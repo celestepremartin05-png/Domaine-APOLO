@@ -89,7 +89,7 @@
       if(k==="forgot"){if(!st.email){st.err="Indiquez votre e-mail.";return draw()}busy();const {error}=await sb.auth.resetPasswordForEmail(st.email);if(error)throw error;st.mode="reset";st.msg="Code envoyé ✓";return draw()}
       if(k==="reset"){const c=val("agCode"),p=val("agPwd");if(!c||!p){st.err="Tapez le code et le nouveau mot de passe.";return draw()}if(p.length<8){st.err="Le mot de passe doit faire au moins 8 caractères.";return draw()}if(p!==val("agPwd2")){st.err="Les deux mots de passe ne sont pas identiques.";return draw()}busy();
         const {error}=await sb.auth.verifyOtp({email:st.email,token:c,type:"recovery"});if(error)throw error;const r=await sb.auth.updateUser({password:p});if(r.error)throw r.error;return start()}
-    }catch(e){st.err=trad(e);draw()}
+    }catch(e){const raw=String((e&&e.message)||e||"");st.err=trad(e)+(raw&&!/^Une erreur/.test(trad(e))?" ("+raw+")":"");draw()}
   }
   card.addEventListener("click",e=>{const m=e.target.closest("[data-m]");if(m){const em=val("agEmail");if(em)st.email=em.toLowerCase();st.mode=m.dataset.m;st.err="";st.msg="";draw();return}const g=e.target.closest("[data-go]");if(g)act(g.dataset.go,g)});
   card.addEventListener("keydown",e=>{if(e.key!=="Enter")return;const b=card.querySelector(".ag-btn");if(b){e.preventDefault();b.click()}});
@@ -115,7 +115,7 @@
   async function start(){
     const {data:{user}}=await sb.auth.getUser();if(!user){st.err="Connexion impossible, réessayez.";return draw()}
     uid=user.id;const r=await sb.from("allowed").select("role").maybeSingle();role=r.data&&r.data.role;
-    if(!role){await sb.auth.signOut();st.mode="login";st.err="Cette adresse e-mail n'est pas autorisée à utiliser Pégase.";return draw()}
+    if(!role){await sb.auth.signOut();st.mode="login";st.err="Connectée, mais adresse absente de la liste autorisée ("+(user.email||"")+(r.error?" · "+r.error.message:"")+").";return draw()}
     sb.channel("pegase-docs").on("postgres_changes",{event:"*",schema:"public",table:"docs"},pl=>{const row=pl.new&&pl.new.path?pl.new:null;const path=row?row.path:(pl.old&&pl.old.path);if(!path)return;local(path,pl.eventType==="DELETE"?null:row.data)}).subscribe();
     window.claude={use:async n=>n==="db"?db:n==="user"?{isOwner:async()=>role==="owner",canEdit:async()=>role==="owner"||role==="editor",id:async()=>uid}:n==="downloads"?{save:async({filename,data})=>{const a=document.createElement("a");a.href=URL.createObjectURL(data);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}}:null};
     gate.hidden=true;document.body.classList.add("pg-in");
