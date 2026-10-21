@@ -798,6 +798,20 @@ textarea.autogrow{field-sizing:content;min-height:110px;resize:vertical;line-hei
 .bag{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#6250d6}
 .bcard.bname{display:grid;gap:2px}
 .cell.avenir{background:#fffaf0;border-color:#ecd28c}
+.apport{display:flex;align-items:center;gap:8px;background:#fffaf0;border:1px solid #ecd28c;border-radius:10px;padding:10px 12px;margin:10px 0;font-weight:600}
+.cel-head{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cel-head h2{font-size:28px}
+.cel-pct{display:grid;gap:4px;font-size:13px;font-weight:700;color:var(--muted);background:#fffaf0;border:1px solid #ecd28c;border-radius:12px;padding:10px 14px}
+.cel-pct span{display:flex;align-items:center;gap:6px;font-size:22px;color:var(--ink)}
+.cel-pct input{width:90px;height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;font-size:20px;font-weight:700;background:var(--surface)}
+.cel-v{display:grid;gap:10px}
+.cel-add{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cel-add input{min-width:0;height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font:inherit;font-size:16px}
+.cel-add input:nth-child(3){grid-column:1/-1}.cel-add .btn{grid-column:1/-1;height:44px}
+.linkbtn{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--band);cursor:pointer;text-align:left}
+.item.fact{cursor:default}.item.fact .sub{display:block}
+@media (max-width:640px){.item.fact{grid-template-columns:5px minmax(0,1fr)!important;row-gap:8px}.item.fact .fact-r{grid-column:2;justify-content:flex-start}}.fact-r{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
+.grid2>.section{align-self:start}
 </style>
 
 <div class="wrap">
@@ -848,7 +862,7 @@ const PERTES=["Pas intéressé","Trop cher","Date pas disponible","A choisi un a
 const JOURS=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
 const NIVEAUX=["Jamais monté","Débutant","Intermédiaire","Confirmé"];
 
-const S={taches:{},depenses:{},chevaux:{},clientsDb:{},reglages:null,downloads:null,offresDb:{},assets:null,uid:null,occupe:{},myPerso:{},pweek:0,personnel:{},cweek:0,rate:10.8,role:"viewer",db:null,pub:{},priv:{},agenda:{},eleves:{},loaded:false,tab:"accueil",route:null,draft:null,dirty:false,
+const S={factures:{},taches:{},depenses:{},chevaux:{},clientsDb:{},reglages:null,downloads:null,offresDb:{},assets:null,uid:null,occupe:{},myPerso:{},pweek:0,personnel:{},cweek:0,rate:10.8,role:"viewer",db:null,pub:{},priv:{},agenda:{},eleves:{},loaded:false,tab:"accueil",route:null,draft:null,dirty:false,
   filter:{q:"",type:"",statut:"actifs"},ptab:"tableau",ftab:"sessions",etab:"avenir",cal:{y:0,m:0,sel:""},open:null,confirmDel:false};
 const canAgenda=()=>S.role==="owner"||S.role==="editor";
 const canProspects=()=>S.role==="owner";
@@ -1231,7 +1245,7 @@ function viewEleve(){
   const e=S.draft;const ed=canAgenda();const isNew=!S.eleves[S.route.id];const r=restants(e);
   const dis=ed?"":" disabled";
   let h='<div class="page"><div class="page-head"><button class="btn small" data-back="clients">‹ Retour</button><div style="min-width:0;flex:1"><h3 style="margin:0;color:var(--k-cours)">Cours particulier</h3><h2>'+esc(e.nom||"Nouvel élève")+'</h2>'+(e.exemple?'<span class="chip ex">Exemple : vous pouvez le supprimer</span>':"")+'</div>'+(e.tel?waBtn(e.tel,"Bonjour "+String(e.nom||"").split(" ")[0]+", "):"")+'<span class="chip '+(r<=0?"bad":r<=1?"warn":"ok")+'" style="font-size:14px;padding:4px 12px">'+r+' cours restant'+(Math.abs(r)>1?"s":"")+'</span></div>';
-  h+='<div class="grid2"><fieldset class="fs"><legend>Élève</legend><div class="grid">'+F("Nom et prénom","nom")+F("Téléphone","tel",{type:"tel"})+F("Parent / contact","parent",{ph:"Si l'élève est mineur"})+F("Âge","age",{type:"number"})+F("Taille (cm)","taille",{type:"number"})+F("Poids (kg)","poids",{type:"number"})+F("Niveau","niveau",{sel:NIVEAUX,ph:"Choisir…"})+F("Offre","offre",{sel:[["cours-adultes","Cours individuels adultes"],["cours-enfants","Cours individuels enfants"],["equitherapie","Équithérapie"]],ph:"Automatique (selon l’âge)"})+F("Statut","actif",{sel:[["true","Actif"],["false","En pause"]]})+'</div></fieldset>'+
+  h+='<div class="grid2"><fieldset class="fs"><legend>Élève</legend>'+(canProspects()?'<label class="check apport"><input type="checkbox" data-k="apporteur"'+(e.apporteur?" checked":"")+'> ⭐ Élève apporté par Céleste</label>':"")+'<div class="grid">'+F("Nom et prénom","nom")+F("Téléphone","tel",{type:"tel"})+F("Parent / contact","parent",{ph:"Si l'élève est mineur"})+F("Âge","age",{type:"number"})+F("Taille (cm)","taille",{type:"number"})+F("Poids (kg)","poids",{type:"number"})+F("Niveau","niveau",{sel:NIVEAUX,ph:"Choisir…"})+F("Offre","offre",{sel:[["cours-adultes","Cours individuels adultes"],["cours-enfants","Cours individuels enfants"],["equitherapie","Équithérapie"]],ph:"Automatique (selon l’âge)"})+F("Statut","actif",{sel:[["true","Actif"],["false","En pause"]]})+'</div></fieldset>'+
    '<fieldset class="fs"><legend>Créneaux réguliers</legend><div class="checks">'+(e.creneaux||[]).map((c,i)=>'<div class="row"><select data-k="creneaux.'+i+'.jour"'+dis+' style="padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">'+JOURS.map((j,x)=>'<option value="'+x+'"'+(Number(c.jour)===x?" selected":"")+'>'+j+'</option>').join("")+'</select><input type="time" data-k="creneaux.'+i+'.heure" value="'+esc(c.heure)+'"'+dis+' style="padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">'+(ed?'<button class="btn small ghost" data-rm="creneaux.'+i+'" aria-label="Retirer">✕</button>':"")+'</div>').join("")+'</div>'+(ed?'<div><button class="btn small" data-add="creneaux">+ Ajouter un créneau</button></div>':"")+'<span class="muted" style="font-size:13px">Ces créneaux apparaissent chaque semaine dans le calendrier.</span></fieldset></div>';
   const P=e.paiements||[];const S2=e.seances||[];
   h+='<div class="grid2"><fieldset class="fs"><legend>Paiements</legend><div class="row" style="font-size:14px"><span><b>'+paye(e)+'</b> cours payés</span><span>·</span><span><b>'+faits(e)+'</b> faits</span><span>·</span><span>Total payé <b>'+money(P.reduce((s,p)=>s+num(p.montant),0))+'</b></span></div>'+
@@ -1421,7 +1435,7 @@ function drawFiche(){
   let h='<div class="overlay" id="ov"><div class="drawer" role="dialog" aria-modal="true" aria-labelledby="fTitle">'+
   '<div class="dh"><div style="min-width:0;flex:1"><h3 style="margin:0">'+(isNew?"Nouveau prospect":"Fiche prospect")+'</h3><h2 id="fTitle">'+esc(d.nom||"Sans nom")+'</h2></div><button class="btn ghost" id="fClose" aria-label="Fermer">✕</button></div>'+convert+
   (tel&&!isNew?'<div class="row"><span style="font-size:20px;font-weight:700;user-select:all;font-variant-numeric:tabular-nums">'+esc(tel)+'</span><button class="btn small" data-copy="'+esc(tel)+'">Copier</button>'+waBtn(tel,"Bonjour "+String(d.prenom||d.nom||"").split(" ")[0]+", c'est "+reg().domaine+". Je reviens vers vous suite à votre demande. ")+'</div>':"")+
-  '<fieldset class="fs"><legend>Contact</legend><div class="row" style="margin-bottom:6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true)+'<p class="muted" style="margin:0;font-size:13px;grid-column:1/-1">La personne que vous avez au téléphone :</p>':"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div></fieldset>'+
+  '<fieldset class="fs"><legend>Contact</legend><div class="row" style="margin-bottom:6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true)+'<p class="muted" style="margin:0;font-size:13px;grid-column:1/-1">La personne que vous avez au téléphone :</p>':"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div><label class="check apport" style="margin-top:8px"><input type="checkbox" id="f_apport"'+(d.apporteur?" checked":"")+'> ⭐ Client apporté par moi (Céleste)</label></fieldset>'+
   '<fieldset class="fs"><legend>La demande</legend><div class="typepick">'+Object.entries(TYPES).map(([k,v])=>'<button type="button" data-ptype="'+k+'" aria-pressed="'+typesOf(d).includes(k)+'">'+(k==="visite"?"🏠 ":"")+v.label+'</button>').join("")+'</div>'+demandeFields()+
   fld("Informations",'<textarea id="f_notes" placeholder="Tout ce qui est utile : ce qu\'il cherche, ses questions, son budget…">'+esc(d.notes)+'</textarea>',true)+'</fieldset>'+
   '<details class="fs suivi" id="suiviBox"'+(S.suiviOpen?" open":"")+'><summary><span>Suivi et relances'+(isVis?' <small class="muted">(facultatif)</small>':"")+'</span><span class="chip st-'+d.statut+'">'+STATUTS[d.statut].label+'</span></summary>'+
@@ -1451,7 +1465,7 @@ function readForm(){
   d.dateEvent=g("v_date",g("f_date",d.dateEvent));d.personnes=g("f_pers",d.personnes);d.montant=g("f_montant",d.montant);d.statut=g("f_statut",d.statut);if(v("f_perte")!==undefined)d.raisonPerte=v("f_perte");
   if(v("f_atype")!==undefined)d.prochaine={type:v("f_atype"),date:v("f_adate"),texte:String(v("f_atxt")||"").trim()};
   d.notes=g("f_notes",d.notes);const cd=document.getElementById("c_done");if(cd)d.__call=cd.checked;
-  [["v_heure","heure"],["v_tuteur","tuteur"],["v_enfant","enfantNom"],["v_age","enfantAge"]].forEach(([id,k])=>{const x=v(id);if(x!==undefined)d.besoin[k]=x});const vr=v("f_recu");if(vr!==undefined)d.besoin.recu=vr;
+  [["v_heure","heure"],["v_tuteur","tuteur"],["v_enfant","enfantNom"],["v_age","enfantAge"]].forEach(([id,k])=>{const x=v(id);if(x!==undefined)d.besoin[k]=x});const vr=v("f_recu");if(vr!==undefined)d.besoin.recu=vr;const fa=document.getElementById("f_apport");if(fa)d.apporteur=fa.checked;
   ["b_sous","b_traiteur","b_spectacle","b_horaire","b_detail","b_enfants","b_occasion","b_niveau","b_age","b_formule","b_dispo","b_quelle","b_objectif"].forEach(k=>{const x=v(k);if(x!==undefined){if(k==="b_sous")d.sousType=x;else d.besoin[k.slice(2)]=x}});
   const log=v("f_log");if(log&&log.trim())d.__log=log.trim();
 }
@@ -1473,9 +1487,9 @@ async function saveProspect(){
   d.besoin.paye=recuN!==null&&prixN&&recuN>=prixN?"oui":"non";
   if(TL.includes("visite")&&d.dateEvent){const hr=d.besoin.heure||"";d.prochaine={type:"rdv",date:d.dateEvent,texte:"Visite du domaine"+(hr?" à "+hr.replace(":","h"):"")};
     const eid=d.eventId||("visite-"+id);const b=d.besoin;const info=[b.enfant==="oui"?"Avec un enfant : "+[b.enfantNom,b.enfantAge?b.enfantAge+" ans":""].filter(Boolean).join(", ")+(b.tuteur?" · tuteur : "+b.tuteur:""):"",d.notes||""].filter(Boolean).join("\n");
-    const ev={...(S.agenda[eid]||blankEvent(d.dateEvent,"rdv")),offre:"visite",kind:"rdv",typeLibre:"Visite",titre:"Visite"+(TL.length>1?" + "+TL.filter(x=>x!=="visite").map(x=>TYPES[x].label).join(" + "):"")+" · "+(d.nom||"Prospect"),date:d.dateEvent,debut:hr,fin:hm1(hr),statut:"confirme",client:{nom:d.nom,tel:d.telephone,email:d.email||""},prospectId:id,notes:info,paiement:{total:prixN||"",acompte:recuN!==null&&recuN<prixN?recuN:"",acompteRecu:recuN!==null&&recuN>0&&recuN<prixN,soldeRecu:recuN!==null&&prixN>0&&recuN>=prixN},updatedAt:new Date().toISOString()};
+    const ev={...(S.agenda[eid]||blankEvent(d.dateEvent,"rdv")),offre:"visite",kind:"rdv",typeLibre:"Visite",titre:"Visite"+(TL.length>1?" + "+TL.filter(x=>x!=="visite").map(x=>TYPES[x].label).join(" + "):"")+" · "+(d.nom||"Prospect"),date:d.dateEvent,debut:hr,fin:hm1(hr),statut:"confirme",client:{nom:d.nom,tel:d.telephone,email:d.email||""},prospectId:id,apporteur:!!d.apporteur,notes:info,paiement:{total:prixN||"",acompte:recuN!==null&&recuN<prixN?recuN:"",acompteRecu:recuN!==null&&recuN>0&&recuN<prixN,soldeRecu:recuN!==null&&prixN>0&&recuN>=prixN},updatedAt:new Date().toISOString()};
     if(await write("agenda/"+eid,ev)){S.agenda[eid]=ev;d.eventId=eid}}
-  const pub={nom:d.nom,agence:d.estAgence?(d.agence||""):"",type:d.type,types:TL,col:(S.pub[id]&&S.pub[id].statut===d.statut&&S.pub[id].col)||"",avoir:num(d.avoir)||0,sousType:d.sousType||"",statut:d.statut,dateEvent:d.dateEvent||"",personnes:d.personnes?Number(d.personnes):"",montant:d.montant?Number(d.montant):"",source:d.source,raisonPerte:d.statut==="perdu"?(d.raisonPerte||""):"",paye:d.statut==="reserve"&&!!d.paye,createdAt:(S.pub[id]&&S.pub[id].createdAt)||new Date().toISOString(),updatedAt:new Date().toISOString(),exemple:!!d.exemple,eventId:d.eventId||""};
+  const pub={apporteur:!!d.apporteur,nom:d.nom,agence:d.estAgence?(d.agence||""):"",type:d.type,types:TL,col:(S.pub[id]&&S.pub[id].statut===d.statut&&S.pub[id].col)||"",avoir:num(d.avoir)||0,sousType:d.sousType||"",statut:d.statut,dateEvent:d.dateEvent||"",personnes:d.personnes?Number(d.personnes):"",montant:d.montant?Number(d.montant):"",source:d.source,raisonPerte:d.statut==="perdu"?(d.raisonPerte||""):"",paye:d.statut==="reserve"&&!!d.paye,createdAt:(S.pub[id]&&S.pub[id].createdAt)||new Date().toISOString(),updatedAt:new Date().toISOString(),exemple:!!d.exemple,eventId:d.eventId||""};
   const priv={appels:d.appels||[],email:d.email||"",telephone:d.telephone,prenom:d.prenom||"",nomFam:d.nomFam||"",agence:d.agence||"",estAgence:!!d.estAgence,instagram:d.instagram||"",besoin:d.besoin,notes:d.notes,prochaine:d.prochaine,historique:d.historique};
   if(!(await write("prospects/"+id,pub)))return null;
   if(!(await write("prive/"+id,priv)))return null;
@@ -1682,6 +1696,7 @@ function viewEvent(){
   if(!RESA_KINDS.includes(k)&&k!=="rdv"&&k!=="autre"){
     h+='<fieldset class="fs"><legend>Paiement</legend><div class="grid3">'+((ev.devis||[]).length&&k==="evenement"?'<label class="f">Montant total<span class="money">'+money(total)+'</span></label>':F("Montant total (DH)","paiement.total",{type:"number"}))+F("Acompte demandé (DH)","paiement.acompte",{type:"number"})+'<label class="f">Reste à encaisser<span class="money">'+money(reste)+'</span></label></div><div class="row"><label class="check"><input type="checkbox" data-k="paiement.acompteRecu"'+(p.acompteRecu?" checked":"")+(ed?"":" disabled")+'>Acompte reçu</label><label class="check"><input type="checkbox" data-k="paiement.soldeRecu"'+(p.soldeRecu?" checked":"")+(ed?"":" disabled")+'>Tout est payé</label>'+F("Moyen de paiement","paiement.moyen",{sel:["Espèces","Virement","Les deux"],ph:"Choisir…"})+'</div></fieldset>';
   }
+  if(canProspects())h+='<label class="check apport"><input type="checkbox" data-k="apporteur"'+(ev.apporteur?" checked":"")+'> ⭐ Client apporté par Céleste <small class="muted">(compte dans ma page Céleste)</small></label>';
   if(k==="brunch"&&(ev.resas||[]).length)h+=brunchRecap(ev);
   if(k!=="rdv"&&k!=="autre")h+=msgSection(ev,k);
   if(k!=="rdv"&&k!=="autre"&&!isNew&&(ev.dateFin||ev.date)<=today())h+=avisSection(ev);
@@ -1958,7 +1973,7 @@ function payMessage(ev){const r=reg();const total=revenueOfAgenda(ev);return fil
 function viewReglages(){
   if(!S.draft)S.draft=clone({msg_confirmation:MSG_DEF.confirmation,msg_rappel:MSG_DEF.rappel,msg_merci:MSG_DEF.merci,...reg()});const ed=canAgenda();
   let h='<div class="page"><p class="muted" style="margin:0">Ces informations servent aux devis, aux rapports et aux messages envoyés aux clients. Cette page n\'est visible que par vous.</p>';
-  h+='<div class="grid2"><fieldset class="fs"><legend>Le domaine</legend><div class="grid">'+F("Nom","domaine")+F("Adresse","adresse")+F("Téléphone","tel",{type:"tel"})+F("E-mail","email",{type:"email"})+F("Site internet","site",{full:true})+'</div></fieldset>'+
+  h+='<div class="grid2"><fieldset class="fs"><legend>Le domaine</legend><div class="grid">'+F("Nom","domaine")+F("Adresse","adresse")+F("Téléphone","tel",{type:"tel"})+F("E-mail","email",{type:"email"})+F("Site internet","site",{full:true})+F("ICE","ice")+F("RC","rc")+F("IF","if_")+'</div></fieldset>'+
     '<fieldset class="fs"><legend>Coordonnées bancaires (RIB)</legend><div class="grid">'+F("Titulaire du compte","titulaire")+F("Banque","banque")+F("RIB","rib",{full:true,ph:"24 chiffres"})+F("SWIFT / BIC","swift")+'</div></fieldset></div>';
   h+='<div class="grid2">'+'<fieldset class="fs"><legend>Devis et objectifs</legend><div class="grid">'+F("Acompte demandé (%)","acomptePct",{type:"number"})+F("Validité du devis (jours)","validite",{type:"number"})+F("Objectif de chiffre par mois (DH)","objectif",{type:"number",ph:"Ex. 60000"})+F("Lien pour laisser un avis","avis",{ph:"Ex. lien Google Maps"})+'</div>'+F("Conditions","conditions",{area:true,full:true})+'</fieldset>'+monPctBox()+'</div>';
   h+='<fieldset class="fs"><legend>Sauvegarde et import</legend><div class="row"><button class="btn" data-export>⬇ Exporter toutes les données (Excel)</button>'+(canProspects()?'<label class="btn" for="impIn2" style="cursor:pointer">⬆ Importer des demandes du site (Excel ou CSV)</label><input type="file" id="impIn2" accept=".csv,.xlsx,.xls" hidden>':"")+'</div><span class="muted" style="font-size:13px">Pensez à exporter une sauvegarde une fois par mois. Le fichier contient les prospects, l\'agenda, les clients, les élèves, le personnel, les dépenses et les chevaux.</span></fieldset>';
@@ -2088,7 +2103,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#gres")&&!$("#gr
 
 /* ---------- navigation, pastilles, accueil ---------- */
 function tabsFor(){const t=[["accueil","Accueil"],["calendrier","Calendrier"],["offres","Offres"],["prospects",canProspects()?"Prospects":"Prospects en cours"],["clients","Clients et élèves"],["argent","Argent & stats"],["chevaux","Chevaux"],["personnel","Personnel"]];if(canProspects())t.push(["reglages","Réglages"]);return t}
-Object.assign(ICON,{calendrier:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8" cy="14.5" r="1"/><circle cx="12" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/>',clients:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.2-4 4.4-6 8-6s6.8 2 8 6"/>',argent:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/>',chevaux:'<path d="M5 20l2-7-3-3 3-5 4 2 4-3 3 4-2 3 1 5-2 4"/><path d="M9 13h6"/>',reglages:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'});
+const _tabsFor0=tabsFor;
+tabsFor=function(){const t=_tabsFor0();const i=t.findIndex(x=>x[0]==="reglages");const add=[["admin","Administration"]];if(canProspects())add.unshift(["celeste","Céleste"]);if(i>=0)t.splice(i,0,...add);else t.push(...add);return t};
+Object.assign(ICON,{celeste:'<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',admin:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h7"/>',calendrier:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8" cy="14.5" r="1"/><circle cx="12" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/>',clients:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.2-4 4.4-6 8-6s6.8 2 8 6"/>',argent:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/>',chevaux:'<path d="M5 20l2-7-3-3 3-5 4 2 4-3 3 4-2 3 1 5-2 4"/><path d="M9 13h6"/>',reglages:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'});
 function badges(){const t=today();const b={};
   if(canProspects()){b.prospects=all().filter(p=>p.nonVu||((x=>x&&x.date<=t)(nextOf(p))&&p.statut!=="perdu")).length}
   b.argent=aEncaisser().filter(x=>x.late).length;b.chevaux=soinsDus().length;
@@ -2426,6 +2443,90 @@ function openMoveMenu(id){const p=S.pub[id];if(!p)return;const cur=colOf(p);
   r.addEventListener("click",e=>{const b=e.target.closest("[data-mm]");if(e.target===r||b){e.stopPropagation();r.remove();if(b&&b.dataset.mm&&b.dataset.mm!==cur)moveProspect(id,b.dataset.mm)}});
 }
 document.addEventListener("contextmenu",e=>{const c=e.target.closest&&e.target.closest('[data-drag="prospect"]');if(c&&canProspects()){e.preventDefault();openMoveMenu(c.dataset.id)}});
+/* ================= v25 : page Céleste et Administration ================= */
+function moi(){return (S.priv&&S.priv._moi)||{}}
+function moiPct(){return num(moi().pct)}
+async function saveMoi(patch){const d={...moi(),...patch,updatedAt:new Date().toISOString()};S.priv=S.priv||{};S.priv._moi=d;return await write("prive/_moi",d)}
+function apportItems(){const out=[];
+  agendaList().filter(a=>a.apporteur&&a.statut!=="annule").forEach(a=>{const enc=encaisseOf(a);out.push({src:"agenda",id:a._id,date:a.date,client:(a.client&&a.client.nom)||((a.resas||[])[0]||{}).nom||titreEv(a),offre:tyOf(a),total:revenueOfAgenda(a),enc})});
+  elevesList().filter(e=>e.apporteur).forEach(e=>(e.paiements||[]).forEach(p=>out.push({src:"eleve",id:e._id,date:p.date||"",client:e.nom||"Élève",offre:offreOfEleve(e),total:num(p.montant),enc:num(p.montant)})));
+  return out.sort((a,b)=>(b.date||"").localeCompare(a.date||""))}
+function apportMonth(m){return apportItems().filter(x=>(x.date||"").slice(0,7)===m).reduce((s,x)=>s+x.enc,0)}
+function viewCeleste(){
+  if(!canProspects())return '<div class="empty">Page réservée.</div>';
+  const pct=moiPct();const items=apportItems();const m=today().slice(0,7);
+  const totAll=items.reduce((s,x)=>s+x.enc,0);const partAll=Math.round(totAll*pct/100);
+  const vers=(moi().versements||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));const recu=vers.reduce((s,v)=>s+num(v.montant),0);const solde=partAll-recu;
+  const caM=apportMonth(m),partM=Math.round(caM*pct/100);
+  const enLigne=items.filter(x=>x.offre==="formation-en-ligne").reduce((s,x)=>s+x.enc,0),surPlace=totAll-enLigne;
+  const keys=monthKeys(12);const tv=keys.map(apportMonth),pv=tv.map(v=>Math.round(v*pct/100));
+  let h='<div class="cel-head"><div><h2>Bonjour Céleste ⭐</h2><p class="muted" style="margin:2px 0 0">Ce que vos clients rapportent au domaine et votre part. Seul l\'argent déjà encaissé compte. Cette page n\'est visible que par vous.</p></div>'+
+    '<label class="cel-pct">Mon pourcentage<span><input type="number" id="celPct" min="0" max="100" step="0.5" inputmode="decimal" value="'+esc(moi().pct??"")+'" placeholder="0"> %</span></label></div>';
+  h+='<div class="strip">'+cellP(money(solde),"💰 Mon solde à recevoir",solde<0)+cellP(money(partM),"Ma part ce mois-ci")+cellP(money(caM),"Généré par mes clients ce mois-ci")+cellP(money(partAll),"Ma part depuis le début")+'</div>';
+  h+='<div class="card" style="margin:16px 0"><h3>Ce que mes clients rapportent · 12 mois</h3><p class="muted" style="margin:0 0 6px;font-size:13px">Bleu : total généré par mes clients · Or : ce que je prends ('+pct+' %).</p>'+lineChart(keys,[{lab:"Total généré",vals:tv,col:"#2a78d6"},{lab:"Ma part",vals:pv,col:"#d29a0e"}])+'</div>';
+  h+='<div class="strip" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">'+cellP(money(surPlace),"Sur place (cours, stages, visites…)")+cellP(money(enLigne),"Formation en ligne")+cellP(new Set(items.map(x=>normTxt(x.client))).size,"Clients apportés")+'</div>';
+  const by={};items.forEach(x=>{const k=normTxt(x.client);(by[k]=by[k]||{nom:x.client,enc:0,offres:new Set(),last:"",ref:x}).enc+=x.enc;by[k].offres.add(OF[x.offre]?OF[x.offre].nom:tLab(x.offre));if((x.date||"")>by[k].last)by[k].last=x.date});
+  const L=Object.values(by).sort((a,b)=>b.enc-a.enc);
+  h+='<div class="grid2" style="margin-top:16px"><section class="section" style="margin:0"><div class="section-head"><h2>Mes clients</h2><span class="count">'+L.length+'</span></div>'+
+    (L.length?'<div class="list">'+L.map(c=>'<button class="item" '+(c.ref.src==="agenda"?'data-item="agenda" data-id="'+esc(c.ref.id)+'"':'data-item="eleve" data-id="'+esc(c.ref.id)+'"')+'><span class="bar" style="background:#d29a0e"></span><span style="min-width:0"><b>'+esc(c.nom)+'</b><span class="sub">'+esc([...c.offres].join(", "))+(c.last?' · '+fmtDate(c.last):"")+'</span></span><span style="text-align:right;font-size:14px"><b>'+money(c.enc)+'</b><br><span class="muted" style="font-size:12.5px">ma part '+Math.round(c.enc*pct/100).toLocaleString("fr-FR")+' DH</span></span></button>').join("")+'</div>':'<div class="empty">Aucun client compté pour l\'instant. Dans la fiche d\'une activité, d\'un élève ou d\'un prospect, cochez <b>⭐ Client apporté par Céleste</b>.</div>')+'</section>'+
+    '<section class="section" style="margin:0"><div class="section-head"><h2>Versements reçus</h2><span class="count">'+money(recu)+'</span></div><div class="card cel-v"><div class="cel-add"><input type="date" id="cvD" value="'+today()+'"><input type="number" id="cvM" min="0" inputmode="numeric" placeholder="Montant (DH)"><input id="cvN" placeholder="Ex. virement de Catherine"><button class="btn primary" data-cv-add>Ajouter</button></div>'+
+    (vers.length?'<div class="w-list">'+vers.map(v=>'<div class="w-i donne"><span class="w-s">+</span><span class="w-t"><b>'+esc(v.note||"Versement")+'</b><small>'+fmtDate(v.date)+'</small></span><b class="w-m">'+money(num(v.montant))+'</b><button class="btn small ghost" data-cv-del="'+esc(v.id)+'" aria-label="Supprimer">✕</button></div>').join("")+'</div>':'<p class="muted" style="margin:0;font-size:14px">Notez ici ce qu\'on vous verse : votre solde se met à jour tout seul.</p>')+'</div></section></div>';
+  return h}
+let celT=null;
+document.addEventListener("input",e=>{if(e.target.id!=="celPct")return;clearTimeout(celT);celT=setTimeout(async()=>{if(await saveMoi({pct:e.target.value}))toast("Pourcentage enregistré");laterRender()},700)});
+document.addEventListener("click",async e=>{
+  if(e.target.closest("[data-cv-add]")){const m=num(($("#cvM")||{}).value);if(!m){toast("Indiquez le montant");return}const v={id:newId("v"),date:($("#cvD")||{}).value||today(),montant:m,note:(($("#cvN")||{}).value||"").trim()};if(await saveMoi({versements:[...(moi().versements||[]),v]})){toast("Versement ajouté");render()}return}
+  const d=e.target.closest("[data-cv-del]");if(d){if(await saveMoi({versements:(moi().versements||[]).filter(x=>x.id!==d.dataset.cvDel)})){toast("Supprimé");render()}}
+});
+
+/* ---------- Administration : factures et devis ---------- */
+function factList(){return Object.keys(S.factures||{}).map(id=>({...S.factures[id],_id:id}))}
+function nextFactNo(){const y=today().slice(0,4);const n=factList().filter(f=>(f.numero||"").startsWith("F-"+y)).map(f=>num(String(f.numero).split("-")[2])).reduce((a,b)=>Math.max(a,b),0)+1;return "F-"+y+"-"+String(n).padStart(3,"0")}
+function viewAdmin(){
+  const t=S.adtab||"factures";
+  let h='<div class="subtabs"><button data-adtab="factures" aria-pressed="'+(t==="factures")+'">🧾 Factures</button><button data-adtab="devis" aria-pressed="'+(t==="devis")+'">📝 Devis</button><button data-adtab="infos" aria-pressed="'+(t==="infos")+'">🏛️ Infos du domaine</button></div>';
+  if(t==="factures"){
+    const rows=agendaList().filter(a=>a.statut!=="annule"&&revenueOfAgenda(a)>0).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+    const F=S.factures||{};const tot=factList().length;
+    h+='<p class="muted" style="margin:0 0 12px">Chaque activité payante peut avoir sa facture. Le numéro est donné automatiquement (F-'+today().slice(0,4)+'-001, 002…) et ne change plus. '+tot+' facture'+(tot>1?"s":"")+' émise'+(tot>1?"s":"")+'.</p>';
+    h+=rows.length?'<div class="list">'+rows.map(a=>{const tot=revenueOfAgenda(a),enc=encaisseOf(a);const f=F[a._id];const cl=(a.client&&a.client.nom)||((a.resas||[])[0]||{}).nom||"—";
+      return '<div class="item fact"><span class="bar" style="background:'+tCol(tyOf(a))+'"></span><span style="min-width:0"><button class="linkbtn" data-item="agenda" data-id="'+esc(a._id)+'">'+esc(cl)+'</button><span class="sub">'+esc(tLab(tyOf(a)))+' · '+fmtDate(a.date)+'</span></span><span class="fact-r"><b>'+tot.toLocaleString("fr-FR")+' DH</b>'+(enc>=tot?'<span class="chip ok">Payé</span>':enc>0?'<span class="chip warn">Acompte '+enc.toLocaleString("fr-FR")+'</span>':'<span class="chip bad">À encaisser</span>')+(f?'<button class="btn small" data-fact="'+esc(a._id)+'">📄 '+esc(f.numero)+'</button>':'<button class="btn small primary" data-fact="'+esc(a._id)+'">Créer la facture</button>')+'</span></div>'}).join("")+'</div>':'<div class="empty">Aucune activité payante pour l\'instant.</div>';
+  }
+  if(t==="devis"){
+    const rows=agendaList().filter(a=>a.statut!=="annule"&&(a.devis||[]).length||(a.statut==="option"&&revenueOfAgenda(a)>0)).sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+    h+='<div class="row" style="margin-bottom:12px"><span class="muted">Les devis se préparent dans la fiche de l\'activité (lignes du devis, prix, acompte). Ici, vous les retrouvez tous et vous les téléchargez en PDF.</span><span class="spacer"></span>'+(canAgenda()?'<button class="btn primary" data-new-ev="'+today()+'" data-kind="privatisation">+ Nouveau devis</button>':"")+'</div>';
+    h+=rows.length?'<div class="list">'+rows.map(a=>{const cl=(a.client&&a.client.nom)||"—";return '<div class="item"><span class="bar" style="background:'+tCol(tyOf(a))+'"></span><span style="min-width:0"><b>'+esc(cl)+'</b><span class="sub">'+esc(tLab(tyOf(a)))+' · '+fmtDate(a.date)+' · '+(a.statut==="option"?"en option":"confirmé")+'</span></span><span class="row" style="gap:6px"><b style="font-size:14px">'+revenueOfAgenda(a).toLocaleString("fr-FR")+' DH</b><button class="btn small" data-item="agenda" data-id="'+esc(a._id)+'">Ouvrir</button><button class="btn small primary" data-devis-of="'+esc(a._id)+'">📄 PDF</button></span></div>'}).join("")+'</div>':'<div class="empty">Aucun devis en cours. Touchez « + Nouveau devis », puis remplissez les lignes du devis dans la fiche.</div>';
+  }
+  if(t==="infos"){const r=reg();
+    h+='<div class="card" style="display:grid;gap:8px"><h3>Ce qui apparaît sur les devis et les factures</h3>'+[["Domaine",r.domaine],["Adresse",r.adresse],["Téléphone",r.tel],["E-mail",r.email],["ICE",r.ice],["RC",r.rc],["IF",r.if_],["Titulaire du compte",r.titulaire],["Banque",r.banque],["RIB",r.rib]].map(([a,b])=>'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span class="muted">'+a+'</span><b>'+esc(b||"à compléter")+'</b></div>').join("")+(canProspects()?'<p class="muted" style="margin:6px 0 0;font-size:13px">Pour modifier ces informations : Réglages.</p>':'')+'</div>';
+  }
+  return h}
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-adtab]");if(b){S.adtab=b.dataset.adtab;render();return}
+  const dv=e.target.closest("[data-devis-of]");if(dv){const a=S.agenda[dv.dataset.devisOf];if(a)devisPDF(a,dv.dataset.devisOf);return}
+  const fb=e.target.closest("[data-fact]");if(fb){const id=fb.dataset.fact;const a=S.agenda[id];if(!a)return;let f=(S.factures||{})[id];
+    if(!f){f={numero:nextFactNo(),date:today(),agendaId:id,client:(a.client&&a.client.nom)||"",montant:revenueOfAgenda(a),cree:new Date().toISOString()};if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;render();toast("Facture "+f.numero+" créée")}
+    facturePDF(a,f);return}
+});
+async function facturePDF(ev,f){
+  const doc=await newPdf();if(!doc)return;const r=reg();const ty=tyOf(ev);
+  pdfHeader(doc,"FACTURE","N° "+f.numero+"  ·  "+pT(fmtLong(f.date)));
+  let y=48;doc.setFontSize(10);doc.setTextColor(113,132,154);doc.text("FACTURÉ À",12,y);doc.text("ACTIVITÉ",110,y);y+=6;
+  doc.setTextColor(36,54,76);doc.setFont("helvetica","bold");doc.setFontSize(12);const cl=ev.client||{};const nom=cl.nom||((ev.resas||[])[0]||{}).nom||"";doc.text(pT(nom||"-"),12,y);doc.text(pT(tLab(ty)),110,y);
+  doc.setFont("helvetica","normal");doc.setFontSize(10);y+=6;doc.text(pT([cl.tel,cl.email].filter(Boolean).join("  ·  ")),12,y);doc.text(pT(ev.dateFin&&ev.dateFin!==ev.date?"Du "+fmtLong(ev.date)+" au "+fmtLong(ev.dateFin):fmtLong(ev.date)),110,y);
+  y+=14;doc.setFillColor(225,238,251);doc.rect(12,y-6,186,9,"F");doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.text("DÉSIGNATION",15,y);doc.text("QTÉ",128,y,{align:"right"});doc.text("PRIX UNITAIRE",162,y,{align:"right"});doc.text("TOTAL",195,y,{align:"right"});
+  doc.setFont("helvetica","normal");doc.setFontSize(10.5);let lines=devisLines(ev);let tot=0;y+=9;
+  if(!lines.length)lines=[[tLab(ty),1,revenueOfAgenda(ev)]];
+  lines.forEach(l=>{const lt=l[1]*l[2];tot+=lt;const wrap=doc.splitTextToSize(pT(l[0]),100);doc.text(wrap,15,y);doc.text(String(l[1]),128,y,{align:"right"});doc.text(dhT(l[2]),162,y,{align:"right"});doc.text(dhT(lt),195,y,{align:"right"});y+=6*wrap.length+2;doc.setDrawColor(216,230,244);doc.line(12,y-4,198,y-4)});
+  const enc=encaisseOf(ev);y+=4;doc.setFont("helvetica","bold");doc.setFontSize(12.5);doc.text("TOTAL",150,y,{align:"right"});doc.text(dhT(tot),195,y,{align:"right"});
+  doc.setFont("helvetica","normal");doc.setFontSize(10.5);y+=7;doc.text("Déjà réglé",150,y,{align:"right"});doc.text(dhT(enc),195,y,{align:"right"});y+=6;doc.setFont("helvetica","bold");doc.text("Reste à payer",150,y,{align:"right"});doc.text(dhT(Math.max(0,tot-enc)),195,y,{align:"right"});
+  if(enc>=tot&&tot>0){y+=14;doc.setTextColor(44,122,74);doc.setFontSize(16);doc.text("FACTURE ACQUITTÉE",12,y);doc.setTextColor(36,54,76)}
+  y+=16;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setFillColor(245,249,254);doc.rect(12,y-6,186,28,"F");
+  [["Titulaire",r.titulaire],["Banque",r.banque],["RIB",r.rib]].forEach(([a,b])=>{doc.text(pT(a+" : "+(b||"-")),15,y);y+=6});
+  y+=10;const ids=[r.ice?"ICE "+r.ice:"",r.rc?"RC "+r.rc:"",r.if_?"IF "+r.if_:""].filter(Boolean).join("  ·  ");if(ids){doc.setFontSize(9.5);doc.setTextColor(113,132,154);doc.text(pT(ids),12,y)}
+  pdfFooter(doc);await saveFile("Facture "+f.numero+" "+pT(nom||tLab(ty))+".pdf",doc.output("blob"));
+}
+
 /* ================= rendu ================= */
 function render(){
   $("#todayLabel").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -2441,7 +2542,7 @@ function render(){
   else if(S.route&&S.route.page==="client")html=viewClient();
   else if(S.route&&S.route.page==="cheval")html=viewCheval();
   else if(S.tab==="reglages"){if(!S.route)S.route={page:"reglages"};html=viewReglages()}
-  else html=({accueil:viewAccueil,evenements:viewEvenements,formations:viewFormations,cours:viewCours,prospects:viewProspects,stats:viewArgentTab,personnel:viewPersonnel,offres:viewOffres,calendrier:viewCalendrier,evenements:viewCalendrier,formations:viewCalendrier,cours:viewCalendrier,clients:viewClientsTab,argent:viewArgentTab,chevaux:viewChevaux}[S.tab])();
+  else html=({accueil:viewAccueil,evenements:viewEvenements,formations:viewFormations,cours:viewCours,prospects:viewProspects,stats:viewArgentTab,personnel:viewPersonnel,offres:viewOffres,calendrier:viewCalendrier,evenements:viewCalendrier,formations:viewCalendrier,cours:viewCalendrier,clients:viewClientsTab,argent:viewArgentTab,celeste:viewCeleste,admin:viewAdmin,chevaux:viewChevaux}[S.tab])();
   const ae=document.activeElement;const k=ae&&ae.dataset&&ae.dataset.k;
   $("#view").innerHTML=html;animateEnter();
   if(k){const el=document.querySelector('[data-k="'+k+'"]');if(el)el.focus()}
@@ -2464,7 +2565,7 @@ async function boot(){
   if(!db){render();return}
   const ready={prospects:false,agenda:false,eleves:false,personnel:false,occupe:false,offres:false,depenses:false,chevaux:false,clients:false,taches:false};
   const sub=(col,key)=>db.collection(col).onSnapshot(snap=>{const o={};snap.docs.forEach(d=>{o[d.id]=d.data()});S[key]=o;if(ready[col]===false)ready[col]=true;S.loaded=Object.values(ready).every(Boolean);onData()},()=>{ready[col]=true;S.loaded=Object.values(ready).every(Boolean);render()});
-  sub("prospects","pub");sub("agenda","agenda");sub("eleves","eleves");sub("personnel","personnel");sub("occupe","occupe");sub("offres","offresDb");sub("depenses","depenses");sub("chevaux","chevaux");sub("clients","clientsDb");sub("taches","taches");
+  sub("prospects","pub");sub("agenda","agenda");sub("eleves","eleves");sub("personnel","personnel");sub("occupe","occupe");sub("offres","offresDb");sub("depenses","depenses");sub("chevaux","chevaux");sub("clients","clientsDb");sub("taches","taches");sub("factures","factures");
   db.doc("reglages/infos").onSnapshot(d=>{S.reglages=d.exists?d.data():null;onData()},()=>{});
   db.doc("reglages/devise").onSnapshot(d=>{const v=d.exists&&Number((d.data()||{}).eurDh);if(v>1){S.rate=v;onData()}},()=>{});
   if(S.uid)db.collection("data/users/"+S.uid).onSnapshot(snap=>{const o={};snap.docs.forEach(d=>{o[d.id]=d.data()});S.myPerso=o;onData()},()=>{});
