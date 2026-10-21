@@ -812,6 +812,12 @@ textarea.autogrow{field-sizing:content;min-height:110px;resize:vertical;line-hei
 .item.fact{cursor:default}.item.fact .sub{display:block}
 @media (max-width:640px){.item.fact{grid-template-columns:5px minmax(0,1fr)!important;row-gap:8px}.item.fact .fact-r{grid-column:2;justify-content:flex-start}}.fact-r{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
 .grid2>.section{align-self:start}
+.myag{margin:0 0 18px}.myag .section-head{flex-wrap:wrap;gap:8px}
+.cel-top{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start;margin-bottom:18px}.cel-top .section{margin:0}
+@media (max-width:860px){.cel-top{grid-template-columns:1fr}}
+.mynotes textarea{width:100%;box-sizing:border-box;font:inherit;border:1px solid var(--line,#ddd);border-radius:10px;padding:10px;resize:vertical;background:var(--card,#fff);color:inherit}
+.note-list{display:grid;gap:10px;margin-top:10px}.note{background:#fffbea;border:1px solid #f0dd8f;border-radius:12px;padding:8px}
+.note textarea{background:transparent;border:0;padding:4px}.note-f{display:flex;justify-content:space-between;align-items:center;font-size:12px}
 </style>
 
 <div class="wrap">
@@ -2462,6 +2468,7 @@ function viewCeleste(){
   const keys=monthKeys(12);const tv=keys.map(apportMonth),pv=tv.map(v=>Math.round(v*pct/100));
   let h='<div class="cel-head"><div><h2>Bonjour Céleste ⭐</h2><p class="muted" style="margin:2px 0 0">Ce que vos clients rapportent au domaine et votre part. Seul l\'argent déjà encaissé compte. Cette page n\'est visible que par vous.</p></div>'+
     '<label class="cel-pct">Mon pourcentage<span><input type="number" id="celPct" min="0" max="100" step="0.5" inputmode="decimal" value="'+esc(moi().pct??"")+'" placeholder="0"> %</span></label></div>';
+  h+='<div class="cel-top">'+myAgendaHtml()+myNotesHtml()+'</div>';
   h+='<div class="strip">'+cellP(money(solde),"💰 Mon solde à recevoir",solde<0)+cellP(money(partM),"Ma part ce mois-ci")+cellP(money(caM),"Généré par mes clients ce mois-ci")+cellP(money(partAll),"Ma part depuis le début")+'</div>';
   h+='<div class="card" style="margin:16px 0"><h3>Ce que mes clients rapportent · 12 mois</h3><p class="muted" style="margin:0 0 6px;font-size:13px">Bleu : total généré par mes clients · Or : ce que je prends ('+pct+' %).</p>'+lineChart(keys,[{lab:"Total généré",vals:tv,col:"#2a78d6"},{lab:"Ma part",vals:pv,col:"#d29a0e"}])+'</div>';
   h+='<div class="strip" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">'+cellP(money(surPlace),"Sur place (cours, stages, visites…)")+cellP(money(enLigne),"Formation en ligne")+cellP(new Set(items.map(x=>normTxt(x.client))).size,"Clients apportés")+'</div>';
@@ -2526,6 +2533,43 @@ async function facturePDF(ev,f){
   y+=10;const ids=[r.ice?"ICE "+r.ice:"",r.rc?"RC "+r.rc:"",r.if_?"IF "+r.if_:""].filter(Boolean).join("  ·  ");if(ids){doc.setFontSize(9.5);doc.setTextColor(113,132,154);doc.text(pT(ids),12,y)}
   pdfFooter(doc);await saveFile("Facture "+f.numero+" "+pT(nom||tLab(ty))+".pdf",doc.output("blob"));
 }
+
+/* ================= v26 : agenda privé de Céleste ================= */
+function myAg(){return ((S.priv&&S.priv._agenda)||{}).items||[]}
+async function saveMyAg(items){const d={items,updatedAt:new Date().toISOString()};S.priv=S.priv||{};S.priv._agenda=d;return await write("prive/_agenda",d)}
+function myAgendaHtml(){
+  const all=myAg().filter(x=>!x.fait||(x.faitLe||"")>=today());const dc=S.myCat||guessCat(S.myTxt||"");
+  let h='<section class="section myag"><div class="section-head"><h2>📋 Mon agenda</h2><span class="count">'+all.filter(x=>!x.fait).length+'</span><span class="muted" style="font-size:13px">privé · Catherine ne le voit pas</span></div>';
+  h+='<div class="card ag-add"><div class="ag-row"><input id="myIn" placeholder="Ce que j\'ai à faire… ex. appeler l\'agence mariage" value="'+esc(S.myTxt||"")+'"><button class="btn primary" data-my-add>Ajouter</button></div><div class="ag-cats">'+CATS.map(([id])=>{const c=CATM[id];return '<button type="button" class="ag-cat" data-mycat="'+id+'" aria-pressed="'+(dc===id)+'" style="--cc:'+c.c+';--cb:'+c.bg+'">'+c.ic+' '+esc(c.l)+'</button>'}).join("")+'</div></div>';
+  const by={};all.forEach(x=>{const c=CATM[x.cat]?x.cat:guessCat(x.texte);(by[c]=by[c]||[]).push(x)});
+  const ids=CATS.map(c=>c[0]).filter(id=>by[id]);
+  h+=ids.length?'<div class="ag-grid">'+ids.map(id=>{const c=CATM[id];const l=by[id].sort((a,b)=>(a.fait?1:0)-(b.fait?1:0));const n=l.filter(x=>!x.fait).length;
+    return '<div class="ag-tile" style="--cc:'+c.c+';--cb:'+c.bg+'"><div class="ag-th"><span class="ag-ic">'+c.ic+'</span><b>'+esc(c.l)+'</b>'+(n?'<span class="ag-n">'+n+'</span>':"")+'</div><div class="ag-bubbles">'+l.map(x=>'<span class="ag-bub'+(x.fait?" done":"")+'"><button type="button" class="ag-bt" data-mydone="'+esc(x.id)+'">'+(x.fait?"✓ ":"")+esc(x.texte)+'</button><button type="button" class="ag-x" data-mydel="'+esc(x.id)+'" aria-label="Supprimer">✕</button></span>').join("")+'</div></div>'}).join("")+'</div>':'<p class="muted" style="margin:0">Rien à faire pour l\'instant ✨</p>';
+  return h+'</section>'}
+document.addEventListener("click",async e=>{
+  const c=e.target.closest("[data-mycat]");if(c){const i=$("#myIn");S.myTxt=i?i.value:"";S.myCat=c.dataset.mycat;render();const n=$("#myIn");if(n)n.focus();return}
+  if(e.target.closest("[data-my-add]")){const i=$("#myIn");const v=i&&i.value.trim();if(!v){toast("Écrivez la tâche");return}const it={id:newId("m"),texte:v,cat:S.myCat||guessCat(v),fait:false,cree:new Date().toISOString()};S.myTxt="";S.myCat="";if(await saveMyAg([...myAg(),it])){toast("Ajouté dans « "+CATM[it.cat].l+" »");render();const n=$("#myIn");if(n)n.focus()}return}
+  const d=e.target.closest("[data-mydone]");if(d){const L=myAg().map(x=>x.id===d.dataset.mydone?{...x,fait:!x.fait,faitLe:!x.fait?today():""}:x);const now=L.find(x=>x.id===d.dataset.mydone);if(await saveMyAg(L)){if(now&&now.fait)toast("Bravo, c'est fait ✓");render()}return}
+  const x=e.target.closest("[data-mydel]");if(x){if(await saveMyAg(myAg().filter(y=>y.id!==x.dataset.mydel)))render()}
+});
+document.addEventListener("input",e=>{if(e.target.id!=="myIn")return;S.myTxt=e.target.value;if(S.myCat)return;const g=guessCat(e.target.value);document.querySelectorAll("[data-mycat]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mycat===g)))});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="myIn"){e.preventDefault();const b=document.querySelector("[data-my-add]");if(b)b.click()}});
+
+/* ================= v27 : notes privées de Céleste ================= */
+function myNotes(){return ((S.priv&&S.priv._notes)||{}).items||[]}
+async function saveNotes(items){const d={items,updatedAt:new Date().toISOString()};S.priv=S.priv||{};S.priv._notes=d;return await write("prive/_notes",d)}
+function myNotesHtml(){const L=myNotes().slice().sort((a,b)=>(b.modif||"").localeCompare(a.modif||""));
+  let h='<section class="section mynotes"><div class="section-head"><h2>📝 Mes notes</h2><span class="count">'+L.length+'</span></div>';
+  h+='<div class="card"><textarea id="noteIn" rows="3" placeholder="Une idée, un numéro, un truc à retenir…">'+esc(S.noteTxt||"")+'</textarea><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn primary" data-note-add>Ajouter la note</button></div></div>';
+  h+=L.length?'<div class="note-list">'+L.map(n=>'<div class="note"><textarea data-note-ed="'+esc(n.id)+'" rows="'+Math.min(8,Math.max(2,String(n.texte).split("\n").length+1))+'">'+esc(n.texte)+'</textarea><div class="note-f"><span class="muted">'+esc(new Date(n.modif).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}))+'</span><button type="button" class="ag-x" data-note-del="'+esc(n.id)+'" aria-label="Supprimer la note">✕</button></div></div>').join("")+'</div>':'<p class="muted" style="margin:0">Pas encore de note.</p>';
+  return h+'</section>'}
+document.addEventListener("click",async e=>{
+  if(e.target.closest("[data-note-add]")){const i=$("#noteIn");const v=i&&i.value.trim();if(!v){toast("Écrivez la note");return}const now=new Date().toISOString();S.noteTxt="";if(await saveNotes([...myNotes(),{id:newId("n"),texte:v,cree:now,modif:now}])){toast("Note ajoutée");render()}return}
+  const d=e.target.closest("[data-note-del]");if(d){if(!confirmDel())return;if(await saveNotes(myNotes().filter(n=>n.id!==d.dataset.noteDel)))render()}
+});
+function confirmDel(){return true}
+document.addEventListener("input",e=>{if(e.target.id==="noteIn")S.noteTxt=e.target.value});
+document.addEventListener("change",async e=>{const id=e.target.dataset&&e.target.dataset.noteEd;if(!id)return;const v=e.target.value.trim();const L=v?myNotes().map(n=>n.id===id?{...n,texte:v,modif:new Date().toISOString()}:n):myNotes().filter(n=>n.id!==id);if(await saveNotes(L))toast("Note enregistrée")});
 
 /* ================= rendu ================= */
 function render(){
