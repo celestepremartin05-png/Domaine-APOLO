@@ -121,6 +121,23 @@
     gate.hidden=true;document.body.classList.add("pg-in");
     const hr=document.querySelector(".hdr-r");if(hr&&!document.getElementById("agOut")){const b=document.createElement("button");b.id="agOut";b.className="ag-out";b.textContent="Se déconnecter";b.onclick=async()=>{await sb.auth.signOut();location.reload()};hr.appendChild(b)}
     if(window.__pegaseBoot)window.__pegaseBoot();
+    if(role==="owner"){const c=await sb.from("docs").select("path",{count:"exact",head:true});if(!c.error&&(c.count===0||location.hash==="#import"))showImport()}
+  }
+  function showImport(){const o=document.createElement("div");o.id="agImp";o.style.cssText="position:fixed;inset:0;z-index:2100;background:rgba(7,16,39,.6);display:flex;align-items:center;justify-content:center;padding:20px";
+    o.innerHTML='<div class="ag-card"><h1>Importer vos données</h1><p>Votre Pégase en ligne est vide. Tapez le code d\'import que Claude vous a donné pour y recopier vos prospects, votre calendrier, vos chevaux, vos offres…</p><label>Code d\'import<input id="impPw" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX"></label><div id="impMsg"></div><button class="ag-btn" id="impGo">Importer</button><button class="ag-link" id="impNo">Plus tard</button></div>';
+    document.body.appendChild(o);
+    o.querySelector("#impNo").onclick=()=>o.remove();
+    o.querySelector("#impGo").onclick=async()=>{const b=o.querySelector("#impGo"),m=o.querySelector("#impMsg");const pw=o.querySelector("#impPw").value.trim().toUpperCase().replace(/\s+/g,"");if(!pw)return;b.disabled=true;b.textContent="Import en cours…";m.innerHTML="";
+      try{const r=await fetch("import.json",{cache:"no-store"});if(!r.ok)throw new Error("Fichier d'import introuvable");const j=await r.json();
+        const u8=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
+        const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
+        const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:u8(j.salt),iterations:310000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+        let plain;try{plain=await crypto.subtle.decrypt({name:"AES-GCM",iv:u8(j.iv)},key,u8(j.ct))}catch(_){throw new Error("Code incorrect")}
+        const docs=JSON.parse(new TextDecoder().decode(plain)).map(d=>({...d,updated_at:new Date().toISOString()}));
+        const {error}=await sb.from("docs").upsert(docs);if(error)throw error;
+        docs.forEach(d=>local(d.path,d.data));
+        m.innerHTML='<div class="ag-ok">✓ '+docs.length+' fiches importées</div>';b.textContent="Terminé";setTimeout(()=>o.remove(),1500);
+      }catch(e){m.innerHTML='<div class="ag-err">'+esc(e.message||String(e))+'</div>';b.disabled=false;b.textContent="Importer"}};
   }
   window.addEventListener("DOMContentLoaded",draw);
 })();
