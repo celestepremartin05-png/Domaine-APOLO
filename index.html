@@ -822,6 +822,8 @@ textarea.autogrow{field-sizing:content;min-height:110px;resize:vertical;line-hei
 .pick-menu{position:fixed;z-index:1000;background:var(--card,#fff);color:inherit;border:1px solid var(--line,#dde);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.18);padding:10px;display:grid;gap:4px;max-height:60vh;overflow:auto}
 .pick-menu b{font-size:13px;margin:2px 4px 6px;text-transform:none}.pick-menu button{text-align:left;border:0;background:transparent;font:inherit;padding:9px 10px;border-radius:8px;cursor:pointer;color:inherit}.pick-menu button:hover{background:var(--bg,#f2f4f8)}.pick-menu button.ghost{color:var(--muted,#667);font-size:13px}
 .pen-paye{font-weight:700;padding:10px 12px;border:1px solid var(--line,#dde);border-radius:10px;display:flex;gap:10px;align-items:center}.pen-paye input{width:20px;height:20px;accent-color:var(--ok)}.pen-paye.done{background:#e8f6ee;border-color:#9fd6b5}
+tr[data-client],[data-item="eleve"]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.lp-on{transition:transform .6s,background .6s;transform:scale(.98);background:color-mix(in srgb,var(--s-lost-b,#e66) 12%,transparent)!important}
 </style>
 
 <div class="wrap">
@@ -1911,7 +1913,7 @@ function clientsAll(){
   const nn=x=>String(x||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   Object.keys(M).filter(k=>k.startsWith("n-")).forEach(k=>{const c=M[k];const t=Object.values(M).find(o=>o.key.startsWith("t")&&nn(o.nom)===nn(c.nom));if(t&&!(S.clientsDb||{})[k]){t.items=t.items.concat(c.items);t.total+=c.total;if(c.last>t.last)t.last=c.last;delete M[k]}});
   Object.values(M).forEach(c=>{c.tags=c.tags||[];c.interets=c.interets||[];const seen=new Set(c.items.map(i=>i.ty).filter(t=>OF[t]));c.offresVues=[...seen]});
-  return Object.values(M).filter(c=>c.nom||c.tel);
+  return Object.values(M).filter(c=>(c.nom||c.tel)&&!((S.clientsDb||{})[c.key]||{}).cache);
 }
 function viewClients(){
   const q=(S.cq||"").trim().toLowerCase();let L=clientsAll();const f=S.cf||"";
@@ -1919,7 +1921,7 @@ function viewClients(){
   if(f.startsWith("tag:"))L=L.filter(c=>c.tags.includes(f.slice(4)));
   if(f.startsWith("of:"))L=L.filter(c=>c.interets.includes(f.slice(3))||c.offresVues.includes(f.slice(3)));
   L.sort((a,b)=>S.csort==="total"?b.total-a.total:S.csort==="nom"?(a.nom||"").localeCompare(b.nom||""):(b.last||"").localeCompare(a.last||""));
-  let h='<p class="muted" style="margin:0 0 14px">Votre base clients se remplit toute seule avec les événements, réservations, élèves et prospects. Ouvrez un client pour compléter sa fiche, ses centres d\'intérêt et le suivi de vos échanges.</p>';
+  let h='<p class="muted" style="margin:0 0 14px">Votre base clients se remplit toute seule avec les événements, réservations, élèves et prospects. Ouvrez un client pour compléter sa fiche, ses centres d\'intérêt et le suivi de vos échanges. Pour supprimer un client, restez appuyé dessus (clic droit sur ordinateur).</p>';
   h+='<div class="toolbar"><input id="cq" type="search" placeholder="Rechercher un nom, un téléphone, une ville…" value="'+esc(S.cq||"")+'"><select id="cfilt"><option value="">Tous les clients</option><optgroup label="Étiquette">'+CTAGS.map(t=>'<option value="tag:'+esc(t)+'"'+(f==="tag:"+t?" selected":"")+'>'+esc(t)+'</option>').join("")+'</optgroup><optgroup label="Intéressé par">'+OFFRES.map(o=>'<option value="of:'+o[0]+'"'+(f==="of:"+o[0]?" selected":"")+'>'+esc(o[1])+'</option>').join("")+'</optgroup></select><select id="csort"><option value="recent"'+(!S.csort||S.csort==="recent"?" selected":"")+'>Les plus récents</option><option value="total"'+(S.csort==="total"?" selected":"")+'>Ceux qui ont le plus dépensé</option><option value="nom"'+(S.csort==="nom"?" selected":"")+'>Par nom</option></select><span class="muted" style="font-size:13px">'+L.length+' client(s)</span>'+(canAgenda()?'<span class="spacer"></span><button class="btn primary" data-newclient>+ Ajouter un client</button>':"")+'</div>';
   if(!L.length)return h+'<div class="empty">Aucun client ne correspond.</div>';
   return h+'<div class="tablewrap"><table><thead><tr><th>Client</th><th>Téléphone</th><th>Intérêts</th><th class="num">Activités</th><th class="num">Total dépensé</th><th>Dernière fois</th></tr></thead><tbody>'+L.map(c=>{const ints=[...new Set(c.interets.concat(c.offresVues))];return '<tr class="click" data-client="'+esc(c.key)+'"><td><b>'+esc(c.nom||"Sans nom")+'</b>'+""+c.tags.map(t=>' <span class="chip'+(t==="VIP"?" warn":t==="Ne plus contacter"?" bad":"")+'">'+esc(t)+'</span>').join("")+(c.ville?'<div class="muted" style="font-size:12.5px">'+esc(c.ville)+'</div>':"")+'</td><td>'+esc(c.tel||"—")+'</td><td>'+(ints.length?'<span class="idots">'+ints.slice(0,6).map(t=>'<span class="dot" title="'+esc(tLab(t))+'" style="background:'+tCol(t)+'"></span>').join("")+'</span>':'<span class="muted">—</span>')+'</td><td class="num">'+c.items.length+'</td><td class="num">'+(c.total?money(c.total):"—")+'</td><td>'+(c.last?fmtDate(c.last):"—")+'</td></tr>'}).join("")+'</tbody></table></div>';
@@ -2602,6 +2604,29 @@ document.addEventListener("click",async e=>{
   document.body.appendChild(m);const r=b.getBoundingClientRect();const w=Math.min(260,innerWidth-24);m.style.width=w+"px";m.style.left=Math.max(12,Math.min(r.left,innerWidth-w-12))+"px";
   const top=r.bottom+6;m.style.top=(top+m.offsetHeight>innerHeight-12?Math.max(12,r.top-m.offsetHeight-6):top)+"px";
 });
+
+/* ===== v33 : appui long pour supprimer un client ou un élève ===== */
+function openDelMenu(kind,id){
+  let nom="",info="";
+  if(kind==="client"){const c=clientsAll().find(x=>x.key===id);if(!c)return;nom=c.nom||c.tel||"Client";info="Il disparaît de la liste des clients. Ses activités déjà passées dans le calendrier restent."}
+  else{const e=S.eleves[id];if(!e)return;nom=e.nom||"Élève";info="Sa fiche, ses séances et son carnet sont supprimés."}
+  const r=document.createElement("div");r.className="mm-ov";r.innerHTML='<div class="mm" role="dialog" aria-label="Supprimer"><b class="mm-t">Supprimer « '+esc(nom)+' » ?</b><p class="muted" style="margin:0 4px 8px;font-size:14px">'+info+'</p><button type="button" class="btn danger" data-dm="1" style="width:100%;justify-content:center">🗑 Supprimer</button><button type="button" class="btn mm-x" data-dm="">Annuler</button></div>';
+  document.body.appendChild(r);
+  r.addEventListener("click",async e=>{const b=e.target.closest("[data-dm]");if(e.target!==r&&!b)return;e.stopPropagation();r.remove();if(!b||!b.dataset.dm)return;
+    if(kind==="client"){const doc={cache:true,nom,supprimeLe:new Date().toISOString()};if(await write("clients/"+id,doc)){S.clientsDb[id]=doc;render();toast("« "+nom+" » supprimé")}else toast("Pas supprimé, réessayez")}
+    else{if(await del("eleves/"+id)){delete S.eleves[id];render();toast("« "+nom+" » supprimé")}else toast("Pas supprimé, réessayez")}});
+}
+(function(){let t=null,xy=null,fired=false;
+  const tgt=el=>{if(!canAgenda()||S.tab!=="clients"||S.route)return null;const c=el.closest&&el.closest("tr[data-client]");if(c)return ["client",c.dataset.client,c];const e=el.closest&&el.closest('[data-item="eleve"][data-id]');if(e)return ["eleve",e.dataset.id,e];return null};
+  document.addEventListener("pointerdown",e=>{if(e.button>0)return;const g=tgt(e.target);if(!g)return;fired=false;xy={x:e.clientX,y:e.clientY};clearTimeout(t);g[2].classList.add("lp-on");
+    t=setTimeout(()=>{t=null;fired=true;g[2].classList.remove("lp-on");if(navigator.vibrate)try{navigator.vibrate(20)}catch(_){}openDelMenu(g[0],g[1])},600)});
+  const stop=()=>{if(t){clearTimeout(t);t=null}document.querySelectorAll(".lp-on").forEach(x=>x.classList.remove("lp-on"))};
+  document.addEventListener("pointerup",stop);document.addEventListener("pointercancel",stop);
+  document.addEventListener("pointermove",e=>{if(t&&xy&&Math.abs(e.clientX-xy.x)+Math.abs(e.clientY-xy.y)>10)stop()});
+  document.addEventListener("scroll",stop,true);
+  document.addEventListener("click",e=>{if(fired){fired=false;e.stopPropagation();e.preventDefault()}},true);
+  document.addEventListener("contextmenu",e=>{const g=tgt(e.target);if(!g)return;e.preventDefault();stop();if(!fired)openDelMenu(g[0],g[1])});
+})();
 
 /* ================= rendu ================= */
 function render(){
