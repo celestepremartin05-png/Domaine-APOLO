@@ -867,6 +867,14 @@ tr[data-client],[data-item="eleve"]{-webkit-touch-callout:none;-webkit-user-sele
 .envoi textarea{min-height:60px}.envoi.on{border-color:#ecd28c;background:#fffaf0}
 .callhist summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--muted);margin-top:6px}
 .benv{font-size:11.5px;font-weight:800;color:#b07d00;background:#fff3cf;border-radius:999px;padding:1px 8px;margin-top:2px}
+.cgrps{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.cgrp-b{display:inline-flex;align-items:center;gap:7px;border:1px solid color-mix(in srgb,var(--g,#999) 40%,transparent);background:var(--gb,#fff);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.cgrp-b i{width:10px;height:10px;border-radius:50%;background:var(--g)}.cgrp-b b{color:var(--g)}
+.cgrp-b[aria-pressed="true"]{background:var(--g);color:#fff;border-color:var(--g)}.cgrp-b[aria-pressed="true"] i{background:#fff}.cgrp-b[aria-pressed="true"] b{color:#fff}
+.cgrp-b.all{background:var(--surface);border-color:var(--line)}
+tr.crow td:first-child{box-shadow:inset 5px 0 0 var(--g);padding-left:14px}
+tr.crow{background:color-mix(in srgb,var(--gb) 55%,transparent)}
+.cgrp-c{display:inline-block;font-size:11.5px;font-weight:700;color:var(--g);background:var(--gb);border-radius:999px;padding:1px 8px;vertical-align:1px}
 </style>
 
 <div class="wrap">
@@ -1979,16 +1987,21 @@ function clientsAll(){
   Object.values(M).forEach(c=>{c.tags=c.tags||[];c.interets=c.interets||[];const seen=new Set(c.items.map(i=>i.ty).filter(t=>OF[t]));c.offresVues=[...seen]});
   return Object.values(M).filter(c=>(c.nom||c.tel)&&!((S.clientsDb||{})[c.key]||{}).cache);
 }
+const CGRP=[["cours","Cours","#2a78d6","#e6f0fc",["cours-adultes","cours-enfants","equitherapie"]],["stage","Stages et formations","#7a4fd0","#efe8fc",["stages","formation-en-ligne"]],["balade","Balades et visites","#2f8f5b","#e3f5ea",["experiences","visite"]],["event","Privatisations et événements","#c2475c","#fde6e9",["privatisation","anniversaire","brunch"]],["autre","Autre","#71849a","#eef2f6",[]]];
+function cGroup(c){const sc={};(c.items||[]).forEach(it=>{const g=(CGRP.find(x=>x[4].includes(it.ty))||CGRP[4])[0];sc[g]=(sc[g]||0)+(it.src==="prospect"?0.5:1)+num(it.montant)/1e6});(c.interets||[]).forEach(t=>{const g=(CGRP.find(x=>x[4].includes(t))||CGRP[4])[0];sc[g]=(sc[g]||0)+0.25});
+  let best="autre",bv=0;Object.entries(sc).forEach(([g,v])=>{if(g!=="autre"&&v>bv){best=g;bv=v}});return CGRP.find(x=>x[0]===best)}
 function viewClients(){
   const q=(S.cq||"").trim().toLowerCase();let L=clientsAll();const f=S.cf||"";
   if(q)L=L.filter(c=>(c.nom+" "+c.tel+" "+c.email+" "+(c.ville||"")+" "+(c.entreprise||"")+" "+c.tags.join(" ")).toLowerCase().includes(q));
   if(f.startsWith("tag:"))L=L.filter(c=>c.tags.includes(f.slice(4)));
   if(f.startsWith("of:"))L=L.filter(c=>c.interets.includes(f.slice(3))||c.offresVues.includes(f.slice(3)));
+  const allL=L;if(S.cgrp)L=L.filter(c=>cGroup(c)[0]===S.cgrp);
   L.sort((a,b)=>S.csort==="total"?b.total-a.total:S.csort==="nom"?(a.nom||"").localeCompare(b.nom||""):(b.last||"").localeCompare(a.last||""));
   let h='<p class="muted" style="margin:0 0 14px">Votre base clients se remplit toute seule avec les événements, réservations, élèves et prospects. Ouvrez un client pour compléter sa fiche, ses centres d\'intérêt et le suivi de vos échanges. Pour supprimer un client, restez appuyé dessus (clic droit sur ordinateur).</p>';
   h+='<div class="toolbar"><input id="cq" type="search" placeholder="Rechercher un nom, un téléphone, une ville…" value="'+esc(S.cq||"")+'"><select id="cfilt"><option value="">Tous les clients</option><optgroup label="Étiquette">'+CTAGS.map(t=>'<option value="tag:'+esc(t)+'"'+(f==="tag:"+t?" selected":"")+'>'+esc(t)+'</option>').join("")+'</optgroup><optgroup label="Intéressé par">'+OFFRES.map(o=>'<option value="of:'+o[0]+'"'+(f==="of:"+o[0]?" selected":"")+'>'+esc(o[1])+'</option>').join("")+'</optgroup></select><select id="csort"><option value="recent"'+(!S.csort||S.csort==="recent"?" selected":"")+'>Les plus récents</option><option value="total"'+(S.csort==="total"?" selected":"")+'>Ceux qui ont le plus dépensé</option><option value="nom"'+(S.csort==="nom"?" selected":"")+'>Par nom</option></select><span class="muted" style="font-size:13px">'+L.length+' client(s)</span>'+(canAgenda()?'<span class="spacer"></span><button class="btn primary" data-newclient>+ Ajouter un client</button>':"")+'</div>';
+  {const cnt={};allL.forEach(c=>{const g=cGroup(c)[0];cnt[g]=(cnt[g]||0)+1});h+='<div class="cgrps">'+CGRP.filter(g=>cnt[g[0]]).map(g=>'<button type="button" class="cgrp-b" data-cgrp="'+g[0]+'" aria-pressed="'+(S.cgrp===g[0])+'" style="--g:'+g[2]+';--gb:'+g[3]+'"><i></i>'+esc(g[1])+' <b>'+cnt[g[0]]+'</b></button>').join("")+(S.cgrp?'<button type="button" class="cgrp-b all" data-cgrp="">Tout afficher</button>':"")+'</div>'}
   if(!L.length)return h+'<div class="empty">Aucun client ne correspond.</div>';
-  return h+'<div class="tablewrap"><table><thead><tr><th>Client</th><th>Téléphone</th><th>Intérêts</th><th class="num">Activités</th><th class="num">Total dépensé</th><th>Dernière fois</th></tr></thead><tbody>'+L.map(c=>{const ints=[...new Set(c.interets.concat(c.offresVues))];return '<tr class="click" data-client="'+esc(c.key)+'"><td><b>'+esc(c.nom||"Sans nom")+'</b>'+""+c.tags.map(t=>' <span class="chip'+(t==="VIP"?" warn":t==="Ne plus contacter"?" bad":"")+'">'+esc(t)+'</span>').join("")+(c.ville?'<div class="muted" style="font-size:12.5px">'+esc(c.ville)+'</div>':"")+'</td><td>'+esc(c.tel||"—")+'</td><td>'+(ints.length?'<span class="idots">'+ints.slice(0,6).map(t=>'<span class="dot" title="'+esc(tLab(t))+'" style="background:'+tCol(t)+'"></span>').join("")+'</span>':'<span class="muted">—</span>')+'</td><td class="num">'+c.items.length+'</td><td class="num">'+(c.total?money(c.total):"—")+'</td><td>'+(c.last?fmtDate(c.last):"—")+'</td></tr>'}).join("")+'</tbody></table></div>';
+  return h+'<div class="tablewrap"><table><thead><tr><th>Client</th><th>Téléphone</th><th>Intérêts</th><th class="num">Activités</th><th class="num">Total dépensé</th><th>Dernière fois</th></tr></thead><tbody>'+L.map(c=>{const ints=[...new Set(c.interets.concat(c.offresVues))];return '<tr class="click crow" data-client="'+esc(c.key)+'" style="--g:'+cGroup(c)[2]+';--gb:'+cGroup(c)[3]+'"><td><b>'+esc(c.nom||"Sans nom")+'</b> <span class="cgrp-c">'+esc(cGroup(c)[1])+'</span>'+""+c.tags.map(t=>' <span class="chip'+(t==="VIP"?" warn":t==="Ne plus contacter"?" bad":"")+'">'+esc(t)+'</span>').join("")+(c.ville?'<div class="muted" style="font-size:12.5px">'+esc(c.ville)+'</div>':"")+'</td><td>'+esc(c.tel||"—")+'</td><td>'+(ints.length?'<span class="idots">'+ints.slice(0,6).map(t=>'<span class="dot" title="'+esc(tLab(t))+'" style="background:'+tCol(t)+'"></span>').join("")+'</span>':'<span class="muted">—</span>')+'</td><td class="num">'+c.items.length+'</td><td class="num">'+(c.total?money(c.total):"—")+'</td><td>'+(c.last?fmtDate(c.last):"—")+'</td></tr>'}).join("")+'</tbody></table></div>';
 }
 document.addEventListener("change",e=>{if(e.target.id==="cfilt"){S.cf=e.target.value;render()}});
 function viewClient(){
@@ -2760,6 +2773,8 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-bdon
   const n={...cur,touche:dn?"non:"+today():today(),updatedAt:new Date().toISOString()};S.pub[id]=n;render();
   if(await write("prospects/"+id,n))toastUndo(dn?"Remis à faire":"✓ Fait aujourd'hui",async()=>{S.pub[id]=old;render();await write("prospects/"+id,old)});else{S.pub[id]=old;render();toast("Pas enregistré, réessayez")}},true);
 document.addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest("[data-bdone]"))e.stopPropagation()},true);
+
+document.addEventListener("click",e=>{const b=e.target.closest("[data-cgrp]");if(!b)return;S.cgrp=S.cgrp===b.dataset.cgrp?"":b.dataset.cgrp;render()});
 
 /* ================= rendu ================= */
 function render(){
