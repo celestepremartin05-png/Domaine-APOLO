@@ -564,7 +564,7 @@ textarea{resize:vertical;min-height:70px}
 .nbadge{background:var(--bad);color:#fff;border-radius:999px;font-size:11.5px;font-weight:700;min-width:20px;height:20px;line-height:20px;padding:0 6px;text-align:center}
 nav.tabs button[aria-selected="true"] .nbadge{background:#fff;color:var(--bad)}
 .horse img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px}
-.hph{width:100%;aspect-ratio:5/2;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-size:42px;color:var(--band);background:var(--wine-soft)}
+.hph{width:100%;aspect-ratio:4/3;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-size:42px;color:var(--band);background:var(--wine-soft)}
 @media (max-width:760px){
   .gsearch{order:3;flex-basis:100%;max-width:none}
   .seg.cv button{padding:5px 9px}
@@ -875,6 +875,17 @@ tr[data-client],[data-item="eleve"]{-webkit-touch-callout:none;-webkit-user-sele
 tr.crow td:first-child{box-shadow:inset 5px 0 0 var(--g);padding-left:14px}
 tr.crow{background:color-mix(in srgb,var(--gb) 55%,transparent)}
 .cgrp-c{display:inline-block;font-size:11.5px;font-weight:700;color:var(--g);background:var(--gb);border-radius:999px;padding:1px 8px;vertical-align:1px}
+.grid2{align-items:start}
+.photofs{display:grid;gap:10px}
+.photofs .visu{max-width:none;aspect-ratio:4/3;padding:0;border-style:solid}
+.photofs .visu.empty{border-style:dashed;cursor:pointer;font-weight:600;line-height:1.6;font-size:15px;padding:10px}
+.photofs .visu.has{border:0}
+.crop-ov{position:fixed;inset:0;z-index:1200;background:rgba(10,18,32,.72);display:grid;place-items:center;padding:12px}
+.crop-box{background:var(--surface);border-radius:16px;padding:16px;display:grid;gap:10px;max-width:calc(100vw - 24px)}
+.crop-stage{position:relative;overflow:hidden;border-radius:10px;background:#111;touch-action:none;cursor:grab;justify-self:center}
+.crop-stage img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.crop-grid{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.9);background:linear-gradient(to right,transparent 33.2%,rgba(255,255,255,.35) 33.3%,rgba(255,255,255,.35) 33.6%,transparent 33.7%,transparent 66.4%,rgba(255,255,255,.35) 66.5%,rgba(255,255,255,.35) 66.8%,transparent 66.9%),linear-gradient(to bottom,transparent 33.2%,rgba(255,255,255,.35) 33.3%,rgba(255,255,255,.35) 33.6%,transparent 33.7%,transparent 66.4%,rgba(255,255,255,.35) 66.5%,rgba(255,255,255,.35) 66.8%,transparent 66.9%)}
+.crop-z{display:flex;align-items:center;gap:10px;font-size:14px}.crop-z input{flex:1}
 </style>
 
 <div class="wrap">
@@ -2059,13 +2070,16 @@ function viewCheval(){
   let h='<div class="page"><div class="page-head"><button class="btn small" data-back="chevaux">‹ Retour</button>'+(c.photo?'<img class="othumb" style="width:64px;height:64px" src="'+blobSrc(c.photo)+'\" alt="">':"")+'<div style="min-width:0;flex:1"><h3 style="margin:0">Cheval</h3><h2>'+esc(c.nom||"Nouveau cheval")+'</h2></div><span class="chip '+(wk.length>=8?"warn":"ok")+'" style="font-size:14px;padding:4px 12px">'+wk.length+' séance(s) cette semaine</span></div>';
   h+='<div class="grid2"><fieldset class="fs"><legend>Fiche</legend><div class="grid">'+F("Nom","nom")+F("Race","race",{ph:"Ex. Pure race espagnol"})+F("Âge (ans)","age",{type:"number"})+F("Sexe","sexe",{sel:["Jument","Hongre","Étalon"],ph:"Choisir…"})+F("Robe","robe",{ph:"Ex. gris, bai"})+F("Propriétaire","proprio",{sel:[["catherine","★ À Catherine"],["pension","$ En pension"]]})+(c.proprio==="pension"?F("Propriétaire du cheval","pensionNom",{ph:"Nom et téléphone"})+F("Prix de la pension (DH / mois)","pensionPrix",{type:"number"})+F("Date d\'arrivée","pensionDebut",{type:"date"})+F("Date de fin","pensionFin",{type:"date"})+(()=>{const L=penMois(c);const dis=canAgenda()?"":" disabled";const tm=today().slice(0,7);const du=penDue(c).reduce((a,x)=>a+x.montant,0);
     return '<div style="grid-column:1/-1"><div class="row" style="margin:4px 0 6px"><b>Pension payée par mois</b><span class="spacer"></span>'+(()=>{const nd=penDue(c).length;return '<span class="chip '+(nd?"bad":"ok")+'">'+(nd?(du?"Reste à payer "+du.toLocaleString("fr-FR")+" DH":nd+" mois non payé"+(nd>1?"s":"")):"À jour")+'</span>'})()+'</div><div class="tablewrap"><table style="min-width:0"><thead><tr><th>Mois</th><th class="num">Montant (DH)</th><th>Payé</th></tr></thead><tbody>'+L.map(x=>'<tr class="'+(x.paye?"s-reserve":x.mk<=tm?"s-perdu":"")+'"><td style="text-transform:capitalize">'+parse(x.mk+"-01").toLocaleDateString("fr-FR",{month:"long",year:"numeric"})+'</td><td style="width:130px"><input type="number" min="0" data-k="pensionMois.'+x.mk+'.montant" value="'+x.montant+'"'+dis+'></td><td><input type="checkbox" data-k="pensionMois.'+x.mk+'.paye"'+(x.paye?" checked":"")+dis+' style="width:20px;height:20px;accent-color:var(--ok)"></td></tr>').join("")+'</tbody></table></div><p class="muted" style="margin:6px 0 0;font-size:13px">'+(c.pensionDebut?"":"⚠️ Indiquez la date d\'arrivée pour voir aussi les mois d\'avant. ")+'Un nouveau mois s\'ajoute tout seul au début de chaque mois'+(c.pensionFin?", jusqu\'à la date de fin":"")+'. Chaque mois coché compte dans l\'argent rentré.</p></div>'})():"")+'</div>'+F("Notes","notes",{area:true,full:true,ph:"Caractère, ce qu\'il aime, précautions…"})+'</fieldset>'+
-    '<fieldset class="fs"><legend>Photo</legend><div class="visu" style="aspect-ratio:4/3">'+(c.photo?'<img src="'+blobSrc(c.photo)+'\" alt="'+esc(c.nom||"")+'">':"Aucune photo")+'</div>'+(ed&&S.assets?'<div class="row"><label class="btn small" for="horseIn" style="cursor:pointer">'+(c.photo?"Changer la photo":"Ajouter une photo")+'</label><input type="file" id="horseIn" accept="image/*" hidden></div>':"")+'</fieldset></div>';
+    '<fieldset class="fs photofs"><legend>Photo</legend>'+(c.photo?'<div class="visu has"><img src="'+blobSrc(c.photo)+'" alt="'+esc(c.nom||"")+'"></div>':(ed&&S.assets?'<label class="visu empty" for="horseIn">📷<br>Ajouter une photo</label>':'<div class="visu empty">Aucune photo</div>'))+(ed&&S.assets?'<div class="row"><label class="btn small" for="horseIn" style="cursor:pointer">'+(c.photo?"Changer la photo":"Ajouter une photo")+'</label>'+(c.photo?'<button type="button" class="btn small" id="horseCrop">✂️ Recadrer</button><button type="button" class="btn small ghost" id="horseDelPh">Retirer</button>':"")+'<input type="file" id="horseIn" accept="image/*" hidden></div>':"")+'</fieldset></div>';
   h+='<fieldset class="fs"><legend>Soins</legend><div class="tablewrap"><table style="min-width:620px"><thead><tr><th>Date</th><th>Type</th><th class="num">Coût (DH)</th><th>Note</th><th>Prochain</th>'+(ed?'<th></th>':"")+'</tr></thead><tbody>'+(c.soins.length?c.soins.map((s,i)=>'<tr><td><input type="date" data-k="soins.'+i+'.date" value="'+esc(s.date)+'"'+dis+'></td><td><select data-k="soins.'+i+'.type"'+dis+'>'+SOIN_TYPES.map(x=>'<option'+(s.type===x?" selected":"")+'>'+x+'</option>').join("")+'</select></td><td style="width:110px"><input type="number" min="0" data-k="soins.'+i+'.cout" value="'+esc(s.cout)+'"'+dis+'></td><td><input data-k="soins.'+i+'.note" value="'+esc(s.note)+'"'+dis+' placeholder="Ex. vaccin grippe"></td><td><input type="date" data-k="soins.'+i+'.prochain" value="'+esc(s.prochain)+'"'+dis+'></td>'+(ed?'<td><button class="btn small ghost" data-rm="soins.'+i+'" aria-label="Retirer">✕</button></td>':"")+'</tr>').join(""):'<tr><td colspan="6" class="muted">Aucun soin noté.</td></tr>')+'</tbody></table></div>'+(ed?'<div><button class="btn small" data-add="soins">+ Ajouter un soin</button></div>':"")+'<span class="muted" style="font-size:13px">Le coût s\'ajoute tout seul aux dépenses. La date « Prochain » déclenche un rappel sur l\'accueil.</span></fieldset>';
   h+='<section class="section"><div class="section-head"><h2>Prochaines séances</h2><span class="count">'+up.length+'</span></div>'+(up.length?'<div class="list">'+up.sort((a,b)=>(a.date+(a.debut||"")).localeCompare(b.date+(b.debut||""))).map(a=>itemRow({ty:tyOf(a),titre:titreEv(a),heure:a.debut||"",fin:a.fin||"",id:a._id,src:"agenda",statut:a.statut,date:a.date},true)).join("")+'</div>':'<div class="empty">Aucune séance prévue. Choisissez les chevaux dans chaque activité du calendrier.</div>')+'</section>';
   if(ed)h+='<div class="sticky-save"><button class="btn primary" id="hSave">'+(isNew?"Ajouter le cheval":"Enregistrer")+'</button><button class="btn" data-back="chevaux" data-discard>'+(S.dirty?"Annuler les modifications":"Fermer")+'</button><span class="muted" style="font-size:13px" id="dirtyHint"></span><span class="spacer"></span>'+(!isNew?(S.confirmDel?'<span class="muted" style="font-size:13px">Supprimer ?</span><button class="btn small danger" id="hDelYes">Oui</button><button class="btn small" id="hDelNo">Non</button>':'<button class="btn small danger" id="hDel">Supprimer</button>'):"")+'</div>';
   return h+'</div>';
 }
-document.addEventListener("change",async e=>{if(e.target.id!=="horseIn"||!S.draft)return;const f=e.target.files&&e.target.files[0];if(!f)return;try{const res=await S.assets.upload(await shrinkImage(f));S.draft.photo=res.id;markDirty();render();toast("Photo ajoutée, pensez à enregistrer")}catch(_){toast("La photo n'a pas pu être envoyée")}});
+document.addEventListener("change",async e=>{if(e.target.id!=="horseIn"||!S.draft)return;const f=e.target.files&&e.target.files[0];if(!f)return;e.target.value="";try{const bl=await cropImage(f,4/3);if(!bl)return;const res=await S.assets.upload(bl);S.draft.photo=res.id;markDirty();render();toast("Photo ajoutée, pensez à enregistrer")}catch(_){toast("La photo n'a pas pu être envoyée")}});
+document.addEventListener("click",async e=>{if(!S.route||S.route.page!=="cheval"||!S.draft)return;
+  if(e.target.id==="horseCrop"){try{const bl=await cropImage(blobSrc(S.draft.photo),4/3);if(!bl)return;const res=await S.assets.upload(bl);S.draft.photo=res.id;markDirty();render();toast("Photo recadrée, pensez à enregistrer")}catch(_){toast("Impossible de recadrer")}}
+  if(e.target.id==="horseDelPh"){S.draft.photo="";markDirty();render()}});
 document.addEventListener("click",async e=>{const t=e.target;if(!S.route||S.route.page!=="cheval"||!S.draft)return;
   if(t.id==="hSave"){const c=S.draft;if(!String(c.nom||"").trim()){toast("Indiquez le nom du cheval");return}const id=S.route.id||newId("ch");c.updatedAt=new Date().toISOString();t.disabled=true;
     if(await write("chevaux/"+id,c)){S.chevaux[id]=clone(c);S.dirty=false;S.touched=false;go.force=true;go("chevaux");toast("Cheval enregistré")}else t.disabled=false;return}
@@ -2780,6 +2794,38 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-bdon
 document.addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest("[data-bdone]"))e.stopPropagation()},true);
 
 document.addEventListener("click",e=>{const b=e.target.closest("[data-cgrp]");if(!b)return;S.cgrp=S.cgrp===b.dataset.cgrp?"":b.dataset.cgrp;render()});
+
+/* ===== v43 : recadrage des photos ===== */
+function cropImage(src,aspect){return new Promise(resolve=>{
+  const url=typeof src==="string"?src:URL.createObjectURL(src);const im=new Image();
+  im.onerror=()=>{toast("Image illisible");resolve(null)};
+  im.onload=()=>{
+    const ov=document.createElement("div");ov.className="crop-ov";
+    ov.innerHTML='<div class="crop-box" role="dialog" aria-label="Recadrer la photo"><b>Choisissez la partie à garder</b><span class="muted" style="font-size:13px">Faites glisser la photo, zoomez avec le curseur (ou deux doigts).</span><div class="crop-stage"><img alt=""><div class="crop-grid"></div></div><label class="crop-z">➖<input type="range" min="1" max="4" step="0.01" value="1">➕</label><div class="row" style="justify-content:flex-end;gap:8px"><button type="button" class="btn" data-cr="0">Annuler</button><button type="button" class="btn primary" data-cr="1">✓ Valider</button></div></div>';
+    document.body.appendChild(ov);
+    const st=ov.querySelector(".crop-stage"),img=st.querySelector("img"),rg=ov.querySelector("input");img.src=im.src;
+    const W=Math.min(innerWidth-48,520),H=Math.round(W/aspect);st.style.width=W+"px";st.style.height=H+"px";
+    const iw=im.naturalWidth,ih=im.naturalHeight,s0=Math.max(W/iw,H/ih);let z=1,x=(W-iw*s0)/2,y=(H-ih*s0)/2;
+    const clamp=()=>{const sc=s0*z;x=Math.min(0,Math.max(W-iw*sc,x));y=Math.min(0,Math.max(H-ih*sc,y))};
+    const draw=()=>{clamp();const sc=s0*z;img.style.width=iw*sc+"px";img.style.height=ih*sc+"px";img.style.transform="translate("+x+"px,"+y+"px)";rg.value=z};
+    const zoomAt=(nz,cx,cy)=>{nz=Math.max(1,Math.min(4,nz));const k=nz/z;x=cx-(cx-x)*k;y=cy-(cy-y)*k;z=nz;draw()};
+    draw();
+    const pts=new Map();let last=null,pinch=null;
+    st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pts.size===1)last={x:e.clientX,y:e.clientY};if(pts.size===2){const [a,b]=[...pts.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z}}});
+    st.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(pts.size===2&&pinch){const [a,b]=[...pts.values()];const r=st.getBoundingClientRect();zoomAt(pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top)}
+      else if(pts.size===1&&last){x+=e.clientX-last.x;y+=e.clientY-last.y;last={x:e.clientX,y:e.clientY};draw()}});
+    const up=e=>{pts.delete(e.pointerId);pinch=null;const r=[...pts.values()][0];last=r?{...r}:null};
+    st.addEventListener("pointerup",up);st.addEventListener("pointercancel",up);
+    st.addEventListener("wheel",e=>{e.preventDefault();const r=st.getBoundingClientRect();zoomAt(z*(e.deltaY<0?1.1:0.9),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+    rg.addEventListener("input",()=>zoomAt(Number(rg.value),W/2,H/2));
+    ov.addEventListener("click",e=>{const b=e.target.closest("[data-cr]");if(!b)return;
+      const ok=b.dataset.cr==="1";let out=null;
+      if(ok){const sc=s0*z;const OW=1200,OH=Math.round(OW/aspect);const c=document.createElement("canvas");c.width=OW;c.height=OH;c.getContext("2d").drawImage(im,-x/sc,-y/sc,W/sc,H/sc,0,0,OW,OH);
+        c.toBlob(bl=>{ov.remove();if(typeof src!=="string")URL.revokeObjectURL(url);resolve(bl)},"image/jpeg",.9);return}
+      ov.remove();if(typeof src!=="string")URL.revokeObjectURL(url);resolve(out)});
+  };
+  im.src=url;})}
 
 /* ================= rendu ================= */
 function render(){
