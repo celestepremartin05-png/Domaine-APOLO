@@ -849,9 +849,16 @@ tr[data-client],[data-item="eleve"]{-webkit-touch-callout:none;-webkit-user-sele
 @media (max-width:760px){.w-cols{grid-template-columns:1fr 1fr}.cw .w-btns{grid-column:1/-1;grid-template-columns:1fr 1fr 1fr auto;min-width:0}.cw .w-btns .btn{padding:0 6px;font-size:13px;white-space:nowrap}.cw .w-add{grid-template-columns:1fr 1fr}.cw .w-add input:first-child{grid-column:1/-1}.w-n{font-size:21px}}
 .navback{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px 6px 10px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;margin:0 0 12px}
 .navback:hover{background:var(--sunk)}
-.toast.undo{display:flex;align-items:center;gap:14px}.toast.undo button{border:0;background:#fff;color:#1d2b44;font:inherit;font-weight:800;border-radius:999px;padding:6px 12px;cursor:pointer}
+.toast.undo{display:flex;align-items:center;gap:14px;width:max-content;max-width:calc(100vw - 32px);white-space:nowrap}.toast.undo button{border:0;background:#fff;color:#1d2b44;font:inherit;font-weight:800;border-radius:999px;padding:6px 12px;cursor:pointer}
 .tm-txt{width:100%;box-sizing:border-box;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical;background:var(--bg);color:inherit}
 .tm-b{height:46px;justify-content:center}.tm-done{border-color:#9fd6b5;color:#1d7a46;font-weight:800}
+.bcard.bname{position:relative;padding:10px 12px 8px}
+.bdone{order:9;justify-self:end;margin-top:4px;width:26px;height:26px;font-size:12px!important;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-family:inherit;font-weight:800;cursor:pointer;display:grid;place-items:center;padding:0}
+@media (max-width:760px){.bcard.bname{grid-template-columns:1fr auto;align-items:center;padding:12px 10px 12px 14px}.bcard.bname .bdone{grid-column:2;grid-row:1/span 3;margin:0;width:32px;height:32px;font-size:14px!important}.bcard.bname>*:not(.bdone){grid-column:1}}
+.bdone:hover{border-color:#2f8f5b;color:#2f8f5b}
+.bcard.bdone-on{background:#eceef1;border-color:#d5d9df;border-left-color:#b3bac4;box-shadow:none}
+.bcard.bdone-on b,.bcard.bdone-on .bag,.bcard.bdone-on .bmeta{color:#8b939e}
+.bcard.bdone-on .bdone{background:#2f8f5b;border-color:#2f8f5b;color:#fff}
 </style>
 
 <div class="wrap">
@@ -2310,10 +2317,11 @@ const BOARD=[
   {k:"signe",l:"Signé, non payé",c:"var(--warn)",bg:"var(--warn-soft)"},
   {k:"paye",l:"Payé",c:"var(--s-ok-b)",bg:"var(--s-ok)"},
   {k:"perdu",l:"Perdu",c:"var(--s-lost-b)",bg:"var(--s-lost)"}].map(c=>({...c,has:p=>colOf(p)===c.k}));
-function boardCard(p){const ag=p.agence&&String(p.nom||"").startsWith(p.agence);return '<div class="bcard bname" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button">'+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+'</div>'}
+function doneToday(p){const t=today();if(p.touche===t)return true;if(p.touche==="non:"+t)return false;return ((S.priv[p._id]||{}).appels||[]).some(a=>a.date===t)}
+function boardCard(p){const ag=p.agence&&String(p.nom||"").startsWith(p.agence);const dn=doneToday(p);return '<div class="bcard bname'+(dn?" bdone-on":"")+'" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button"><button type="button" class="bdone" data-bdone="'+esc(p._id)+'" aria-pressed="'+dn+'" aria-label="'+(dn?"Remettre à faire":"Fait aujourd\'hui")+'" title="'+(dn?"Fait aujourd\'hui · toucher pour annuler":"Marquer comme fait aujourd\'hui")+'">✓</button>'+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+'</div>'}
 function viewBoard(){
   const ps=all().sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
-  let h='<p class="muted" style="margin:0 0 12px">Glissez une fiche avec la souris, ou restez appuyée dessus sur téléphone pour la déplacer. Touchez un nom pour ouvrir sa fiche.</p><div class="board">';
+  let h='<p class="muted" style="margin:0 0 12px">Glissez une fiche avec la souris, ou restez appuyée dessus sur téléphone pour la déplacer. Touchez un nom pour ouvrir sa fiche. Touchez ✓ quand vous avez relancé ou appelé la personne : la fiche devient grise jusqu\'à demain.</p><div class="board">';
   BOARD.forEach(c=>{const l=ps.filter(c.has);const tot=l.reduce((a,p)=>a+num(p.montant),0);
     h+='<section class="bcol" data-col="'+c.k+'" style="--bc:'+c.c+';--bb:'+c.bg+'"><div class="bhead"><span class="bdot"></span><b>'+c.l+'</b><span class="count">'+l.length+'</span>'+""+'</div><div class="blist">'+(l.length?l.map(boardCard).join(""):'<div class="bempty">Déposez une fiche ici</div>')+'</div></section>'});
   return h+'</div>';
@@ -2720,6 +2728,13 @@ async function maybeImportNotes(){if(maybeImportNotes.busy||!S.priv||S.role!=="o
     const cur=S.priv._agenda||{};const d={...cur,items:(cur.items||[]).filter(x=>!txts.has(x.texte)),imports:[...new Set([...(cur.imports||[]),"notes-2210",MK])],updatedAt:now};S.priv._agenda=d;
     if(await write("prive/_agenda",d)){render();if(n)toast(n+" tâches ajoutées dans l'agenda commun")}}
   finally{maybeImportNotes.busy=false}}
+
+/* ===== v39 : fait aujourd'hui sur les fiches prospects ===== */
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-bdone]");if(!b)return;e.stopImmediatePropagation();e.preventDefault();if(!canProspects())return;
+  const id=b.dataset.bdone;const cur=S.pub[id];if(!cur)return;const dn=doneToday({...cur,_id:id});const old={...cur};
+  const n={...cur,touche:dn?"non:"+today():today(),updatedAt:new Date().toISOString()};S.pub[id]=n;render();
+  if(await write("prospects/"+id,n))toastUndo(dn?"Remis à faire":"✓ Fait aujourd'hui",async()=>{S.pub[id]=old;render();await write("prospects/"+id,old)});else{S.pub[id]=old;render();toast("Pas enregistré, réessayez")}},true);
+document.addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest("[data-bdone]"))e.stopPropagation()},true);
 
 /* ================= rendu ================= */
 function render(){
