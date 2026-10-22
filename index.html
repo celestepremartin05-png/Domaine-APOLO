@@ -859,6 +859,14 @@ tr[data-client],[data-item="eleve"]{-webkit-touch-callout:none;-webkit-user-sele
 .bcard.bdone-on{background:#eceef1;border-color:#d5d9df;border-left-color:#b3bac4;box-shadow:none}
 .bcard.bdone-on b,.bcard.bdone-on .bag,.bcard.bdone-on .bmeta{color:#8b939e}
 .bcard.bdone-on .bdone{background:#2f8f5b;border-color:#2f8f5b;color:#fff}
+.resume{border:1px solid #cfe0f5;background:#f3f8fe;border-radius:12px;padding:10px 12px;display:grid;gap:8px;margin:4px 0 12px}
+.rs-h{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#2a78d6}
+.rs-l{font-size:14.5px;line-height:1.4}.rs-call time{font-size:12px;font-weight:700;color:var(--muted)}.rs-call p{margin:2px 0 0}
+.rs-env{background:#fff6dd;border-radius:8px;padding:6px 8px}
+.callfs textarea,.envoi textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical;background:var(--bg);color:inherit;min-height:96px}
+.envoi textarea{min-height:60px}.envoi.on{border-color:#ecd28c;background:#fffaf0}
+.callhist summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--muted);margin-top:6px}
+.benv{font-size:11.5px;font-weight:800;color:#b07d00;background:#fff3cf;border-radius:999px;padding:1px 8px;margin-top:2px}
 </style>
 
 <div class="wrap">
@@ -1498,12 +1506,13 @@ function drawFiche(){
   const isVis=typesOf(d).includes("visite");
   let h='<div class="overlay" id="ov"><div class="drawer" role="dialog" aria-modal="true" aria-labelledby="fTitle">'+
   '<div class="dh"><div style="min-width:0;flex:1"><h3 style="margin:0">'+(isNew?"Nouveau prospect":"Fiche prospect")+'</h3><h2 id="fTitle">'+esc(d.nom||"Sans nom")+'</h2></div><button class="btn ghost" id="fClose" aria-label="Fermer">✕</button></div>'+convert+
-  (tel&&!isNew?'<div class="row"><span style="font-size:20px;font-weight:700;user-select:all;font-variant-numeric:tabular-nums">'+esc(tel)+'</span><button class="btn small" data-copy="'+esc(tel)+'">Copier</button>'+waBtn(tel,"Bonjour "+String(d.prenom||d.nom||"").split(" ")[0]+", c'est "+reg().domaine+". Je reviens vers vous suite à votre demande. ")+'</div>':"")+
-  '<fieldset class="fs"><legend>Contact</legend><div class="row" style="margin-bottom:6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true)+'<p class="muted" style="margin:0;font-size:13px;grid-column:1/-1">La personne que vous avez au téléphone :</p>':"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div><label class="check apport" style="margin-top:8px"><input type="checkbox" id="f_apport"'+(d.apporteur?" checked":"")+'> ⭐ Client apporté par moi (Céleste)</label></fieldset>'+
+  (tel&&!isNew?'<div class="row"><span style="font-size:20px;font-weight:700;user-select:all;font-variant-numeric:tabular-nums">'+esc(tel)+'</span><button class="btn small" data-copy="'+esc(tel)+'">Copier</button>'+waBtn(tel,"Bonjour "+(d.genre==="f"?"Madame ":d.genre==="h"?"Monsieur ":"")+String(d.prenom||d.nom||"").split(" ")[0]+", c'est "+reg().domaine+". Je reviens vers vous suite à votre demande. ")+'</div>':"")+
+  resumeBox()+callBox()+envoiBox()+
+  '<fieldset class="fs"><legend>Contact</legend><div class="row" style="margin-bottom:6px"><span style="font-weight:600">C\'est</span>'+seg("genre",[["f","👩 Une femme"],["h","👨 Un homme"]],d.genre||"")+'</div>'+fld("Pourquoi il/elle appelle ?",inp("f_motif",d.motif||"","text","Ex. veut une balade pour l\'anniversaire de sa fille"),true)+'<div class="row" style="margin:8px 0 6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true)+'<p class="muted" style="margin:0;font-size:13px;grid-column:1/-1">La personne que vous avez au téléphone :</p>':"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div><label class="check apport" style="margin-top:8px"><input type="checkbox" id="f_apport"'+(d.apporteur?" checked":"")+'> ⭐ Client apporté par moi (Céleste)</label></fieldset>'+
   '<fieldset class="fs"><legend>La demande</legend><div class="typepick">'+Object.entries(TYPES).map(([k,v])=>'<button type="button" data-ptype="'+k+'" aria-pressed="'+typesOf(d).includes(k)+'">'+(k==="visite"?"🏠 ":"")+v.label+'</button>').join("")+'</div>'+demandeFields()+
   fld("Informations",'<textarea id="f_notes" placeholder="Tout ce qui est utile : ce qu\'il cherche, ses questions, son budget…">'+esc(d.notes)+'</textarea>',true)+'</fieldset>'+
   '<details class="fs suivi" id="suiviBox"'+(S.suiviOpen?" open":"")+'><summary><span>Suivi et relances'+(isVis?' <small class="muted">(facultatif)</small>':"")+'</span><span class="chip st-'+d.statut+'">'+STATUTS[d.statut].label+'</span></summary>'+
-  callBox()+'<div class="grid">'+fld("Statut",sel("f_statut",Object.entries(STATUTS).map(([k,v])=>[k,v.label]),d.statut))+(d.statut==="perdu"?fld("Raison de la perte",sel("f_perte",PERTES,d.raisonPerte,"Choisir…")):"<span></span>")+'</div>'+
+  '<div class="grid">'+fld("Statut",sel("f_statut",Object.entries(STATUTS).map(([k,v])=>[k,v.label]),d.statut))+(d.statut==="perdu"?fld("Raison de la perte",sel("f_perte",PERTES,d.raisonPerte,"Choisir…")):"<span></span>")+'</div>'+
   (isVis?"":'<div class="grid">'+fld("Prochaine action",sel("f_atype",Object.entries(ACTIONS),d.prochaine.type||"appel"))+fld("Quand",inp("f_adate",d.prochaine.date||"","date"))+'</div><div class="quick"><button type="button" class="btn small" data-q="0">Aujourd\'hui</button><button type="button" class="btn small" data-q="1">Demain</button><button type="button" class="btn small" data-q="3">Dans 3 jours</button><button type="button" class="btn small" data-q="7">Dans 1 semaine</button><button type="button" class="btn small ghost" data-q="x">Aucune</button></div>'+fld("Détail de l\'action",inp("f_atxt",d.prochaine.texte||"","text","Ex. envoyer le devis"),true))+
   fld("Ajouter un échange",'<textarea id="f_log" placeholder="Ex. Appelée, attend l\'accord de son mari."></textarea>',true)+
   (d.historique.length?'<ul class="hist">'+d.historique.slice().reverse().map(x=>'<li><time>'+fmtLong(x.date)+'</time>'+esc(x.texte)+'</li>').join("")+'</ul>':"")+'</details>'+
@@ -1514,13 +1523,24 @@ function drawFiche(){
   const sb=$("#suiviBox");if(sb)sb.addEventListener("toggle",()=>{S.suiviOpen=sb.open});
 }
 function seg(name,opts,val){return '<span class="seg">'+opts.map(([v,l])=>'<button type="button" data-seg="'+name+'" data-v="'+v+'" aria-pressed="'+(val===v)+'">'+l+'</button>').join("")+'</span>'}
+function resumeBox(){const d=draft;if(S.open==="new")return "";const ap=(d.appels||[]).filter(a=>a.note).slice(-3).reverse();const env=d.aEnvoyer&&d.aEnvoyer.on;
+  const parts=[];
+  if(d.genre||d.motif)parts.push('<div class="rs-l"><b>'+(d.genre==="f"?"👩 Femme":d.genre==="h"?"👨 Homme":"")+'</b>'+(d.motif?(d.genre?' · ':'')+'<span>'+esc(d.motif)+'</span>':"")+'</div>');
+  if(env)parts.push('<div class="rs-l rs-env">📨 <b>À lui envoyer :</b> '+esc(d.aEnvoyer.texte||"(à préciser)")+'</div>');
+  ap.forEach(a=>parts.push('<div class="rs-l rs-call"><time>📞 '+fmtDate(a.date)+(a.repondu==="non"?" · pas de réponse":"")+'</time><p>'+esc(a.note).replace(/\n/g,"<br>")+'</p></div>'));
+  if(!ap.length&&d.notes)parts.push('<div class="rs-l rs-call"><time>📝 Informations</time><p>'+esc(d.notes).replace(/\n/g,"<br>")+'</p></div>');
+  return parts.length?'<div class="resume"><div class="rs-h">Résumé</div>'+parts.join("")+'</div>':""}
+function envoiBox(){const d=draft;const e=d.aEnvoyer||{};
+  return '<fieldset class="fs envoi'+(e.on?" on":"")+'"><legend>📨 Je dois revenir vers lui/elle</legend><label class="check" style="font-weight:700"><input type="checkbox" id="e_on"'+(e.on?" checked":"")+'> Je dois lui envoyer quelque chose (prix, infos, photos…)</label>'+
+   (e.on?'<textarea id="e_txt" rows="2" placeholder="Ex. envoyer le prix du stage de 3 jours + les dates de novembre">'+esc(e.texte||"")+'</textarea><div class="row"><button type="button" class="btn small" data-envoye>✓ C\'est envoyé</button><span class="muted" style="font-size:12.5px">Ce n\'est pas une relance : juste un message à lui envoyer. La fiche affiche 📨 dans le tableau.</span></div>':"")+'</fieldset>'}
 function callBox(){
-  const d=draft;if(S.open==="new"&&!d.appels.length&&!d.__call)return '<fieldset class="fs"><legend>Appels</legend><label class="check"><input type="checkbox" id="c_done"> J\'ai déjà appelé cette personne aujourd\'hui</label></fieldset>';
+  const d=draft;
   const yn=v=>v==="oui"?'<span class="chip ok">Oui</span>':v==="non"?'<span class="chip bad">Non</span>':v==="avoir"?'<span class="chip st-contacte">À voir</span>':'<span class="muted">—</span>';
-  return '<fieldset class="fs"><legend>Appels</legend><label class="check" style="font-weight:700"><input type="checkbox" id="c_done"'+(d.__call?" checked":"")+'> J\'ai appelé aujourd\'hui</label>'+
+  return '<fieldset class="fs callfs"><legend>📞 Appel</legend><label class="check" style="font-weight:700"><input type="checkbox" id="c_done"'+(d.__call?" checked":"")+'> J\'ai appelé '+(S.open==="new"?"cette personne ":"")+'aujourd\'hui</label>'+
+   '<label class="f full">Ce qui s\'est dit pendant l\'appel<textarea id="c_note" rows="4" placeholder="Écrivez librement pendant l\'échange : sa demande particulière, ses questions, ce que vous avez proposé, ce qu\'il faut faire ensuite…">'+esc(d.__note||"")+'</textarea></label>'+
    (d.__call?'<div class="row"><span class="muted" style="font-size:13px;min-width:110px">A répondu ?</span>'+seg("rep",[["oui","Oui"],["non","Non"]],d.__rep)+'</div>'+(d.__rep==="oui"?'<div class="row"><span class="muted" style="font-size:13px;min-width:110px">Donne suite ?</span>'+seg("suite",[["oui","Oui, on continue"],["avoir","À voir"],["non","Non, ça tombe à l\'eau"]],d.__suite)+'</div>':"")+
      (d.__rep==="non"?'<p class="muted" style="margin:0;font-size:13px">Une relance par message sera prévue pour demain.</p>':d.__suite==="non"?'<p class="muted" style="margin:0;font-size:13px">Le prospect passera en « Perdu ».</p>':""):"")+
-   (d.appels.length?'<div class="tablewrap"><table style="min-width:0"><thead><tr><th>Date</th><th>A répondu</th><th>Donne suite</th></tr></thead><tbody>'+d.appels.slice().reverse().map(a=>'<tr><td>'+fmtDate(a.date)+'</td><td>'+yn(a.repondu)+'</td><td>'+yn(a.suite)+'</td></tr>').join("")+'</tbody></table></div>':"")+'</fieldset>';
+   (d.appels.length?'<details class="callhist"><summary>Appels précédents ('+d.appels.length+')</summary><ul class="hist">'+d.appels.slice().reverse().map(a=>'<li><time>'+fmtDate(a.date)+'</time>'+yn(a.repondu)+(a.repondu==="oui"?" "+yn(a.suite):"")+(a.note?'<div style="margin-top:4px;white-space:pre-wrap">'+esc(a.note)+'</div>':"")+'</li>').join("")+'</ul></details>':"")+'</fieldset>';
 }
 function readForm(){
   const v=id=>{const e=document.getElementById(id);return e?e.value:undefined};const d=draft;const g=(id,cur)=>{const x=v(id);return x===undefined?cur:x};
@@ -1529,6 +1549,8 @@ function readForm(){
   d.dateEvent=g("v_date",g("f_date",d.dateEvent));d.personnes=g("f_pers",d.personnes);d.montant=g("f_montant",d.montant);d.statut=g("f_statut",d.statut);if(v("f_perte")!==undefined)d.raisonPerte=v("f_perte");
   if(v("f_atype")!==undefined)d.prochaine={type:v("f_atype"),date:v("f_adate"),texte:String(v("f_atxt")||"").trim()};
   d.notes=g("f_notes",d.notes);const cd=document.getElementById("c_done");if(cd)d.__call=cd.checked;
+  const cn=v("c_note");if(cn!==undefined){d.__note=cn;if(cn.trim()&&cd&&!cd.checked){d.__call=true}}
+  d.motif=String(g("f_motif",d.motif||""));const eo=document.getElementById("e_on");if(eo){d.aEnvoyer={...(d.aEnvoyer||{}),on:eo.checked};const et=v("e_txt");if(et!==undefined)d.aEnvoyer.texte=et;if(eo.checked&&!d.aEnvoyer.depuis)d.aEnvoyer.depuis=today()}
   [["v_heure","heure"],["v_tuteur","tuteur"],["v_enfant","enfantNom"],["v_age","enfantAge"]].forEach(([id,k])=>{const x=v(id);if(x!==undefined)d.besoin[k]=x});const vr=v("f_recu");if(vr!==undefined)d.besoin.recu=vr;const fa=document.getElementById("f_apport");if(fa)d.apporteur=fa.checked;
   ["b_sous","b_traiteur","b_spectacle","b_horaire","b_detail","b_enfants","b_occasion","b_niveau","b_age","b_formule","b_dispo","b_quelle","b_objectif"].forEach(k=>{const x=v(k);if(x!==undefined){if(k==="b_sous")d.sousType=x;else d.besoin[k.slice(2)]=x}});
   const log=v("f_log");if(log&&log.trim())d.__log=log.trim();
@@ -1537,11 +1559,11 @@ async function saveProspect(){
   readForm();const d=draft;
   if(!d.nom&&!d.telephone){toast("Indiquez au moins un nom ou un téléphone");return null}
   if(d.__log){d.historique.push({date:today(),texte:d.__log});delete d.__log}
-  if(d.__call){d.appels=d.appels||[];d.appels.push({date:today(),repondu:d.__rep||"",suite:d.__rep==="oui"?(d.__suite||""):""});
+  if(d.__call){d.appels=d.appels||[];d.appels.push({date:today(),repondu:d.__rep||"",suite:d.__rep==="oui"?(d.__suite||""):"",note:String(d.__note||"").trim()});
     if(d.__rep==="non"){if(!d.prochaine.date||d.prochaine.date<=today())d.prochaine={type:"message",date:addDays(1),texte:"Relancer : pas de réponse à l'appel"}}
     else if(d.__suite==="non"){d.statut="perdu";if(!d.raisonPerte)d.raisonPerte="Pas intéressé";d.prochaine={type:"appel",date:"",texte:""}}
     else if(d.__rep==="oui"){if(d.statut==="nouveau")d.statut="contacte";if(d.prochaine.date&&d.prochaine.date<=today())d.prochaine.date=""}}
-  delete d.__call;delete d.__rep;delete d.__suite;
+  delete d.__call;delete d.__rep;delete d.__suite;delete d.__note;
   if(d.statut==="nouveau"&&d.historique.length)d.statut="contacte";
   if(d.statut==="attente")d.prochaine={type:"appel",date:"",texte:""};
   if(d.type!=="evenement")d.sousType="";
@@ -1554,7 +1576,7 @@ async function saveProspect(){
     const ev={...(S.agenda[eid]||blankEvent(d.dateEvent,"rdv")),offre:"visite",kind:"rdv",typeLibre:"Visite",titre:"Visite"+(TL.length>1?" + "+TL.filter(x=>x!=="visite").map(x=>TYPES[x].label).join(" + "):"")+" · "+(d.nom||"Prospect"),date:d.dateEvent,debut:hr,fin:hm1(hr),statut:"confirme",client:{nom:d.nom,tel:d.telephone,email:d.email||""},prospectId:id,apporteur:!!d.apporteur,notes:info,paiement:{total:prixN||"",acompte:recuN!==null&&recuN<prixN?recuN:"",acompteRecu:recuN!==null&&recuN>0&&recuN<prixN,soldeRecu:recuN!==null&&prixN>0&&recuN>=prixN},updatedAt:new Date().toISOString()};
     if(await write("agenda/"+eid,ev)){S.agenda[eid]=ev;d.eventId=eid}}
   const pub={apporteur:!!d.apporteur,nom:d.nom,agence:d.estAgence?(d.agence||""):"",type:d.type,types:TL,col:(S.pub[id]&&S.pub[id].statut===d.statut&&S.pub[id].col)||"",avoir:num(d.avoir)||0,sousType:d.sousType||"",statut:d.statut,dateEvent:d.dateEvent||"",personnes:d.personnes?Number(d.personnes):"",montant:d.montant?Number(d.montant):"",source:d.source,raisonPerte:d.statut==="perdu"?(d.raisonPerte||""):"",paye:d.statut==="reserve"&&!!d.paye,createdAt:(S.pub[id]&&S.pub[id].createdAt)||new Date().toISOString(),updatedAt:new Date().toISOString(),exemple:!!d.exemple,eventId:d.eventId||""};
-  const priv={appels:d.appels||[],email:d.email||"",telephone:d.telephone,prenom:d.prenom||"",nomFam:d.nomFam||"",agence:d.agence||"",estAgence:!!d.estAgence,instagram:d.instagram||"",besoin:d.besoin,notes:d.notes,prochaine:d.prochaine,historique:d.historique};
+  const priv={genre:d.genre||"",motif:String(d.motif||"").trim(),aEnvoyer:d.aEnvoyer&&(d.aEnvoyer.on||d.aEnvoyer.texte)?{on:!!d.aEnvoyer.on,texte:String(d.aEnvoyer.texte||"").trim(),depuis:d.aEnvoyer.depuis||""}:null,appels:d.appels||[],email:d.email||"",telephone:d.telephone,prenom:d.prenom||"",nomFam:d.nomFam||"",agence:d.agence||"",estAgence:!!d.estAgence,instagram:d.instagram||"",besoin:d.besoin,notes:d.notes,prochaine:d.prochaine,historique:d.historique};
   if(!(await write("prospects/"+id,pub)))return null;
   if(!(await write("prive/"+id,priv)))return null;
   return {id,pub,priv};
@@ -1569,6 +1591,9 @@ document.addEventListener("click",async e=>{
   const ag=t.closest("[data-agence]");if(ag){readForm();draft.estAgence=ag.dataset.agence==="oui";if(draft.estAgence&&!draft.source)draft.source="Agence";if(draft.estAgence)draft.source="Agence";drawFiche();return}
   const en=t.closest("[data-enf]");if(en){readForm();draft.besoin.enfant=en.dataset.enf;drawFiche();return}
   const q=t.closest("[data-q]");if(q){$("#f_adate").value=q.dataset.q==="x"?"":addDays(Number(q.dataset.q));return}
+  if(t.id==="e_on"){readForm();drawFiche();return}
+  if(t.closest("[data-envoye]")){readForm();const tx=(draft.aEnvoyer&&draft.aEnvoyer.texte)||"";draft.historique.push({date:today(),texte:"📨 Envoyé"+(tx?" : "+tx:"")});draft.aEnvoyer={on:false,texte:"",depuis:""};drawFiche();toast("Noté comme envoyé · pensez à enregistrer");return}
+  const sgg=t.closest('[data-seg="genre"]');if(sgg){readForm();draft.genre=draft.genre===sgg.dataset.v?"":sgg.dataset.v;drawFiche();return}
   const sg=t.closest("[data-seg]");if(sg){readForm();draft["__"+sg.dataset.seg]=sg.dataset.v;if(sg.dataset.seg==="rep"&&sg.dataset.v==="non")draft.__suite="";drawFiche();return}
   if(t.id==="fDel"){readForm();S.confirmDel=true;drawFiche();return}
   if(t.id==="fDelNo"){readForm();S.confirmDel=false;drawFiche();return}
@@ -2318,7 +2343,7 @@ const BOARD=[
   {k:"paye",l:"Payé",c:"var(--s-ok-b)",bg:"var(--s-ok)"},
   {k:"perdu",l:"Perdu",c:"var(--s-lost-b)",bg:"var(--s-lost)"}].map(c=>({...c,has:p=>colOf(p)===c.k}));
 function doneToday(p){const t=today();if(p.touche===t)return true;if(p.touche==="non:"+t)return false;return ((S.priv[p._id]||{}).appels||[]).some(a=>a.date===t)}
-function boardCard(p){const ag=p.agence&&String(p.nom||"").startsWith(p.agence);const dn=doneToday(p);return '<div class="bcard bname'+(dn?" bdone-on":"")+'" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button"><button type="button" class="bdone" data-bdone="'+esc(p._id)+'" aria-pressed="'+dn+'" aria-label="'+(dn?"Remettre à faire":"Fait aujourd\'hui")+'" title="'+(dn?"Fait aujourd\'hui · toucher pour annuler":"Marquer comme fait aujourd\'hui")+'">✓</button>'+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+'</div>'}
+function boardCard(p){const ag=p.agence&&String(p.nom||"").startsWith(p.agence);const dn=doneToday(p);return '<div class="bcard bname'+(dn?" bdone-on":"")+'" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button"><button type="button" class="bdone" data-bdone="'+esc(p._id)+'" aria-pressed="'+dn+'" aria-label="'+(dn?"Remettre à faire":"Fait aujourd\'hui")+'" title="'+(dn?"Fait aujourd\'hui · toucher pour annuler":"Marquer comme fait aujourd\'hui")+'">✓</button>'+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+(((S.priv[p._id]||{}).aEnvoyer||{}).on?'<span class="benv">📨 À envoyer</span>':"")+'</div>'}
 function viewBoard(){
   const ps=all().sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
   let h='<p class="muted" style="margin:0 0 12px">Glissez une fiche avec la souris, ou restez appuyée dessus sur téléphone pour la déplacer. Touchez un nom pour ouvrir sa fiche. Touchez ✓ quand vous avez relancé ou appelé la personne : la fiche devient grise jusqu\'à demain.</p><div class="board">';
