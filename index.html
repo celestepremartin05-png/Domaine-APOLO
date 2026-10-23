@@ -854,7 +854,7 @@ tr[data-client],[data-item="eleve"]{-webkit-touch-callout:none;-webkit-user-sele
 .tm-b{height:46px;justify-content:center}.tm-done{border-color:#9fd6b5;color:#1d7a46;font-weight:800}
 .bcard.bname{position:relative;padding:10px 12px 8px}
 .bdone{order:9;justify-self:end;margin-top:4px;width:26px;height:26px;font-size:12px!important;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-family:inherit;font-weight:800;cursor:pointer;display:grid;place-items:center;padding:0}
-@media (max-width:760px){.bcard.bname{grid-template-columns:1fr auto;align-items:center;padding:12px 10px 12px 14px}.bcard.bname .bdone{grid-column:2;grid-row:1/span 3;margin:0;width:32px;height:32px;font-size:14px!important}.bcard.bname>*:not(.bdone){grid-column:1}}
+@media (max-width:760px){.bcard.bname{grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:12px 10px 12px 14px}.bcard.bname .bdone{grid-column:2;grid-row:1/span 3;margin:0;width:32px;height:32px;font-size:14px!important}.bcard.bname>*:not(.bdone){grid-column:1}}
 .bdone:hover{border-color:#2f8f5b;color:#2f8f5b}
 .bcard.bdone-on{background:#eceef1;border-color:#d5d9df;border-left-color:#b3bac4;box-shadow:none}
 .bcard.bdone-on b,.bcard.bdone-on .bag,.bcard.bdone-on .bmeta{color:#8b939e}
@@ -922,6 +922,20 @@ tr.crow{background:color-mix(in srgb,var(--gb) 55%,transparent)}
 .sc-end ul{margin:0;padding-left:18px;font-size:13.5px}
 .sess{display:flex;flex-wrap:wrap;gap:6px;align-items:center;grid-column:1/-1;font-size:13px}.sess .hchip{font-size:13px;padding:4px 10px}
 @media (max-width:900px){.fsplit{grid-template-columns:1fr}.fscript{display:none;position:static;max-height:none;order:-1}.pfull.sopen .fscript{display:grid}.sbtn{display:inline-flex}.pfull.sopen .sbtn{background:#d29a0e;color:#fff;border-color:#d29a0e}}
+.nextfs.on{border-color:#9cc3ef;background:#f5f9fe}
+.nx-ty{display:flex;flex-wrap:wrap;gap:6px}.nx-ty button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--ink)}
+.nx-ty button[aria-pressed="true"]{background:var(--band);border-color:var(--band);color:#fff}
+.nx-when{align-items:flex-end;gap:10px;flex-wrap:wrap}
+.nx-why textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical;background:var(--bg);color:inherit}
+.nx-why textarea.need{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}
+.req{font-size:11.5px;font-weight:600;color:var(--muted);margin-left:6px}
+.nx-chips{display:flex;flex-wrap:wrap;gap:6px}.nx-chips .hchip{font-size:12.5px;padding:4px 10px}
+@media (min-width:761px){.bcard.bname{grid-template-columns:minmax(0,1fr)}}.nxb{display:grid;gap:1px;margin-top:6px;min-width:0;overflow-wrap:anywhere;border-radius:8px;padding:5px 8px;font-size:12.5px;line-height:1.35;font-weight:600;width:100%;box-sizing:border-box;text-align:left}
+.nxb small{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.02em}
+.nxb.late{background:#fde3e3;color:#9b1c1c}.nxb.due{background:#fff1c7;color:#7a5600}.nxb.later{background:var(--sunk);color:var(--muted);font-weight:500}
+.nxb i{font-style:normal;color:#9b1c1c}
+.bcard.bdone-on .nxb{opacity:.6}
+.rs-next{border-radius:8px;padding:7px 9px;background:#eef4fd}.rs-next.due{background:#fff1c7}.rs-next.late{background:#fde3e3}
 </style>
 
 <div class="wrap">
@@ -1565,13 +1579,13 @@ function drawFiche(){
   let h='<div class="overlay" id="ov"><div class="drawer pfull'+(S.scriptOpen?" sopen":"")+'" role="dialog" aria-modal="true" aria-labelledby="fTitle">'+
   '<div class="dh"><div style="min-width:0;flex:1"><h3 style="margin:0">'+(isNew?"Nouveau prospect":"Fiche prospect")+'</h3><h2 id="fTitle">'+esc(d.nom||"Sans nom")+'</h2></div><button type="button" class="btn small sbtn" data-sopen>📜 Script</button><button class="btn ghost" id="fClose" aria-label="Fermer">✕</button></div><div class="fsplit"><div class="fleft">'+convert+
   (tel&&!isNew?'<div class="row"><span style="font-size:20px;font-weight:700;user-select:all;font-variant-numeric:tabular-nums">'+esc(tel)+'</span><button class="btn small" data-copy="'+esc(tel)+'">Copier</button>'+waBtn(tel,"Bonjour "+(d.genre==="f"?"Madame ":d.genre==="h"?"Monsieur ":"")+String(d.prenom||d.nom||"").split(" ")[0]+", c'est "+reg().domaine+". Je reviens vers vous suite à votre demande. ")+'</div>':"")+
-  resumeBox()+callBox()+envoiBox()+
+  resumeBox()+callBox()+(isVis?"":nextBox())+envoiBox()+
   '<fieldset class="fs"><legend>Contact</legend><div class="row" style="margin-bottom:6px"><span style="font-weight:600">C\'est</span>'+seg("genre",[["f","👩 Une femme"],["h","👨 Un homme"]],d.genre||"")+'</div>'+fld("Pourquoi il/elle appelle ?",inp("f_motif",d.motif||"","text","Ex. veut une balade pour l\'anniversaire de sa fille"),true)+'<div class="row" style="margin:8px 0 6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true)+'<p class="muted" style="margin:0;font-size:13px;grid-column:1/-1">La personne que vous avez au téléphone :</p>':"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div><label class="check apport" style="margin-top:8px"><input type="checkbox" id="f_apport"'+(d.apporteur?" checked":"")+'> ⭐ Client apporté par moi (Céleste)</label></fieldset>'+
   '<fieldset class="fs"><legend>La demande</legend><div class="typepick">'+Object.entries(TYPES).map(([k,v])=>'<button type="button" data-ptype="'+k+'" aria-pressed="'+typesOf(d).includes(k)+'">'+(k==="visite"?"🏠 ":"")+v.label+'</button>').join("")+'</div>'+demandeFields()+
   fld("Informations",'<textarea id="f_notes" placeholder="Tout ce qui est utile : ce qu\'il cherche, ses questions, son budget…">'+esc(d.notes)+'</textarea>',true)+'</fieldset>'+quiBox()+lignesBox()+payBox()+
   '<details class="fs suivi" id="suiviBox"'+(S.suiviOpen?" open":"")+'><summary><span>Suivi et relances'+(isVis?' <small class="muted">(facultatif)</small>':"")+'</span><span class="chip st-'+d.statut+'">'+STATUTS[d.statut].label+'</span></summary>'+
   '<div class="grid">'+fld("Statut",sel("f_statut",Object.entries(STATUTS).map(([k,v])=>[k,v.label]),d.statut))+(d.statut==="perdu"?fld("Raison de la perte",sel("f_perte",PERTES,d.raisonPerte,"Choisir…")):"<span></span>")+'</div>'+
-  (isVis?"":'<div class="grid">'+fld("Prochaine action",sel("f_atype",Object.entries(ACTIONS),d.prochaine.type||"appel"))+fld("Quand",inp("f_adate",d.prochaine.date||"","date"))+'</div><div class="quick"><button type="button" class="btn small" data-q="0">Aujourd\'hui</button><button type="button" class="btn small" data-q="1">Demain</button><button type="button" class="btn small" data-q="3">Dans 3 jours</button><button type="button" class="btn small" data-q="7">Dans 1 semaine</button><button type="button" class="btn small ghost" data-q="x">Aucune</button></div>'+fld("Détail de l\'action",inp("f_atxt",d.prochaine.texte||"","text","Ex. envoyer le devis"),true))+
+
   fld("Ajouter un échange",'<textarea id="f_log" placeholder="Ex. Appelée, attend l\'accord de son mari."></textarea>',true)+
   (d.historique.length?'<ul class="hist">'+d.historique.slice().reverse().map(x=>'<li><time>'+fmtLong(x.date)+'</time>'+esc(x.texte)+'</li>').join("")+'</ul>':"")+'</details>'+
   '<div class="row"><button class="btn primary" id="fSave">Enregistrer</button><button class="btn" id="fCancel">Annuler</button><span class="spacer"></span>'+(!isNew?(S.confirmDel?'<span class="muted" style="font-size:13px">Supprimer définitivement ?</span><button class="btn small danger" id="fDelYes">Oui, supprimer</button><button class="btn small" id="fDelNo">Non</button>':'<button class="btn small danger" id="fDel">Supprimer</button>'):"")+'</div></div><aside class="fscript" id="fscript">'+closingScript()+'</aside></div></div></div>';
@@ -1581,8 +1595,9 @@ function drawFiche(){
   const sb=$("#suiviBox");if(sb)sb.addEventListener("toggle",()=>{S.suiviOpen=sb.open});
 }
 function seg(name,opts,val){return '<span class="seg">'+opts.map(([v,l])=>'<button type="button" data-seg="'+name+'" data-v="'+v+'" aria-pressed="'+(val===v)+'">'+l+'</button>').join("")+'</span>'}
-function resumeBox(){const d=draft;if(S.open==="new")return "";const ap=(d.appels||[]).filter(a=>a.note).slice(-3).reverse();const env=d.aEnvoyer&&d.aEnvoyer.on;
+function resumeBox(){const d=draft;if(S.open==="new")return "";const pr0=d.prochaine||{};const ap=(d.appels||[]).filter(a=>a.note).slice(-3).reverse();const env=d.aEnvoyer&&d.aEnvoyer.on;
   const parts=[];
+  if(pr0.date){const t=today();parts.push('<div class="rs-l rs-next '+(pr0.date<t?"late":pr0.date===t?"due":"")+'">➡️ <b>À faire '+(pr0.date<t?"(en retard, prévu le "+fmtDate(pr0.date)+")":pr0.date===t?"aujourd\'hui":"le "+fmtDate(pr0.date))+' : '+esc((ACTIONS[pr0.type]||"").replace("Relancer par message","Envoyer un message"))+'</b><br>'+(String(pr0.texte||"").trim()?esc(pr0.texte).replace(/\n/g,"<br>"):'<i>Raison non notée. Écrivez-la plus bas dans « Prochaine étape ».</i>')+'</div>')}
   if(d.genre||d.motif)parts.push('<div class="rs-l"><b>'+(d.genre==="f"?"👩 Femme":d.genre==="h"?"👨 Homme":"")+'</b>'+(d.motif?(d.genre?' · ':'')+'<span>'+esc(d.motif)+'</span>':"")+'</div>');
   if((d.qui||[]).some(q=>q.prenom||q.age))parts.push('<div class="rs-l">👨‍👩‍👧 Avec : '+d.qui.filter(q=>q.prenom||q.age).map(q=>esc([q.prenom,q.age?q.age+" ans":"",q.lien&&q.lien!=="Autre"?"("+q.lien.toLowerCase()+")":""].filter(Boolean).join(" "))).join(", ")+'</div>');
   if((d.lignes||[]).length)parts.push('<div class="rs-l rs-lg">'+d.lignes.map(l=>'<div><span>'+(l.du?fmtDate(l.du)+" · ":"")+esc(ligneLabel({...l,du:l.au?l.du:"",au:l.au||""}))+'</span><b>'+money(num(l.qte===""?1:l.qte)*num(l.pu))+'</b></div>').join("")+'<div class="rs-tot"><span>Total</span><b>'+money(lignesTotal(d))+'</b></div></div>');
@@ -1618,6 +1633,7 @@ function readForm(){
 }
 async function saveProspect(){
   readForm();const d=draft;
+  if(d.prochaine&&d.prochaine.date&&!String(d.prochaine.texte||"").trim()&&!(d.__call&&d.__rep==="non")){toast("Écrivez pourquoi vous devez la/le relancer");const t=$("#f_atxt");if(t){t.scrollIntoView({block:"center"});t.focus();t.classList.add("need")}return null}
   if(!d.nom&&!d.telephone){toast("Indiquez au moins un nom ou un téléphone");return null}
   if(d.__log){d.historique.push({date:today(),texte:d.__log});delete d.__log}
   if(d.__call){d.appels=d.appels||[];d.appels.push({date:today(),repondu:d.__rep||"",suite:d.__rep==="oui"?(d.__suite||""):"",note:String(d.__note||"").trim()});
@@ -2424,7 +2440,7 @@ const BOARD=[
   {k:"paye",l:"Payé",c:"var(--s-ok-b)",bg:"var(--s-ok)"},
   {k:"perdu",l:"Perdu",c:"var(--s-lost-b)",bg:"var(--s-lost)"}].map(c=>({...c,has:p=>colOf(p)===c.k}));
 function doneToday(p){const t=today();if(p.touche===t)return true;if(p.touche==="non:"+t)return false;return ((S.priv[p._id]||{}).appels||[]).some(a=>a.date===t)}
-function boardCard(p){const ag=p.agence&&String(p.nom||"").startsWith(p.agence);const dn=doneToday(p);return '<div class="bcard bname'+(dn?" bdone-on":"")+'" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button"><button type="button" class="bdone" data-bdone="'+esc(p._id)+'" aria-pressed="'+dn+'" aria-label="'+(dn?"Remettre à faire":"Fait aujourd\'hui")+'" title="'+(dn?"Fait aujourd\'hui · toucher pour annuler":"Marquer comme fait aujourd\'hui")+'">✓</button>'+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+(((S.priv[p._id]||{}).aEnvoyer||{}).on?'<span class="benv">📨 À envoyer</span>':"")+'</div>'}
+function boardCard(p){const ag=p.agence&&String(p.nom||"").startsWith(p.agence);const dn=doneToday(p);return '<div class="bcard bname'+(dn?" bdone-on":"")+'" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button"><button type="button" class="bdone" data-bdone="'+esc(p._id)+'" aria-pressed="'+dn+'" aria-label="'+(dn?"Remettre à faire":"Fait aujourd\'hui")+'" title="'+(dn?"Fait aujourd\'hui · toucher pour annuler":"Marquer comme fait aujourd\'hui")+'">✓</button>'+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+(((S.priv[p._id]||{}).aEnvoyer||{}).on?'<span class="benv">📨 À envoyer</span>':"")+nxBadge(p._id)+'</div>'}
 function viewBoard(){
   const ps=all().sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
   let h='<p class="muted" style="margin:0 0 12px">Glissez une fiche avec la souris, ou restez appuyée dessus sur téléphone pour la déplacer. Touchez un nom pour ouvrir sa fiche. Touchez ✓ quand vous avez relancé ou appelé la personne : la fiche devient grise jusqu\'à demain.</p><div class="board">';
@@ -2937,6 +2953,22 @@ function closingScript(){const d=draft;const T=typesOf(d);const pr=String(d.pren
   h+='<div class="sc-blk"><div class="sc-t">🛡 Objections</div><dl class="sc-obj"><dt>« C\'est cher »</dt><dd>'+say("Je comprends. Qu'est-ce qui compte le plus pour vous dans cette expérience ?")+'Puis ramener à la valeur (Catherine, les chevaux, le cadre), jamais baisser le prix tout de suite.</dd><dt>« Je vais réfléchir »</dt><dd>'+say("Bien sûr. Qu'est-ce qui vous fait hésiter ?")+'Puis fixer une date : '+say("Je vous rappelle jeudi à 18 h, ça vous va ?")+'</dd><dt>« Je dois en parler à mon mari / ma femme »</dt><dd>'+say("Avec plaisir, je vous envoie un récapitulatif sur WhatsApp pour lui montrer. On se rappelle demain soir ?")+'</dd><dt>« Pas maintenant »</dt><dd>'+say("Quel serait le bon moment ? Je note de revenir vers vous à ce moment-là.")+'</dd></dl></div>';
   h+='<div class="sc-blk sc-end"><div class="sc-t">✅ Avant de raccrocher</div><ul><li>Reformuler ce qui est convenu</li><li>Fixer la prochaine étape avec une date</li><li>Noter l\'échange dans la fiche (📞 Appel)</li><li>Cocher 📨 si vous devez lui envoyer le prix ou des infos</li></ul></div>';
   return h}
+
+/* ===== v46 : prochaine étape avec raison obligatoire ===== */
+const NX_IC={appel:"📞",message:"💬",rdv:"📅",autre:"📌"};
+const NX_REASONS=["Lui envoyer le prix","Lui envoyer les dates","Pas répondu : réessayer","Attend l'accord de son conjoint","Envoyer le lien pour l'acompte","Confirmer la réservation","Elle doit me rappeler : vérifier"];
+function nextBox(){const d=draft;const pr=d.prochaine||{};const ty=pr.type||"appel";
+  return '<fieldset class="fs nextfs'+(pr.date?" on":"")+'"><legend>➡️ Prochaine étape</legend>'+
+   '<div class="nx-ty">'+Object.entries(ACTIONS).map(([k,l])=>'<button type="button" data-nxty="'+k+'" aria-pressed="'+(ty===k)+'">'+NX_IC[k]+' '+esc(k==="message"?"Envoyer un message":l)+'</button>').join("")+'<input type="hidden" id="f_atype" value="'+esc(ty)+'"></div>'+
+   '<div class="row nx-when"><label class="f" style="flex:1;min-width:150px">Quand<input type="date" id="f_adate" value="'+esc(pr.date||"")+'"></label><div class="quick"><button type="button" class="btn small" data-q="0">Aujourd\'hui</button><button type="button" class="btn small" data-q="1">Demain</button><button type="button" class="btn small" data-q="3">Dans 3 jours</button><button type="button" class="btn small" data-q="7">Dans 1 semaine</button><button type="button" class="btn small ghost" data-q="x">Rien de prévu</button></div></div>'+
+   '<label class="f full nx-why">Pourquoi ? Ce que je dois lui dire ou lui envoyer <span class="req">obligatoire si une date est mise</span><textarea id="f_atxt" rows="3" placeholder="Ex. Lui envoyer le prix du stage de novembre + l\'hébergement. Elle hésitait à cause des dates.">'+esc(pr.texte||"")+'</textarea></label>'+
+   '<div class="nx-chips">'+NX_REASONS.map(r=>'<button type="button" class="hchip" data-nxr="'+esc(r)+'">+ '+esc(r)+'</button>').join("")+'</div></fieldset>'}
+document.addEventListener("click",e=>{if(!S.open||!draft)return;
+  const b=e.target.closest("[data-nxty]");if(b){document.querySelectorAll("[data-nxty]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));const h=$("#f_atype");if(h)h.value=b.dataset.nxty;const dt=$("#f_adate");if(dt&&!dt.value)dt.value=addDays(1);return}
+  const r=e.target.closest("[data-nxr]");if(r){const t=$("#f_atxt");if(t){t.value=(t.value.trim()?t.value.trim()+"\n":"")+r.dataset.nxr;t.focus()}const dt=$("#f_adate");if(dt&&!dt.value)dt.value=addDays(1);return}});
+function nxBadge(id){const pr=(S.priv[id]||{}).prochaine;if(!pr||!pr.date)return "";const t=today();const past=pr.type==="rdv"&&pr.date<t;const cls=past?"later":pr.date<t?"late":pr.date===t?"due":"later";
+  const when=past?"Passé · "+fmtDate(pr.date):pr.date<t?"En retard · "+fmtDate(pr.date):pr.date===t?"Aujourd'hui":fmtDate(pr.date);const tx=String(pr.texte||"").trim();
+  return '<span class="nxb '+cls+'"><small>'+(NX_IC[pr.type]||"➡️")+' '+esc(when)+'</small>'+(tx?esc(tx.length>110?tx.slice(0,108)+"…":tx):'<i>⚠️ Raison non notée : ouvre la fiche</i>')+'</span>'}
 
 /* ================= rendu ================= */
 function render(){
