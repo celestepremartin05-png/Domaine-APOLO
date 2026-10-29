@@ -947,6 +947,12 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .cl-edit{border-color:#9cc3ef;background:#f5f9fe;margin:4px 0}.cl-edit .lr1 select{max-width:210px}
 .cl-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;font-size:13px}.cl-tools select{height:34px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font:inherit;font-size:13.5px;padding:0 8px;max-width:100%}
 .nxdot{display:inline-flex;gap:5px;align-items:center;margin-top:3px;font-size:12px}.nxdot i{width:10px;height:10px;border-radius:50%;display:inline-block}.nxdot i.late{background:#d93636}.nxdot i.due{background:#e0a800}
+.qz{gap:10px}.qz-n{font-size:12px;font-weight:700;color:#b07d00;background:#fff3cf;border-radius:999px;padding:1px 8px;margin-left:6px}
+.qz-q{display:grid;gap:6px;border-left:3px solid #ecd28c;padding:4px 0 4px 10px}.qz-q.ok{border-left-color:#2f8f5b}.qz-q>b{font-size:14px}
+.qz-o{display:flex;flex-wrap:wrap;gap:5px}.qz-o button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.qz-o button[aria-pressed="true"]{background:#2f8f5b;border-color:#2f8f5b;color:#fff;font-weight:700}
+.qz-q textarea,.qz-q input{width:100%;box-sizing:border-box;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:#fff;color:inherit;resize:vertical}
+.rs-qz{display:grid;gap:2px;font-size:13.5px}.rs-qz span{color:var(--muted)}
 </style>
 
 <div class="wrap">
@@ -1588,7 +1594,7 @@ function drawFiche(){
   }
   const isVis=typesOf(d).includes("visite");
   let h='<div class="overlay" id="ov"><div class="drawer pfull'+(S.scriptOpen?" sopen":"")+'" role="dialog" aria-modal="true" aria-labelledby="fTitle">'+
-  '<div class="dh"><div style="min-width:0;flex:1"><h3 style="margin:0">'+(isNew?"Nouveau prospect":"Fiche prospect")+'</h3><h2 id="fTitle">'+esc(d.nom||"Sans nom")+'</h2></div><button type="button" class="btn small sbtn" data-sopen>📜 Script</button><button class="btn ghost" id="fClose" aria-label="Fermer">✕</button></div><div class="fsplit"><div class="fleft">'+convert+
+  '<div class="dh"><div style="min-width:0;flex:1"><h3 style="margin:0">'+(isNew?"Nouveau prospect":"Fiche prospect")+'</h3><h2 id="fTitle">'+esc(d.nom||"Sans nom")+'</h2></div><button type="button" class="btn small sbtn" data-sopen>📜 Script et questions</button><button class="btn ghost" id="fClose" aria-label="Fermer">✕</button></div><div class="fsplit"><div class="fleft">'+convert+
   (tel&&!isNew?'<div class="row"><span style="font-size:20px;font-weight:700;user-select:all;font-variant-numeric:tabular-nums">'+esc(tel)+'</span><button class="btn small" data-copy="'+esc(tel)+'">Copier</button>'+waBtn(tel,"Bonjour "+(d.genre==="f"?"Madame ":d.genre==="h"?"Monsieur ":"")+String(d.prenom||d.nom||"").split(" ")[0]+", c'est "+reg().domaine+". Je reviens vers vous suite à votre demande. ")+'</div>':"")+
   resumeBox()+callBox()+(isVis?"":nextBox())+envoiBox()+
   '<fieldset class="fs"><legend>Contact</legend><div class="row" style="margin-bottom:6px"><span style="font-weight:600">C\'est</span>'+seg("genre",[["f","👩 Une femme"],["h","👨 Un homme"]],d.genre||"")+'</div>'+fld("Pourquoi il/elle appelle ?",inp("f_motif",d.motif||"","text","Ex. veut une balade pour l\'anniversaire de sa fille"),true)+'<div class="row" style="margin:8px 0 6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true)+'<p class="muted" style="margin:0;font-size:13px;grid-column:1/-1">La personne que vous avez au téléphone :</p>':"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div><label class="check apport" style="margin-top:8px"><input type="checkbox" id="f_apport"'+(d.apporteur?" checked":"")+'> ⭐ Client apporté par moi (Céleste)</label></fieldset>'+
@@ -1612,6 +1618,7 @@ function resumeBox(){const d=draft;if(S.open==="new")return "";const pr0=d.proch
   if(d.genre||d.motif)parts.push('<div class="rs-l"><b>'+(d.genre==="f"?"👩 Femme":d.genre==="h"?"👨 Homme":"")+'</b>'+(d.motif?(d.genre?' · ':'')+'<span>'+esc(d.motif)+'</span>':"")+'</div>');
   if((d.qui||[]).some(q=>q.prenom||q.age))parts.push('<div class="rs-l">👨‍👩‍👧 Avec : '+d.qui.filter(q=>q.prenom||q.age).map(q=>esc([q.prenom,q.age?q.age+" ans":"",q.lien&&q.lien!=="Autre"?"("+q.lien.toLowerCase()+")":""].filter(Boolean).join(" "))).join(", ")+'</div>');
   if((d.lignes||[]).length)parts.push('<div class="rs-l rs-lg">'+d.lignes.map(l=>'<div><span>'+(l.du?fmtDate(l.du)+" · ":"")+esc(ligneLabel({...l,du:l.au?l.du:"",au:l.au||""}))+'</span><b>'+money(num(l.qte===""?1:l.qte)*num(l.pu))+'</b></div>').join("")+'<div class="rs-tot"><span>Total</span><b>'+money(lignesTotal(d))+'</b></div></div>');
+  {const qs=qzSummary(d);if(qs.length)parts.push('<div class="rs-l rs-qz"><b>🧭 Profil cavalier</b>'+qs.map(([q,v])=>'<div><span>'+esc(q)+'</span> '+esc(v)+'</div>').join("")+'</div>')}
   if(env)parts.push('<div class="rs-l rs-env">📨 <b>À lui envoyer :</b> '+esc(d.aEnvoyer.texte||"(à préciser)")+'</div>');
   ap.forEach(a=>parts.push('<div class="rs-l rs-call"><time>📞 '+fmtDate(a.date)+(a.repondu==="non"?" · pas de réponse":"")+'</time><p>'+esc(a.note).replace(/\n/g,"<br>")+'</p></div>'));
   if(!ap.length&&d.notes)parts.push('<div class="rs-l rs-call"><time>📝 Informations</time><p>'+esc(d.notes).replace(/\n/g,"<br>")+'</p></div>');
@@ -1640,7 +1647,7 @@ function readForm(){
   [["v_heure","heure"],["v_tuteur","tuteur"],["v_enfant","enfantNom"],["v_age","enfantAge"]].forEach(([id,k])=>{const x=v(id);if(x!==undefined)d.besoin[k]=x});const vr=v("f_recu");if(vr!==undefined)d.besoin.recu=vr;const d2=v("f_date2");if(d2!==undefined)d.besoin.dateFin=d2;const fa=document.getElementById("f_apport");if(fa)d.apporteur=fa.checked;
   ["b_sous","b_traiteur","b_spectacle","b_horaire","b_detail","b_enfants","b_occasion","b_niveau","b_age","b_formule","b_dispo","b_quelle","b_objectif"].forEach(k=>{const x=v(k);if(x!==undefined){if(k==="b_sous")d.sousType=x;else d.besoin[k.slice(2)]=x}});
   const log=v("f_log");if(log&&log.trim())d.__log=log.trim();
-  readLignes();
+  readLignes();qzRead();
 }
 async function saveProspect(){
   readForm();const d=draft;
@@ -3007,6 +3014,7 @@ function closingScript(){const d=draft;const T=typesOf(d);const pr=String(d.pren
   };
   const keys=[...new Set(T.map(t=>t==="visite"?"visite":t==="experiences"?"experiences":t==="formation-en-ligne"?"enligne":pmode(t)==="formation"?"formation":pmode(t)==="cours"?"cours":t==="brunch"?"brunch":pmode(t)==="evenement"?"evenement":null).filter(Boolean))];
   let h='<div class="sc-head"><b>📜 Script de closing</b><span class="muted">'+(keys.length?"selon la demande choisie":"touchez une demande pour adapter le script")+'</span></div>';
+  h+=qzBox();
   h+='<div class="sc-gold">Règle d\'or : on ne raccroche jamais sans une prochaine étape datée.</div>';
   h+='<div class="sc-blk"><div class="sc-t">👋 Accueil</div>'+say("Bonjour "+(civ?civ:pr||"")+", c'est "+(S.role==="owner"?"Céleste":"[prénom]")+" du Domaine Apolo. Vous nous avez contactés pour "+(T.length?T.map(t=>TYPES[t].label.toLowerCase()).join(" et "):"…")+". Vous avez deux minutes ?")+'</div>';
   keys.forEach(k=>{const x=S_[k];h+='<div class="sc-blk"><div class="sc-t">'+x.t+'</div><div class="sc-but">🎯 '+x.but+'</div><ol class="sc-steps">'+x.steps.map(([a,b])=>'<li><b>'+a+'</b>'+b+'</li>').join("")+'</ol></div>'});
@@ -3043,6 +3051,33 @@ async function clMerge(from,into){const C=S.clientsDb[from]||{};const old={...C}
 document.addEventListener("click",e=>{const m=e.target.closest("[data-clmerge]");if(m&&S.route&&S.route.id){clMerge(S.route.id,m.dataset.clmerge);return}
   if(e.target.closest("[data-cldelclient]")&&S.route&&S.route.id){openDelMenu("client",S.route.id)}});
 document.addEventListener("change",e=>{if(e.target.id==="clMergeSel"&&e.target.value&&S.route&&S.route.id)clMerge(S.route.id,e.target.value)});
+
+/* ===== v50 : questions découverte cours / formation ===== */
+const QZ=[
+ ["dep","Depuis combien de temps montez-vous à cheval ?",["Jamais monté","Moins d'1 an","1 à 3 ans","3 à 10 ans","Plus de 10 ans","Reprise après une pause"],0],
+ ["niv","Quel est votre niveau aujourd'hui ?",["Débutant","Galop 1 à 3","Galop 4 à 5","Galop 6 à 7","Niveau pro","Ne sait pas"],0],
+ ["cadre","Vous montez dans quel cadre ?",["Loisir","Concours amateur","Concours pro","Métier du cheval","Club","Chez soi / en pension"],1],
+ ["disc","Quelle discipline ?",["Dressage","Saut d'obstacles","Complet","Travail à pied / éthologie","Extérieur / balade","Western","Pas encore"],1],
+ ["obj","Quels sont vos objectifs ?",["Prendre confiance","Apprendre les bases","Préparer un concours","Monter de niveau","Mieux comprendre mon cheval","Débourrer / éduquer un jeune cheval","Devenir professionnel","Se faire plaisir"],1],
+ ["prio","Sur quoi voulez-vous progresser en priorité ?",null,0,"Ex. l'assiette au galop, gérer un cheval qui embarque, les abords à l'obstacle…"],
+ ["peur","Une difficulté, une peur ou un mauvais souvenir ?",null,0,"Ex. une chute l'an dernier, peur au galop, cheval qui refuse…"],
+ ["chev","Avez-vous votre propre cheval ?",["Oui","Je viens d'en acheter un","En demi-pension","Non","J'aimerais en acheter un"],0],
+ ["chevd","Parlez-moi de votre cheval",null,0,"Âge, race, caractère, ce qui pose problème…","chev"],
+ ["nb","Combien de séances envisagez-vous ?",["Un cours d'essai","5 séances","10 séances","Plus de 10","Un stage","Ne sait pas"],0],
+ ["ryth","À quel rythme ?",["1 fois par semaine","2 fois par semaine ou plus","Pendant les vacances scolaires","Stage intensif","De temps en temps"],1],
+ ["dispo","Quels jours et horaires vous arrangent ?",null,0,"Ex. mercredi après-midi, samedi matin…"],
+ ["cav","Le cavalier : âge, taille, poids",null,0,"Pour choisir le bon cheval. Ex. 12 ans, 1m50, 40 kg"],
+ ["sante","Quelque chose à savoir côté santé ?",null,0,"Douleur au dos, blessure, contre-indication…"]];
+function qzOn(){return typesOf(draft).some(t=>["cours","formation"].includes(pmode(t))||t==="experiences")}
+function qzVal(k){return ((draft.besoin||{}).qz||{})[k]}
+function qzBox(){if(!qzOn())return "";const Q=(draft.besoin||{}).qz||{};const n=QZ.filter(q=>{const v=Q[q[0]];return Array.isArray(v)?v.length:v}).length;
+  return '<div class="sc-blk qz"><div class="sc-t">🧭 Questions à poser <span class="qz-n">'+n+' / '+QZ.length+'</span></div><p class="muted" style="margin:0;font-size:12.5px">Touchez la réponse ou écrivez-la : tout est gardé dans la fiche et apparaît dans le résumé.</p>'+
+   QZ.map(([k,q,opts,multi,ph,dep])=>{if(dep&&!["Oui","Je viens d'en acheter un","En demi-pension"].some(x=>[].concat(Q[dep]||[]).includes(x)))return "";const v=Q[k];
+     return '<div class="qz-q'+((Array.isArray(v)?v.length:v)?" ok":"")+'"><b>'+esc(q)+'</b>'+(opts?'<div class="qz-o">'+opts.map(o=>'<button type="button" data-qz="'+k+'|'+esc(o)+'" aria-pressed="'+[].concat(v||[]).includes(o)+'">'+esc(o)+'</button>').join("")+'</div>'+(k==="disc"||k==="obj"||k==="cadre"?'<input id="qz_'+k+'_autre" placeholder="Autre / précision…" value="'+esc(Q[k+"_autre"]||"")+'">':""):'<textarea id="qz_'+k+'" rows="2" placeholder="'+esc(ph||"")+'">'+esc(v||"")+'</textarea>')+'</div>'}).join("")+'</div>'}
+function qzRead(){if(!draft)return;const b=draft.besoin=draft.besoin||{};const Q=b.qz=b.qz||{};QZ.forEach(([k,,opts])=>{if(!opts){const e=document.getElementById("qz_"+k);if(e)Q[k]=e.value}else{const e=document.getElementById("qz_"+k+"_autre");if(e)Q[k+"_autre"]=e.value}})}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-qz]");if(!b||!S.open||!draft)return;readForm();const i=b.dataset.qz.indexOf("|");const k=b.dataset.qz.slice(0,i),v=b.dataset.qz.slice(i+1);const def=QZ.find(q=>q[0]===k);const Q=draft.besoin.qz=draft.besoin.qz||{};
+  if(def[3]){const a=[].concat(Q[k]||[]);Q[k]=a.includes(v)?a.filter(x=>x!==v):a.concat(v)}else Q[k]=Q[k]===v?"":v;drawFiche()});
+function qzSummary(d){const Q=((d.besoin||{}).qz)||{};const out=[];QZ.forEach(([k,q,opts])=>{let v=Q[k];v=Array.isArray(v)?v.join(", "):String(v||"").trim();const au=String(Q[k+"_autre"]||"").trim();if(au)v=v?v+" ("+au+")":au;if(v)out.push([({dep:"Monte depuis",niv:"Niveau",cadre:"Cadre",disc:"Discipline",obj:"Objectifs",prio:"Priorité",peur:"Difficulté / peur",chev:"Son cheval",chevd:"Le cheval",nb:"Séances",ryth:"Rythme",dispo:"Dispos",cav:"Cavalier",sante:"Santé"})[k]+" :",v])});return out}
 
 /* ================= rendu ================= */
 function render(){
