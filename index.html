@@ -990,6 +990,7 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .pnotes textarea{min-height:110px;font-size:16px;line-height:1.45}
 label.pnotes{margin-top:10px;font-weight:700}
 .pn-from{background:#f5f9fe;border:1px solid #cfe0f5;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:14px}.pn-from small{font-weight:800;color:#2a78d6;text-transform:uppercase;font-size:11px;letter-spacing:.05em}.pn-from p{margin:4px 0}
+.fact-miss{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:#fdecec;border:1px solid #f3c2c2;color:#7a1f1f;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:14px}
 </style>
 
 <div class="wrap">
@@ -2823,6 +2824,7 @@ function viewAdmin(){
     const rows=agendaList().filter(a=>a.statut!=="annule"&&revenueOfAgenda(a)>0).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
     const F={};factList().filter(f=>f.kind!=="devis"&&f.agendaId).forEach(f=>{F[f.agendaId]=f});const tot=factList().filter(f=>f.kind!=="devis").length;
     h+='<div class="row" style="margin:0 0 12px"><span class="muted">Créez une facture depuis une activité ci-dessous, ou une facture libre. Numéro automatique (FAC-'+today().slice(0,4)+'-001, 002…). '+tot+' facture'+(tot>1?"s":"")+'.</span><span class="spacer"></span>'+(canAgenda()?'<button class="btn primary" data-factnew>+ Nouvelle facture</button>':"")+'</div>';
+    {const miss=rows.filter(a=>!F[a._id]&&(encaisseOf(a)>0||a.date<=today()));if(miss.length&&canAgenda())h+='<div class="fact-miss"><span><b>'+miss.length+' activité'+(miss.length>1?"s":"")+' sans facture</b> : déjà payée'+(miss.length>1?"s":"")+' ou déjà passée'+(miss.length>1?"s":"")+'. Chaque vente doit avoir sa facture, même si le client ne la demande pas.</span><button class="btn primary" data-factall>🧾 Créer les '+miss.length+' facture'+(miss.length>1?"s":"")+'</button></div>'}
     const libres=factList().filter(f=>f.kind!=="devis"&&(!f.agendaId||!S.agenda[f.agendaId])).sort((a,b)=>(b.numero||"").localeCompare(a.numero||""));
     if(libres.length)h+='<div class="list" style="margin-bottom:14px">'+libres.map(f=>'<div class="item fact"><span class="bar" style="background:#8a6420"></span><span style="min-width:0">'+(f.clientKey&&clientsAll().some(c=>c.key===f.clientKey)?'<button class="linkbtn fx-name" data-goclient="'+esc(f.clientKey)+'" title="Ouvrir la fiche client">'+esc((f.client&&f.client.nom)||"Client")+' ✏️</button>':'<button class="linkbtn fx-name" data-factopen="'+esc(f._id)+'">'+esc((f.client&&f.client.nom)||"Client à compléter")+' ✏️</button>')+'<span class="sub">'+esc(f.objet||"Facture libre")+' · '+fmtDate(f.date)+'</span></span><span class="fact-r"><b>'+factTotals(f).ttc.toLocaleString("fr-FR")+' DH</b><button class="btn small" data-factopen="'+esc(f._id)+'">📄 '+esc(f.numero)+'</button><button class="btn small ghost" data-factdel="'+esc(f._id)+'" aria-label="Annuler la facture">✕</button></span></div>').join("")+'</div>';
     h+=rows.length?'<div class="list">'+rows.map(a=>{const tot=revenueOfAgenda(a),enc=encaisseOf(a);const f=F[a._id];const cl=(a.client&&a.client.nom)||((a.resas||[])[0]||{}).nom||"—";
@@ -3380,6 +3382,13 @@ async function refWrite(r,q,pu){const now=new Date().toISOString();try{
   else if(r.src==="cligne"){const C=S.clientsDb[r.id];if(!C)return;const n={...C,lignes:(C.lignes||[]).map(l=>l.id===r.lid?{...l,qte:q,pu}:l)};S.clientsDb[r.id]=n;await write("clients/"+r.id,n)}
   const sv=$("#fxSaved");if(sv)sv.textContent="Prix mis à jour partout ✓"}catch(_){}}
 
+/* ===== v61 : une facture pour chaque vente ===== */
+document.addEventListener("click",async e=>{if(!e.target.closest("[data-factall]"))return;const b=e.target.closest("[data-factall]");b.disabled=true;
+  const F={};factList().filter(f=>f.kind!=="devis"&&f.agendaId).forEach(f=>{F[f.agendaId]=1});
+  const miss=agendaList().filter(a=>a.statut!=="annule"&&revenueOfAgenda(a)>0&&!F[a._id]&&!(S.factures||{})[a._id]&&(encaisseOf(a)>0||a.date<=today())).sort((x,y)=>(x.date||"").localeCompare(y.date||""));
+  const made=[];for(const a of miss){const f=factNew({...a,_id:a._id});f.acquittee=encaisseOf(a)>=revenueOfAgenda(a);if(await write("factures/"+a._id,f)){S.factures[a._id]=f;made.push(a._id)}}
+  render();if(made.length)toastUndo(made.length+" facture"+(made.length>1?"s":"")+" créée"+(made.length>1?"s":""),async()=>{for(const id of made){delete S.factures[id];await del("factures/"+id)}render()});else toast("Rien à créer")});
+
 /* ================= rendu ================= */
 function render(){
   $("#todayLabel").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -3434,7 +3443,7 @@ window.__pegaseBoot=boot;
 </script>
 
 <script>
-window.PEGASE_BUILD="20261030193041";
+window.PEGASE_BUILD="20261030193726";
 (function(){var busy=false;async function chk(){if(busy)return;busy=true;try{var r=await fetch("/?v="+Date.now(),{cache:"no-store"});var t=await r.text();var m=t.match(/PEGASE_BUILD="(\d+)"/);if(m&&m[1]!==window.PEGASE_BUILD){if(document.getElementById("pgUpd"))return;var b=document.createElement("div");b.id="pgUpd";b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:3000;background:#1d2b44;color:#fff;border-radius:999px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";b.innerHTML='Nouvelle version de Pégase <button style="border:0;background:#f2c94c;color:#1d2b44;border-radius:999px;padding:7px 14px;font:800 14px system-ui;cursor:pointer">Mettre à jour</button>';b.querySelector("button").onclick=function(){location.reload()};document.body.appendChild(b)}}catch(e){}busy=false}
 document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});window.addEventListener("focus",chk);setInterval(chk,120000);setTimeout(chk,15000)})();
 </script>
