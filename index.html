@@ -660,7 +660,7 @@ nav.tabs button .nbadge{margin-left:auto}
 .hdr-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .role-badge{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#071027;background:#f1d58e;border-radius:999px;padding:3px 10px}
 @media (max-width:760px){.hdr-r{flex-direction:row;align-items:center;gap:10px}}
-.board{display:grid;grid-template-columns:repeat(7,minmax(128px,1fr));gap:12px;overflow-x:auto;padding-bottom:10px;align-items:start}
+.board{display:grid;grid-template-columns:repeat(8,minmax(104px,1fr));gap:12px;overflow-x:auto;padding-bottom:10px;align-items:start}
 .bcol{background:var(--bb);border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);border-top:4px solid var(--bc);border-radius:var(--r);padding:10px;display:grid;gap:10px;min-height:220px;align-content:start;transition:box-shadow .15s ease,transform .15s ease}
 .bhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .bhead b{font-size:14.5px}
@@ -685,7 +685,7 @@ body.dragging,body.dragging *{cursor:grabbing!important;user-select:none}
 .drag-ghost{z-index:1000;pointer-events:none;opacity:.92;box-shadow:0 14px 30px rgba(20,40,70,.25);transform:rotate(-2deg);margin:0}
 .drag-src{opacity:.35}
 .undo-btn{margin-left:10px;border:0;background:rgba(255,255,255,.2);color:inherit;font:inherit;font-weight:700;padding:3px 10px;border-radius:999px;cursor:pointer}
-@media (max-width:760px){.board{grid-template-columns:repeat(7,82vw);scroll-snap-type:x mandatory}.bcol{scroll-snap-align:start}}
+@media (max-width:760px){.board{grid-template-columns:repeat(8,82vw);scroll-snap-type:x mandatory}.bcol{scroll-snap-align:start}}
 .hbadge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
 .hbadge.own{background:#fbf0d4;color:#8a6210;border:1px solid #ecd28c}
 .hbadge.pen{background:var(--ok-soft);color:var(--ok);border:1px solid #a9d9b9}
@@ -2516,11 +2516,12 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-ctab]");if
 
 /* ================= v5 : glisser-déposer (calendrier et tableau prospects) ================= */
 function colOf(p){if(p.statut==="perdu")return "perdu";if(p.statut==="attente")return "attente";if(p.statut==="reserve")return p.paye?"paye":"signe";
-  if(["visite","appel","relance"].includes(p.col))return p.col;
+  if(["visite","message","appel","relance"].includes(p.col))return p.col;
   if((p.types||[p.type]).includes("visite"))return "visite";
   return p.statut==="nouveau"?"appel":"relance"}
 const BOARD=[
   {k:"visite",l:"🏠 Visites",c:"#2b9fcf",bg:"#e3f4fb"},
+  {k:"message",l:"💬 Message",c:"#d4588a",bg:"#fbe7f0"},
   {k:"appel",l:"À appeler",c:"var(--s-new-b)",bg:"var(--s-new)"},
   {k:"relance",l:"Relance",c:"var(--s-mid-b)",bg:"var(--s-mid)"},
   {k:"attente",l:"⏳ En attente",c:"#8c96a3",bg:"#eef1f5"},
@@ -2528,11 +2529,11 @@ const BOARD=[
   {k:"paye",l:"Payé",c:"var(--s-ok-b)",bg:"var(--s-ok)"},
   {k:"perdu",l:"Perdu",c:"var(--s-lost-b)",bg:"var(--s-lost)"}].map(c=>({...c,has:p=>colOf(p)===c.k}));
 function doneToday(p){const t=today();if(p.touche===t)return true;if(p.touche==="non:"+t)return false;return ((S.priv[p._id]||{}).appels||[]).some(a=>a.date===t)}
-function boardCard(p){const nd=((S.priv[p._id]||{}).prochaine||{});const fut=nd.date&&nd.date>today()&&nd.type!=="rdv";const ag=p.agence&&String(p.nom||"").startsWith(p.agence);const ck=["appel","relance"].includes(colOf(p));const dn=ck&&doneToday(p);return '<div class="bcard bname'+(dn?" bdone-on":"")+(ck?"":" nock")+(fut?" bfut":"")+'" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button">'+(ck?'<button type="button" class="bdone" data-bdone="'+esc(p._id)+'" aria-pressed="'+dn+'" aria-label="'+(dn?"Remettre à faire":"Fait aujourd\'hui")+'" title="'+(dn?"Fait aujourd\'hui · toucher pour annuler":"Marquer comme fait aujourd\'hui")+'">✓</button>':"")+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+nxDot(p._id)+(fut?'<span class="bwhen" title="Je te le rappellerai ce jour-là">⏰ '+esc(parse(nd.date).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"}))+'</span>':"")+'</div>'}
+function boardCard(p){const nd=((S.priv[p._id]||{}).prochaine||{});const fut=nd.date&&nd.date>today()&&nd.type!=="rdv";const ag=p.agence&&String(p.nom||"").startsWith(p.agence);const ck=["message","appel","relance"].includes(colOf(p));const dn=ck&&doneToday(p);return '<div class="bcard bname'+(dn?" bdone-on":"")+(ck?"":" nock")+(fut?" bfut":"")+'" data-open="'+esc(p._id)+'" data-drag="prospect" data-id="'+esc(p._id)+'" tabindex="0" role="button">'+(ck?'<button type="button" class="bdone" data-bdone="'+esc(p._id)+'" aria-pressed="'+dn+'" aria-label="'+(dn?"Remettre à faire":"Fait aujourd\'hui")+'" title="'+(dn?"Fait aujourd\'hui · toucher pour annuler":"Marquer comme fait aujourd\'hui")+'">✓</button>':"")+(ag?'<span class="bag">🏢 Agence</span><b>'+esc(p.agence)+'</b>'+(String(p.nom).length>p.agence.length?'<span class="muted bmeta">'+esc(String(p.nom).slice(p.agence.length).replace(/^ · /,""))+'</span>':""):'<b>'+esc(p.nom||"Sans nom")+'</b>')+nxDot(p._id)+(fut?'<span class="bwhen" title="Je te le rappellerai ce jour-là">⏰ '+esc(parse(nd.date).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"}))+'</span>':"")+'</div>'}
 function nxDot(id){const pv=S.priv[id]||{};const pr=pv.prochaine;const t=today();let c="";if(pr&&pr.date&&!(pr.type==="rdv"&&pr.date<t))c=pr.date<t?"late":pr.date===t?"due":"";const env=(pv.aEnvoyer||{}).on;if(!c&&!env)return "";return '<span class="nxdot">'+(c?'<i class="'+c+'" title="'+(c==="late"?"Relance en retard":"À faire aujourd\'hui")+'"></i>':"")+(env?'<span title="Quelque chose à lui envoyer">📨</span>':"")+'</span>'}
 function viewBoard(){
   const ps=all().sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
-  let h='<p class="muted" style="margin:0 0 12px">Glissez une fiche avec la souris, ou restez appuyée dessus sur téléphone pour la déplacer. Touchez un nom pour ouvrir sa fiche. Les points rouge (en retard) et jaune (aujourd\'hui) indiquent une relance à faire : touchez le nom pour voir pourquoi. Dans « À appeler » et « Relance », touchez ✓ quand c\'est fait : la fiche devient grise jusqu\'à demain.</p><div class="board">';
+  let h='<p class="muted" style="margin:0 0 12px">Glissez une fiche avec la souris, ou restez appuyée dessus sur téléphone pour la déplacer. Touchez un nom pour ouvrir sa fiche. Les points rouge (en retard) et jaune (aujourd\'hui) indiquent une relance à faire : touchez le nom pour voir pourquoi. Dans « Message », « À appeler » et « Relance », touchez ✓ quand c\'est fait : la fiche devient grise jusqu\'à demain.</p><div class="board">';
   const nxd=p=>((S.priv[p._id]||{}).prochaine||{}).date||"";
   BOARD.forEach(c=>{let l=ps.filter(c.has);if(c.k==="relance"||c.k==="appel"){const t=today();l=l.slice().sort((a,b)=>{const da=nxd(a),db=nxd(b);const fa=da>t?1:0,fb=db>t?1:0;return fa-fb||(da||"0").localeCompare(db||"0")})}const tot=l.reduce((a,p)=>a+num(p.montant),0);
     h+='<section class="bcol" data-col="'+c.k+'" style="--bc:'+c.c+';--bb:'+c.bg+'"><div class="bhead"><span class="bdot"></span><b>'+c.l+'</b><span class="count">'+l.length+'</span>'+""+'</div><div class="blist">'+(l.length?l.map(boardCard).join(""):'<div class="bempty">Déposez une fiche ici</div>')+'</div></section>'});
@@ -2540,7 +2541,7 @@ function viewBoard(){
 }
 async function moveProspect(id,col){const cur=S.pub[id];if(!cur)return;if(col==='attente'&&S.priv[id]&&S.priv[id].prochaine&&S.priv[id].prochaine.date){const pv={...S.priv[id],prochaine:{type:'appel',date:'',texte:''}};S.priv[id]=pv;write('prive/'+id,pv)}
   const n={...cur,updatedAt:new Date().toISOString()};
-  n.col=col;if(col==="appel"||col==="visite"){n.statut="nouveau";n.paye=false}
+  n.col=col;if(col==="appel"||col==="visite"||col==="message"){n.statut="nouveau";n.paye=false}
   else if(col==="relance"){n.statut=cur.statut==="proposition"?"proposition":"contacte";n.paye=false}
   else if(col==="signe"){n.statut="reserve";n.paye=false}
   else if(col==="paye"){n.statut="reserve";n.paye=true}
