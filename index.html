@@ -953,6 +953,13 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .qz-o button[aria-pressed="true"]{background:#2f8f5b;border-color:#2f8f5b;color:#fff;font-weight:700}
 .qz-q textarea,.qz-q input{width:100%;box-sizing:border-box;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:#fff;color:inherit;resize:vertical}
 .rs-qz{display:grid;gap:2px;font-size:13.5px}.rs-qz span{color:var(--muted)}
+.drawer.pfull.noside .fsplit{grid-template-columns:minmax(0,820px);justify-content:center}
+.cplus{margin-top:10px}.cplus>summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--muted)}.cplus[open]>summary{margin-bottom:6px}
+.ldet{margin-top:10px}.ldet>summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--muted)}.ldet[open]>summary{margin-bottom:8px}.ldet .lignes{border:0;padding:0;margin:0}.ldet .lignes>legend{display:none}
+.paybox{font-weight:800;font-size:16px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;display:flex;gap:10px;align-items:center}.paybox input{width:22px;height:22px;accent-color:#2f8f5b}.paybox.on{background:#e8f6ee;border-color:#9fd6b5;color:#1d7a46}
+.fs5{border-radius:10px;padding:6px 9px;margin:4px 0;display:grid;gap:2px}.fs5 small{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.fs5.enl{background:#e7f1fb}.fs5.enl small{color:#2a78d6}.fs5.pres{background:#e5f4e4}.fs5.pres small{color:#2f8f5b}
+.lg{font-weight:700;border-radius:999px;padding:0 6px}.lg.enl{background:#e7f1fb;color:#2a78d6}.lg.pres{background:#e5f4e4;color:#2f8f5b}
 </style>
 
 <div class="wrap">
@@ -1593,23 +1600,34 @@ function drawFiche(){
     else convert='<div class="notice" style="background:var(--ok-soft);color:var(--ok)">Réservé ! <button class="btn small" id="toEvent">Créer l\'événement dans le calendrier</button></div>';
   }
   const isVis=typesOf(d).includes("visite");
-  let h='<div class="overlay" id="ov"><div class="drawer pfull'+(S.scriptOpen?" sopen":"")+'" role="dialog" aria-modal="true" aria-labelledby="fTitle">'+
-  '<div class="dh"><div style="min-width:0;flex:1"><h3 style="margin:0">'+(isNew?"Nouveau prospect":"Fiche prospect")+'</h3><h2 id="fTitle">'+esc(d.nom||"Sans nom")+'</h2></div><button type="button" class="btn small sbtn" data-sopen>📜 Script et questions</button><button class="btn ghost" id="fClose" aria-label="Fermer">✕</button></div><div class="fsplit"><div class="fleft">'+convert+
+  const TLx=typesOf(d);const side=asideHtml();
+  let h='<div class="overlay" id="ov"><div class="drawer pfull'+(S.scriptOpen?" sopen":"")+(side?"":" noside")+'" role="dialog" aria-modal="true" aria-labelledby="fTitle">'+
+  '<div class="dh"><div style="min-width:0;flex:1"><h3 style="margin:0">'+(isNew?"Nouveau prospect":"Fiche prospect")+'</h3><h2 id="fTitle">'+esc(d.nom||"Sans nom")+'</h2></div>'+(side?'<button type="button" class="btn small sbtn" data-sopen>'+(side.indexOf("qz")>=0&&side.indexOf("fs5")<0?"🧭 Questions":"📜 Script")+'</button>':"")+'<button class="btn ghost" id="fClose" aria-label="Fermer">✕</button></div><div class="fsplit"><div class="fleft">'+convert+
   (tel&&!isNew?'<div class="row"><span style="font-size:20px;font-weight:700;user-select:all;font-variant-numeric:tabular-nums">'+esc(tel)+'</span><button class="btn small" data-copy="'+esc(tel)+'">Copier</button>'+waBtn(tel,"Bonjour "+(d.genre==="f"?"Madame ":d.genre==="h"?"Monsieur ":"")+String(d.prenom||d.nom||"").split(" ")[0]+", c'est "+reg().domaine+". Je reviens vers vous suite à votre demande. ")+'</div>':"")+
-  resumeBox()+callBox()+(isVis?"":nextBox())+envoiBox()+
-  '<fieldset class="fs"><legend>Contact</legend><div class="row" style="margin-bottom:6px"><span style="font-weight:600">C\'est</span>'+seg("genre",[["f","👩 Une femme"],["h","👨 Un homme"]],d.genre||"")+'</div>'+fld("Pourquoi il/elle appelle ?",inp("f_motif",d.motif||"","text","Ex. veut une balade pour l\'anniversaire de sa fille"),true)+'<div class="row" style="margin:8px 0 6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true)+'<p class="muted" style="margin:0;font-size:13px;grid-column:1/-1">La personne que vous avez au téléphone :</p>':"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div><label class="check apport" style="margin-top:8px"><input type="checkbox" id="f_apport"'+(d.apporteur?" checked":"")+'> ⭐ Client apporté par moi (Céleste)</label></fieldset>'+
-  '<fieldset class="fs"><legend>La demande</legend><div class="typepick">'+Object.entries(TYPES).map(([k,v])=>'<button type="button" data-ptype="'+k+'" aria-pressed="'+typesOf(d).includes(k)+'">'+(k==="visite"?"🏠 ":"")+v.label+'</button>').join("")+'</div>'+demandeFields()+
-  fld("Informations",'<textarea id="f_notes" placeholder="Tout ce qui est utile : ce qu\'il cherche, ses questions, son budget…">'+esc(d.notes)+'</textarea>',true)+'</fieldset>'+quiBox()+lignesBox()+payBox()+
-  '<details class="fs suivi" id="suiviBox"'+(S.suiviOpen?" open":"")+'><summary><span>Suivi et relances'+(isVis?' <small class="muted">(facultatif)</small>':"")+'</span><span class="chip st-'+d.statut+'">'+STATUTS[d.statut].label+'</span></summary>'+
+  resumeBox()+
+  /* 1 · contact */
+  '<fieldset class="fs"><legend>1 · Contact</legend><div class="grid">'+(d.estAgence?fld("Nom de l\'agence",inp("f_agence",d.agence||"","text","Ex. Agence mariage Marrakech"),true):"")+fld("Prénom",inp("f_prenom",d.prenom,"text"))+fld("Nom",inp("f_nomf",d.nomFam,"text"))+fld("Téléphone",inp("f_tel",d.telephone,"tel","06…"))+fld("E-mail",inp("f_email",d.email||"","email","nom@exemple.com"))+'</div>'+
+  '<details class="cplus"'+(S.cplusOpen||d.estAgence?" open":"")+'><summary>Plus sur le contact (femme / homme, venu par, agence…)</summary><div class="row" style="margin:6px 0"><span style="font-weight:600">C\'est</span>'+seg("genre",[["f","👩 Une femme"],["h","👨 Un homme"]],d.genre||"")+'</div>'+fld("Pourquoi il/elle appelle ?",inp("f_motif",d.motif||"","text","Ex. veut une balade pour l\'anniversaire de sa fille"),true)+'<div class="grid">'+fld("Venu par",sel("f_source",SOURCES,d.source))+'</div><div class="row" style="margin:8px 0 6px"><span style="font-weight:600">C\'est une agence ?</span><span class="seg">'+[["oui","Oui"],["non","Non"]].map(([v,l])=>'<button type="button" data-agence="'+v+'" aria-pressed="'+((d.estAgence?"oui":"non")===v)+'">'+l+'</button>').join("")+'</span></div><label class="check apport" style="margin-top:4px"><input type="checkbox" id="f_apport"'+(d.apporteur?" checked":"")+'> ⭐ Client apporté par moi (Céleste)</label></details></fieldset>'+
+  /* 2 · demande */
+  '<fieldset class="fs"><legend>2 · La demande</legend><div class="typepick">'+Object.entries(TYPES).map(([k,v])=>'<button type="button" data-ptype="'+k+'" aria-pressed="'+TLx.includes(k)+'">'+(k==="visite"?"🏠 ":"")+v.label+'</button>').join("")+'</div>'+demandeFields2()+
+  fld("Informations",'<textarea id="f_notes" placeholder="Tout ce qui est utile : ce qu\'il cherche, ses questions…">'+esc(d.notes)+'</textarea>',true)+'</fieldset>'+
+  /* 3 · qui vient */
+  (TLx.length?quiBox():"")+
+  /* 4 · prix */
+  prixBox()+
+  /* 5 · prochaine étape */
+  (isVis?'<fieldset class="fs"><legend>5 · Prochaine étape</legend><p class="muted" style="margin:0">La prochaine étape est la visite : elle s\'ajoute toute seule dans le calendrier au jour et à l\'heure choisis.</p></fieldset>':nextBox())+
+  callBox()+envoiBox()+
+  '<details class="fs suivi" id="suiviBox"'+(S.suiviOpen?" open":"")+'><summary><span>Statut et historique</span><span class="chip st-'+d.statut+'">'+STATUTS[d.statut].label+'</span></summary>'+
   '<div class="grid">'+fld("Statut",sel("f_statut",Object.entries(STATUTS).map(([k,v])=>[k,v.label]),d.statut))+(d.statut==="perdu"?fld("Raison de la perte",sel("f_perte",PERTES,d.raisonPerte,"Choisir…")):"<span></span>")+'</div>'+
-
   fld("Ajouter un échange",'<textarea id="f_log" placeholder="Ex. Appelée, attend l\'accord de son mari."></textarea>',true)+
   (d.historique.length?'<ul class="hist">'+d.historique.slice().reverse().map(x=>'<li><time>'+fmtLong(x.date)+'</time>'+esc(x.texte)+'</li>').join("")+'</ul>':"")+'</details>'+
-  '<div class="row"><button class="btn primary" id="fSave">Enregistrer</button><button class="btn" id="fCancel">Annuler</button><span class="spacer"></span>'+(!isNew?(S.confirmDel?'<span class="muted" style="font-size:13px">Supprimer définitivement ?</span><button class="btn small danger" id="fDelYes">Oui, supprimer</button><button class="btn small" id="fDelNo">Non</button>':'<button class="btn small danger" id="fDel">Supprimer</button>'):"")+'</div></div><aside class="fscript" id="fscript">'+closingScript()+'</aside></div></div></div>';
+  '<div class="row"><button class="btn primary" id="fSave">Enregistrer</button><button class="btn" id="fCancel">Annuler</button><span class="spacer"></span>'+(!isNew?(S.confirmDel?'<span class="muted" style="font-size:13px">Supprimer définitivement ?</span><button class="btn small danger" id="fDelYes">Oui, supprimer</button><button class="btn small" id="fDelNo">Non</button>':'<button class="btn small danger" id="fDel">Supprimer</button>'):"")+'</div></div>'+(side?'<aside class="fscript" id="fscript">'+side+'</aside>':"")+'</div></div></div>';
   $("#drawerRoot").innerHTML=h;
   const dr=document.querySelector("#drawerRoot .drawer");if(dr&&old)dr.scrollTop=keep;const ns=document.getElementById("fscript");if(ns&&oldS)ns.scrollTop=keepS;
   if(!old){const f=$("#f_prenom");if(isNew&&f)f.focus()}
   const sb=$("#suiviBox");if(sb)sb.addEventListener("toggle",()=>{S.suiviOpen=sb.open});
+  const cp=document.querySelector("#drawerRoot .cplus");if(cp)cp.addEventListener("toggle",()=>{S.cplusOpen=cp.open});
 }
 function seg(name,opts,val){return '<span class="seg">'+opts.map(([v,l])=>'<button type="button" data-seg="'+name+'" data-v="'+v+'" aria-pressed="'+(val===v)+'">'+l+'</button>').join("")+'</span>'}
 function resumeBox(){const d=draft;if(S.open==="new")return "";const pr0=d.prochaine||{};const ap=(d.appels||[]).filter(a=>a.note).slice(-3).reverse();const env=d.aEnvoyer&&d.aEnvoyer.on;
@@ -1648,6 +1666,7 @@ function readForm(){
   ["b_sous","b_traiteur","b_spectacle","b_horaire","b_detail","b_enfants","b_occasion","b_niveau","b_age","b_formule","b_dispo","b_quelle","b_objectif"].forEach(k=>{const x=v(k);if(x!==undefined){if(k==="b_sous")d.sousType=x;else d.besoin[k.slice(2)]=x}});
   const log=v("f_log");if(log&&log.trim())d.__log=log.trim();
   readLignes();qzRead();
+  const fp=document.getElementById("f_paye");if(fp){if(fp.checked){d.besoin.recu=String(num(d.montant)||"");d.besoin.paye="oui";d.paye=true;if(d.statut!=="perdu")d.statut="reserve"}else if(d.besoin.paye==="oui"||d.paye){d.besoin.recu="";d.besoin.paye="non";d.paye=false}}
 }
 async function saveProspect(){
   readForm();const d=draft;
@@ -2967,7 +2986,7 @@ function ligneLabel(l){const q=num(l.qte===""?1:l.qte);return (l.lib||lgLab(l.k)
 function lastPrice(k){let best="";Object.values(S.pub||{}).forEach(p=>(p.lignes||[]).forEach(l=>{if(l.k===k&&num(l.pu))best=num(l.pu)}));return best}
 function nights(a,b){if(!a||!b)return 0;return Math.round((parse(b)-parse(a))/864e5)}
 function quiBox(){const d=draft;const Q=d.qui||[];
-  return '<fieldset class="fs qui"><legend>👨‍👩‍👧 Qui vient avec lui/elle ?</legend>'+(Q.length?Q.map((q,i)=>'<div class="qrow"><input id="q_'+i+'_prenom" placeholder="Prénom" value="'+esc(q.prenom||"")+'"><input id="q_'+i+'_age" type="number" inputmode="numeric" placeholder="Âge" value="'+esc(q.age||"")+'"><select id="q_'+i+'_genre"><option value="">—</option><option value="f"'+(q.genre==="f"?" selected":"")+'>Fille / femme</option><option value="h"'+(q.genre==="h"?" selected":"")+'>Garçon / homme</option></select><select id="q_'+i+'_lien">'+["Enfant","Conjoint(e)","Ami(e)","Famille","Autre"].map(x=>'<option'+(q.lien===x?" selected":"")+'>'+x+'</option>').join("")+'</select><button type="button" class="btn small ghost" data-qdel="'+i+'" aria-label="Retirer">✕</button></div>').join(""):'<p class="muted" style="margin:0;font-size:13.5px">Personne d\'autre pour l\'instant.</p>')+'<div><button type="button" class="btn small" data-qadd>+ Ajouter une personne</button></div></fieldset>'}
+  return '<fieldset class="fs qui"><legend>3 · Qui vient avec lui/elle ?</legend>'+(Q.length?Q.map((q,i)=>'<div class="qrow"><input id="q_'+i+'_prenom" placeholder="Prénom" value="'+esc(q.prenom||"")+'"><input id="q_'+i+'_age" type="number" inputmode="numeric" placeholder="Âge" value="'+esc(q.age||"")+'"><select id="q_'+i+'_genre"><option value="">—</option><option value="f"'+(q.genre==="f"?" selected":"")+'>Fille / femme</option><option value="h"'+(q.genre==="h"?" selected":"")+'>Garçon / homme</option></select><select id="q_'+i+'_lien">'+["Enfant","Conjoint(e)","Ami(e)","Famille","Autre"].map(x=>'<option'+(q.lien===x?" selected":"")+'>'+x+'</option>').join("")+'</select><button type="button" class="btn small ghost" data-qdel="'+i+'" aria-label="Retirer">✕</button></div>').join(""):'<p class="muted" style="margin:0;font-size:13.5px">Personne d\'autre pour l\'instant.</p>')+'<div><button type="button" class="btn small" data-qadd>+ Ajouter une personne</button></div></fieldset>'}
 function lignesBox(){const d=draft;const Lg=d.lignes||[];
   let h='<fieldset class="fs lignes"><legend>🧾 Ce qu\'il/elle prend · détail et tarifs</legend>';
   h+=Lg.length?Lg.map(l=>{const id=esc(l.id);const multi=true;return '<div class="lrow"><div class="lr1"><input class="l-lib" id="l_'+id+'_lib" value="'+esc(l.lib||"")+'" placeholder="Quoi ?"><button type="button" class="btn small ghost" data-ldel="'+id+'" aria-label="Retirer">✕</button></div>'+
@@ -3026,7 +3045,7 @@ function closingScript(){const d=draft;const T=typesOf(d);const pr=String(d.pren
 const NX_IC={appel:"📞",message:"💬",rdv:"📅",autre:"📌"};
 const NX_REASONS=["Lui envoyer le prix","Lui envoyer les dates","Pas répondu : réessayer","Attend l'accord de son conjoint","Envoyer le lien pour l'acompte","Confirmer la réservation","Elle doit me rappeler : vérifier"];
 function nextBox(){const d=draft;const pr=d.prochaine||{};const ty=pr.type||"appel";
-  return '<fieldset class="fs nextfs'+(pr.date?" on":"")+'"><legend>➡️ Prochaine étape</legend>'+
+  return '<fieldset class="fs nextfs'+(pr.date?" on":"")+'"><legend>5 · Prochaine étape</legend>'+
    '<div class="nx-ty">'+Object.entries(ACTIONS).map(([k,l])=>'<button type="button" data-nxty="'+k+'" aria-pressed="'+(ty===k)+'">'+NX_IC[k]+' '+esc(k==="message"?"Envoyer un message":l)+'</button>').join("")+'<input type="hidden" id="f_atype" value="'+esc(ty)+'"></div>'+
    '<div class="row nx-when"><label class="f" style="flex:1;min-width:150px">Quand<input type="date" id="f_adate" value="'+esc(pr.date||"")+'"></label><div class="quick"><button type="button" class="btn small" data-q="0">Aujourd\'hui</button><button type="button" class="btn small" data-q="1">Demain</button><button type="button" class="btn small" data-q="3">Dans 3 jours</button><button type="button" class="btn small" data-q="7">Dans 1 semaine</button><button type="button" class="btn small ghost" data-q="x">Rien de prévu</button></div></div>'+
    '<label class="f full nx-why">Pourquoi ? Ce que je dois lui dire ou lui envoyer <span class="req">obligatoire si une date est mise</span><textarea id="f_atxt" rows="3" placeholder="Ex. Lui envoyer le prix du stage de novembre + l\'hébergement. Elle hésitait à cause des dates.">'+esc(pr.texte||"")+'</textarea></label>'+
@@ -3068,7 +3087,7 @@ const QZ=[
  ["dispo","Quels jours et horaires vous arrangent ?",null,0,"Ex. mercredi après-midi, samedi matin…"],
  ["cav","Le cavalier : âge, taille, poids",null,0,"Pour choisir le bon cheval. Ex. 12 ans, 1m50, 40 kg"],
  ["sante","Quelque chose à savoir côté santé ?",null,0,"Douleur au dos, blessure, contre-indication…"]];
-function qzOn(){return typesOf(draft).some(t=>["cours","formation"].includes(pmode(t))||t==="experiences")}
+function qzOn(){return typesOf(draft).some(t=>pmode(t)==="cours"&&t!=="experiences")}
 function qzVal(k){return ((draft.besoin||{}).qz||{})[k]}
 function qzBox(){if(!qzOn())return "";const Q=(draft.besoin||{}).qz||{};const n=QZ.filter(q=>{const v=Q[q[0]];return Array.isArray(v)?v.length:v}).length;
   return '<div class="sc-blk qz"><div class="sc-t">🧭 Questions à poser <span class="qz-n">'+n+' / '+QZ.length+'</span></div><p class="muted" style="margin:0;font-size:12.5px">Touchez la réponse ou écrivez-la : tout est gardé dans la fiche et apparaît dans le résumé.</p>'+
@@ -3078,6 +3097,33 @@ function qzRead(){if(!draft)return;const b=draft.besoin=draft.besoin||{};const Q
 document.addEventListener("click",e=>{const b=e.target.closest("[data-qz]");if(!b||!S.open||!draft)return;readForm();const i=b.dataset.qz.indexOf("|");const k=b.dataset.qz.slice(0,i),v=b.dataset.qz.slice(i+1);const def=QZ.find(q=>q[0]===k);const Q=draft.besoin.qz=draft.besoin.qz||{};
   if(def[3]){const a=[].concat(Q[k]||[]);Q[k]=a.includes(v)?a.filter(x=>x!==v):a.concat(v)}else Q[k]=Q[k]===v?"":v;drawFiche()});
 function qzSummary(d){const Q=((d.besoin||{}).qz)||{};const out=[];QZ.forEach(([k,q,opts])=>{let v=Q[k];v=Array.isArray(v)?v.join(", "):String(v||"").trim();const au=String(Q[k+"_autre"]||"").trim();if(au)v=v?v+" ("+au+")":au;if(v)out.push([({dep:"Monte depuis",niv:"Niveau",cadre:"Cadre",disc:"Discipline",obj:"Objectifs",prio:"Priorité",peur:"Difficulté / peur",chev:"Son cheval",chevd:"Le cheval",nb:"Séances",ryth:"Rythme",dispo:"Dispos",cav:"Cavalier",sante:"Santé"})[k]+" :",v])});return out}
+
+/* ===== v51 : fiche prospect en 5 parties, panneau selon cours / formation ===== */
+function demandeFields2(){const d=draft,b=d.besoin;const L=typesOf(d);let h="";
+  if(L.includes("visite"))h+='<div class="dblock"><span class="dtitle">🏠 Visite</span><div class="grid">'+fld("Jour de la visite",inp("v_date",d.dateEvent,"date"))+fld("Heure",inp("v_heure",b.heure||"","time"))+'</div><p class="muted" style="margin:6px 0 0;font-size:13px">La visite s\'ajoute toute seule dans le calendrier.</p></div>';
+  if(L.some(t=>pmode(t)==="formation"&&t!=="formation-en-ligne"))h+='<div class="dblock"><span class="dtitle">📚 Dates de la formation</span><div class="grid">'+(L.includes("visite")?"":fld("Du",inp("f_date",d.dateEvent,"date")))+fld("Au",inp("f_date2",b.dateFin||"","date"))+sessChips("dsess")+'</div></div>';
+  return h}
+function prixBox(){const d=draft,b=d.besoin||{};const tot=(d.lignes||[]).length?lignesTotal(d):null;const paid=b.paye==="oui"||(b.recu!==undefined&&b.recu!==""&&num(b.recu)>=num(d.montant)&&num(d.montant)>0);
+  return '<fieldset class="fs prixfs"><legend>4 · Prix provisoire</legend><div class="row" style="align-items:flex-end;gap:14px;flex-wrap:wrap">'+(tot!==null?'<div><span class="muted" style="font-size:12.5px;font-weight:700">Prix provisoire (DH)</span><div class="ro-total" id="lgTotal2">'+money(tot)+'</div></div>':'<label class="f" style="min-width:170px">Prix provisoire (DH)<input type="number" min="0" inputmode="numeric" id="f_montant" value="'+esc(d.montant??"")+'" placeholder="'+esc(String(defSum(typesOf(d))||"Ex. 1300"))+'"></label>')+
+   '<label class="check paybox'+(paid?" on":"")+'"><input type="checkbox" id="f_paye"'+(paid?" checked":"")+'> Payé</label></div>'+
+   '<details class="ldet"'+((d.lignes||[]).length||S.ldetOpen?" open":"")+'><summary>Détailler le prix (plusieurs prestations, dates, quantités)</summary>'+lignesBox()+'</details></fieldset>'}
+function asideHtml(){const L=typesOf(draft);const cours=L.some(t=>pmode(t)==="cours"&&t!=="experiences");const form=L.some(t=>pmode(t)==="formation");let h="";
+  if(form)h+=formationScript();
+  if(cours)h+=qzBox();
+  return h}
+function formationScript(){const d=draft;const L=typesOf(d);const enl=L.includes("formation-en-ligne"),pres=L.some(t=>pmode(t)==="formation"&&t!=="formation-en-ligne");
+  const civ=d.genre==="f"?"Madame":d.genre==="h"?"Monsieur":"";const nm=civ?civ+(d.nomFam?" "+d.nomFam:""):(String(d.prenom||"").trim()||"[prénom]");
+  const P=t=>{const v=num(defPrice(t));return v?v.toLocaleString("fr-FR")+" DH":"[prix]"};const sa=stageSessions()[0];const sessD=sa?(()=>{const d1=parse(sa.date),d2=sa.dateFin?parse(sa.dateFin):d1;const m=x=>x.toLocaleDateString("fr-FR",{month:"long"});return "du "+d1.getDate()+(m(d1)!==m(d2)?" "+m(d1):"")+" au "+d2.getDate()+" "+m(d2)})():"[dates]";
+  const say=t=>'<p class="say">« '+t+' »</p>';
+  const col=(a,b2)=>(enl?'<div class="fs5 enl"><small>En ligne</small>'+a+'</div>':"")+(pres?'<div class="fs5 pres"><small>Présentiel</small>'+b2+'</div>':"");
+  let h='<div class="sc-head fs5h"><b>📜 Script de closing · formation</b><span class="muted">5 étapes'+(enl&&pres?' · <span class="lg enl">bleu = en ligne</span> <span class="lg pres">vert = présentiel</span>':"")+'</span></div>';
+  h+='<div class="sc-blk"><div class="sc-t">1 · Brisage de glace</div><div class="sc-but">Qu\'elle se sente à l\'aise et accepte de parler.</div>'+say("Bonjour "+nm+", c\'est Céleste du Domaine Apolo ! On s\'est écrit pour la formation. Vous avez 10 minutes devant vous ?")+say("Vous êtes où en ce moment ? Vous avez un cheval, ou vous montez en club ?")+'</div>';
+  h+='<div class="sc-blk"><div class="sc-t">2 · Pourquoi elle est là</div><div class="sc-but">Son envie, et pourquoi maintenant.</div>'+say("Qu\'est-ce qui vous a donné envie de nous contacter ?")+say("Pourquoi maintenant ?")+say("C\'est plutôt pour vous faire plaisir, ou pour en faire votre métier ?")+'<p>Note ses mots exacts dans la fiche.</p></div>';
+  h+='<div class="sc-blk"><div class="sc-t">3 · Problème</div><div class="sc-but">Qu\'elle dise elle-même ce qui la bloque.</div>'+say("Qu\'est-ce qui vous bloque aujourd\'hui avec les chevaux ?")+say("Vous avez déjà essayé quelque chose ? Qu\'est-ce qui n\'a pas marché ?")+say("Si rien ne change, ça donne quoi dans six mois ?")+'<p>Puis reformule et attends son « oui » :</p>'+say("Si je vous comprends bien : … C\'est bien ça ?")+'</div>';
+  h+='<div class="sc-blk"><div class="sc-t">4 · La formation = la solution</div><div class="sc-but">Reprendre SON problème avec ses mots.</div>'+col(say("Justement, la formation en ligne répond exactement à ça. Vous suivez les modules de Catherine chez vous, à votre rythme, et vous commencez dès aujourd\'hui.")+'<p>Argument : la liberté, revoir les vidéos autant qu\'il faut.</p>',say("Justement, c\'est ce que Catherine travaille pendant la formation. Vous êtes au domaine avec elle, en petit groupe, sur plusieurs jours intensifs.")+'<p>Argument : la rareté, peu de stagiaires par session.</p>')+say("Est-ce que ça correspond à ce que vous cherchez ?")+'</div>';
+  h+='<div class="sc-blk"><div class="sc-t">5 · Paiement · passage à l\'action</div><div class="sc-but">Qu\'elle réserve pendant l\'appel, ou une date fixée.</div>'+col(say("La formation en ligne est à "+P("formation-en-ligne")+", et vous avez accès à tout immédiatement.")+'<p>Puis silence.</p>'+say("Je vous envoie le lien d\'inscription maintenant ?")+'<p>Si elle hésite : « C\'est moins qu\'un week-end de stage, et vous commencez aujourd\'hui. »</p>',say("La formation est à "+P("stages")+". Pour réserver votre place, c\'est un acompte, et le reste avant le stage.")+'<p>Puis silence.</p>'+say("On vous inscrit sur la session "+sessD+" ?")+'<p>Si elle vient de loin : logement + petit-déjeuner. Si le prix bloque : l\'en ligne pour commencer.</p>')+'<p><b>Pas prête ?</b> Jamais raccrocher sans une date : « Je vous rappelle jeudi à 18 h ? »</p></div>';
+  return h}
+document.addEventListener("toggle",e=>{if(e.target.classList&&e.target.classList.contains("ldet"))S.ldetOpen=e.target.open},true);
 
 /* ================= rendu ================= */
 function render(){
