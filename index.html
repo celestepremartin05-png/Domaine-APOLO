@@ -962,6 +962,9 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .lg{font-weight:700;border-radius:999px;padding:0 6px}.lg.enl{background:#e7f1fb;color:#2a78d6}.lg.pres{background:#e5f4e4;color:#2f8f5b}
 .bcard.bfut{opacity:.62;background:#f7f8fa}.bcard.bfut:hover{opacity:1}
 .bwhen{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.hdr-r{flex-wrap:wrap;row-gap:6px}.viewas-btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:5px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.viewas-btn.on{background:#f2c94c;color:#1d2b44;border-color:#f2c94c}
+.viewas-banner{background:#fff3cf;border:1px solid #ecd28c;color:#5c4400;border-radius:12px;padding:10px 14px;margin:0 0 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px}
 </style>
 
 <div class="wrap">
@@ -1015,7 +1018,7 @@ const NIVEAUX=["Jamais monté","Débutant","Intermédiaire","Confirmé"];
 const S={factures:{},taches:{},depenses:{},chevaux:{},clientsDb:{},reglages:null,downloads:null,offresDb:{},assets:null,uid:null,occupe:{},myPerso:{},pweek:0,personnel:{},cweek:0,rate:10.8,role:"viewer",db:null,pub:{},priv:{},agenda:{},eleves:{},loaded:false,tab:"accueil",route:null,draft:null,dirty:false,
   filter:{q:"",type:"",statut:"actifs"},ptab:"tableau",ftab:"sessions",etab:"avenir",cal:{y:0,m:0,sel:""},open:null,confirmDel:false};
 const canAgenda=()=>S.role==="owner"||S.role==="editor";
-const canProspects=()=>S.role==="owner";
+const canProspects=()=>S.role==="owner"&&!S.viewAs;
 
 /* ================= utilitaires ================= */
 const $=s=>document.querySelector(s);
@@ -1429,7 +1432,7 @@ function viewEleve(){
 }
 
 /* ================= prospects ================= */
-function all(){return Object.keys(S.pub).map(id=>({...S.pub[id],...(S.priv[id]||{}),_id:id}))}
+function all(){return Object.keys(S.pub).map(id=>({...S.pub[id],...(S.viewAs?{}:(S.priv[id]||{})),_id:id}))}
 function nextOf(p){return p.prochaine&&p.prochaine.date?p.prochaine:null}
 function leadRow(p,showStatus){
   const x=nextOf(p);const t=today();const own=canProspects();
@@ -3130,11 +3133,19 @@ function formationScript(){const d=draft;const L=typesOf(d);const enl=L.includes
   return h}
 document.addEventListener("toggle",e=>{if(e.target.classList&&e.target.classList.contains("ldet"))S.ldetOpen=e.target.open},true);
 
+/* ===== v53 : voir Pégase comme Catherine ===== */
+function viewAsUi(){const hr=document.querySelector(".hdr-r");if(!hr)return;let b=document.getElementById("viewAsBtn");
+  if(S.role!=="owner"){if(b)b.remove();return}
+  if(!b){b=document.createElement("button");b.id="viewAsBtn";b.type="button";b.className="viewas-btn";b.onclick=()=>{S.viewAs=!S.viewAs;if(S.open){S.open=null;const d=$("#drawerRoot");if(d)d.innerHTML=""}go.force=true;S.nav=[];S.navCur=undefined;go(S.viewAs&&["prospects","celeste","reglages"].includes(S.tab)?"accueil":S.tab);toast(S.viewAs?"Vous voyez Pégase comme Catherine":"Retour à votre compte")};hr.insertBefore(b,hr.firstChild)}
+  b.textContent=S.viewAs?"↩ Revenir à mon compte":"👁 Voir comme Catherine";b.classList.toggle("on",!!S.viewAs);
+  const rb=$("#roleBadge");if(rb)rb.textContent=S.viewAs?"Vue de Catherine":"Administratrice";
+  let bn=document.getElementById("viewAsBanner");if(S.viewAs){if(!bn){bn=document.createElement("div");bn.id="viewAsBanner";bn.className="viewas-banner";const v=$("#view");v.parentNode.insertBefore(bn,v)}bn.innerHTML='<span>👁 Vous voyez Pégase <b>comme Catherine</b> : mêmes pages et mêmes informations qu\'elle.</span><button type="button" class="btn small" onclick="document.getElementById(\'viewAsBtn\').click()">Revenir à mon compte</button>'}else if(bn)bn.remove()}
+
 /* ================= rendu ================= */
 function render(){
   $("#todayLabel").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
   if(!tabsFor().some(([k])=>k===S.tab))S.tab="accueil";
-  renderTabs();
+  renderTabs();try{viewAsUi()}catch(_){}
   if(!S.db){$("#view").innerHTML='<div class="notice">Le logiciel n\'a pas pu se connecter à ses données. Ouvrez la page en étant connectée à votre compte Claude, puis rechargez-la.</div>';return}
   if(!S.loaded){$("#view").innerHTML='<div class="empty">Chargement…</div>';return}
   let html;
