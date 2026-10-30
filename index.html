@@ -1581,7 +1581,7 @@ function openFiche(id,type,call){
   if(!canProspects())return;
   S.open=id||"new";S.confirmDel=false;
   draft=id?clone({...blank(),...S.pub[id],...(S.priv[id]||{})}):blank();if(id)draft.type=ptype(draft)||"";if(id&&S.pub[id]&&S.pub[id].nonVu){const np={...S.pub[id],nonVu:false};S.pub[id]=np;write("prospects/"+id,np)}
-  if(!id&&type){draft.type=type;draft.types=[type];draft.montant=defPrice(type)}if(!draft.appels)draft.appels=[];if(!draft.lignes)draft.lignes=[];if(!draft.qui)draft.qui=[];draft.__call=!!call;
+  if(!id&&type){draft.type=type;draft.types=[type];draft.montant=defPrice(type)}if(id){const ck=ckey(draft.nom,draft.telephone);const cn=((S.clientsDb||{})[ck]||{}).notes;if(cn)draft.notes=mergeNotes(draft.notes,cn)}if(!draft.appels)draft.appels=[];if(!draft.lignes)draft.lignes=[];if(!draft.qui)draft.qui=[];draft.__call=!!call;
   if(!draft.besoin)draft.besoin={};if(draft.besoin.paye==="oui"&&(draft.besoin.recu===undefined||draft.besoin.recu===""))draft.besoin.recu=draft.montant;if(!draft.prochaine)draft.prochaine={type:"appel",date:"",texte:""};if(!draft.historique)draft.historique=[];
   drawFiche();
 }
@@ -1728,7 +1728,8 @@ async function saveProspect(){
   if(!(await write("prospects/"+id,pub)))return null;
   if(!(await write("prive/"+id,priv)))return null;
   S.pub[id]=pub;S.priv[id]=priv;
-  if(oldKeyP){try{await propagatePerson(oldKeyP,{nom:d.nom,tel:d.telephone,email:d.email},{skipP:id})}catch(_){}}
+  let pk=oldKeyP;if(oldKeyP){try{pk=await propagatePerson(oldKeyP,{nom:d.nom,tel:d.telephone,email:d.email},{skipP:id})}catch(_){}}
+  try{const k2=pk||ckey(d.nom,d.telephone);const C=(S.clientsDb||{})[k2];if(C||String(d.notes||"").trim())await notesEverywhere(k2,String(d.notes||""),id)}catch(_){}
   return {id,pub,priv};
 }
 document.addEventListener("click",async e=>{
@@ -2153,7 +2154,7 @@ function viewClients(){
 document.addEventListener("change",e=>{if(e.target.id==="cfilt"){S.cf=e.target.value;render()}});
 function clientDetail(c,key){key=key||(c&&c.key);if(!c&&!key)return "";const it=c?c.items.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")):[];const Q=c?(c.qui||[]).filter((q,i,A)=>q.prenom&&A.findIndex(z=>z.prenom===q.prenom)===i):[];
   const tot=it.reduce((a,x)=>a+(x.montant||x.prix||0),0);const ed=canAgenda();
-  let h='<details class="cdetail"'+(S.cDetailOpen!==false||S.clEdit?" open":"")+'><summary><span>📋 Détail : quand, quoi, combien</span><span class="count">'+it.length+'</span></summary>';
+  let h='<details class="cdetail"'+(S.cDetailOpen!==false||S.clEdit?" open":"")+'><summary><span>2 · Ce qu\'elle a pris : quand, quoi, combien</span><span class="count">'+it.length+'</span></summary>';
   if(Q.length)h+='<div class="cd-qui">👨‍👩‍👧 Vient avec : '+Q.map(q=>esc([q.prenom,q.age?q.age+" ans":"",q.lien&&q.lien!=="Autre"?"("+q.lien.toLowerCase()+")":""].filter(Boolean).join(" "))).join(", ")+'</div>';
   const canEd=x=>x.src==="prospect"?canProspects():ed;
   h+=it.length?'<div class="list">'+it.map(x=>{const v=x.montant||x.prix||0;const ek=x.src+"|"+(x.src==="manuel"?key:x.id)+"|"+(x.src==="manuel"?String(x.idx):x.src==="prospect"&&!x.lid?"new":(x.lid||""));
@@ -2210,10 +2211,10 @@ function viewClient(){if(S.clEditRoute!==S.route.id){S.clEdit="";S.clEditRoute=S
     h+='<div class="strip" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">'+cellP(money(tp),"Montant des prestations")+cellP(money(c.total),"Déjà payé")+cellP(money(du),"Reste à payer",du>0)+cellP(c.items.length,"Prestations")+'</div>'}
   h+='<div class="row">'+(d.tel?'<span style="font-size:20px;font-weight:700;user-select:all;font-variant-numeric:tabular-nums">'+esc(d.tel)+'</span><button class="btn small" data-copy="'+esc(d.tel)+'">Copier le numéro</button>':"")+(d.email?'<button class="btn small" data-copy="'+esc(d.email)+'">Copier l\'e-mail</button>':"")+waBtn(d.tel,"Bonjour "+String(d.nom||"").split(" ")[0]+", ")+'<span class="spacer"></span>'+(ed&&S.route.id?'<button class="btn small primary" data-cl-act>+ Nouvelle activité pour ce client</button>':"")+(canProspects()&&S.route.id?'<button class="btn small" data-cl-pros>+ Créer un prospect</button>':"")+'</div>';
   if(S.route.id&&canAgenda()){const dn=!!db.complet;h+='<label class="check cl-done'+(dn?" on":"")+'"><input type="checkbox" data-cl-complet'+(dn?" checked":"")+'> '+(dn?"✓ Fiche terminée":"Fiche à compléter · cochez quand elle est terminée")+'</label>'}
-  h+='<fieldset class="fs"><legend>Fiche client</legend><div class="grid">'+F("Nom et prénom","nom")+F("Téléphone / WhatsApp","tel",{type:"tel"})+F("E-mail","email",{type:"email"})+F("Comment est-il/elle venu(e) ?","source",{sel:SOURCES,ph:"Choisir…"})+'</div></fieldset>';
-  {const pn=canProspects()?all().filter(pp=>ckey(pp.nom,pp.telephone)===S.route.id):[];
-   h+='<fieldset class="fs pnotes"><legend>📝 Mes notes</legend>'+F("","notes",{area:true,full:true,ph:"Qui elle est, ce qu'elle vous dit, pourquoi vous lui parlez, ses préférences…"})+
-     pn.filter(pp=>String(pp.notes||"").trim()||(pp.appels||[]).some(a=>a.note)).map(pp=>'<div class="pn-from"><small>Notes de sa fiche prospect</small>'+(String(pp.notes||"").trim()?'<p>'+esc(pp.notes).replace(/\n/g,"<br>")+'</p>':"")+(pp.appels||[]).filter(a=>a.note).slice(-3).reverse().map(a=>'<p><b>📞 '+fmtDate(a.date)+'</b> '+esc(a.note).replace(/\n/g,"<br>")+'</p>').join("")+'<button type="button" class="btn small" data-open="'+esc(pp._id)+'">Ouvrir la fiche prospect</button></div>').join("")+'</fieldset>'}
+  if(S.route.id&&!S.draft.__notesMerged){S.draft.notes=prospectsOf(S.route.id).reduce((a,pp)=>mergeNotes(a,pp.notes),S.draft.notes||"");S.draft.__notesMerged=true}
+  {const pr=prospectsOf(S.route.id);h+='<fieldset class="fs"><legend>1 · Contact</legend>'+(pr.length?'<div class="row" style="gap:6px;margin-bottom:6px">'+pr.map(pp=>'<button type="button" class="btn small" data-open="'+esc(pp._id)+'">📇 Ouvrir sa fiche prospect</button>').join("")+'</div>':"")+'<div class="grid">'+F("Nom et prénom","nom")+F("Téléphone / WhatsApp","tel",{type:"tel"})+F("E-mail","email",{type:"email"})+F("Venu par","source",{sel:SOURCES,ph:"Choisir…"})+'</div>'+
+   '<label class="f full pnotes">📝 Mes notes : qui elle est, ce qu\'elle me dit, pourquoi je lui parle<textarea data-k="notes" rows="5" placeholder="Les mêmes notes que sur sa fiche prospect : ce que vous écrivez ici apparaît là-bas, et inversement.">'+esc(S.draft.notes||"")+'</textarea></label>'+
+   pr.filter(pp=>(pp.appels||[]).some(a=>a.note)).map(pp=>'<div class="pn-from"><small>Ses derniers appels</small>'+(pp.appels||[]).filter(a=>a.note).slice(-3).reverse().map(a=>'<p><b>📞 '+fmtDate(a.date)+'</b> '+esc(a.note).replace(/\n/g,"<br>")+'</p>').join("")+'</div>').join("")+'</fieldset>'}
   h+=clientDetail(c,S.route.id);
   if(S.route.id){const fa=d.fact||(d.fact={});h+='<details class="cmore"'+(S.cFactOpen?" open":"")+' id="cFactBox"><summary>🧾 Infos pour les devis et factures</summary><div class="grid">'+F("Nom ou société à facturer","fact.nom",{ph:d.nom||""})+F("Adresse","fact.adresse",{full:true})+F("ICE","fact.ice")+F("IF","fact.if_")+F("RC","fact.rc")+F("Patente","fact.patente")+'</div><p class="muted" style="margin:6px 0 0;font-size:12.5px">Ces infos se mettent toutes seules sur ses devis et factures, et inversement.</p></details>';
     h+=docsBox(S.route.id,null)}
@@ -2235,6 +2236,7 @@ async function saveClient(btn,silent){const d=S.draft;if(!String(d.nom||"").trim
   const key=S.route.id||ckey(d.nom,d.tel);if(!key){toast("Nom invalide");return null}if(btn)btn.disabled=true;
   const doc={...((S.clientsDb||{})[key]||{}),updatedAt:new Date().toISOString(),tags:d.tags||[],interets:d.interets||[],suivi:d.suivi||[],achats:(d.achats||[]).filter(a=>num(a.montant)||a.offre),fact:{...(d.fact||{})}};CFIELDS.forEach(f=>doc[f]=typeof d[f]==="string"?d[f].trim():(d[f]||""));
   if(await write("clients/"+key,doc)){S.clientsDb[key]=doc;S.dirty=false;S.touched=false;
+    try{for(const pp of prospectsOf(key)){const V=S.priv[pp._id]||{};if((V.notes||"")!==(doc.notes||"")){const nv={...V,notes:doc.notes||""};S.priv[pp._id]=nv;await write("prive/"+pp._id,nv)}}}catch(_){}
     try{const nk=await propagatePerson(key,{nom:doc.nom,tel:doc.tel,email:doc.email},{client:false});if(nk!==key&&S.route&&S.route.page==="client"&&S.route.id===key){S.route.id=nk;S.clEditRoute=nk}}catch(_){}
     if(!silent){S.ctab="clients";go.force=true;go("clients");toast("Client enregistré · mis à jour partout")}return key}if(btn)btn.disabled=false;return null}
 document.addEventListener("click",async e=>{const t=e.target;if(!S.route||S.route.page!=="client"||!S.draft)return;
@@ -3300,7 +3302,7 @@ let cfT=null;
 function clientFactWrite(key,k,v){const C=S.clientsDb[key]||{};const n={...C,fact:{...(C.fact||{}),[k]:v}};S.clientsDb[key]=n;if(S.draft&&S.route&&S.route.page==="client"&&S.route.id===key)S.draft.fact={...n.fact};clearTimeout(cfT);cfT=setTimeout(()=>write("clients/"+key,S.clientsDb[key]),700)}
 function docsOf(key,pid){return factList().filter(f=>(key&&f.clientKey===key)||(pid&&f.prospectId===pid)).sort((a,b)=>(b.cree||"").localeCompare(a.cree||""))}
 function docsBox(key,pid){if(!canAgenda())return "";const L=docsOf(key,pid);
-  return '<div class="docsbox"><div class="row" style="gap:8px;flex-wrap:wrap"><b>🧾 Devis et factures</b><span class="spacer"></span><button type="button" class="btn small primary" data-mkdoc="devis|'+esc(key||"")+'|'+esc(pid||"")+'">+ Devis</button><button type="button" class="btn small" data-mkdoc="facture|'+esc(key||"")+'|'+esc(pid||"")+'">+ Facture</button></div>'+
+  return '<div class="docsbox"><div class="row" style="gap:8px;flex-wrap:wrap"><b>'+(pid?"":"3 · ")+'🧾 Devis et factures</b><span class="spacer"></span><button type="button" class="btn small primary" data-mkdoc="devis|'+esc(key||"")+'|'+esc(pid||"")+'">+ Devis</button><button type="button" class="btn small" data-mkdoc="facture|'+esc(key||"")+'|'+esc(pid||"")+'">+ Facture</button></div>'+
    (L.length?'<div class="docs-l">'+L.map(f=>'<button type="button" class="doc-chip'+(f.kind==="devis"?"":" fac")+'" data-factopen="'+esc(f._id)+'">'+(f.kind==="devis"?"📝 ":"📄 ")+esc(f.numero)+' · '+factTotals(f).ttc.toLocaleString("fr-FR")+' DH'+(f.objet?' · '+esc(f.objet.slice(0,40)):"")+'</button>').join("")+'</div>':'<p class="muted" style="margin:6px 0 0;font-size:13px">Aucun devis ni facture. Vous pouvez en faire plusieurs, chacun avec son propre détail.</p>')+'</div>'}
 function docCandidates(key,pid){const out=[];
   if(pid){const P=S.pub[pid]||{};(P.lignes||[]).forEach(l=>out.push({lib:ligneLabel({...l,du:l.au?l.du:"",au:l.au||""}),qte:l.qte===""?1:num(l.qte),pu:num(l.pu),date:l.du||"",ref:{src:"prospect",id:pid,lid:l.id}}));if(!out.length&&num(P.montant)){const t=ptype(P);out.push({lib:TYPES[t]?TYPES[t].label:"Prestation",qte:1,pu:num(P.montant),date:P.dateEvent||"",ref:{src:"prospect",id:pid}})}}
@@ -3389,6 +3391,12 @@ document.addEventListener("click",async e=>{if(!e.target.closest("[data-factall]
   const made=[];for(const a of miss){const f=factNew({...a,_id:a._id});f.acquittee=encaisseOf(a)>=revenueOfAgenda(a);if(await write("factures/"+a._id,f)){S.factures[a._id]=f;made.push(a._id)}}
   render();if(made.length)toastUndo(made.length+" facture"+(made.length>1?"s":"")+" créée"+(made.length>1?"s":""),async()=>{for(const id of made){delete S.factures[id];await del("factures/"+id)}render()});else toast("Rien à créer")});
 
+/* ===== v62 : fiche prospect et fiche client = mêmes notes, même ordre ===== */
+function mergeNotes(a,b){a=String(a||"").trim();b=String(b||"").trim();if(!a)return b;if(!b)return a;if(a.includes(b))return a;if(b.includes(a))return b;return a+"\n\n"+b}
+function prospectsOf(key){return canProspects()?all().filter(pp=>ckey(pp.nom,pp.telephone)===key):[]}
+async function notesEverywhere(key,notes,skipP){if(!key)return;const C=S.clientsDb[key]||{};if((C.notes||"")!==notes){const n={...C,notes};S.clientsDb[key]=n;await write("clients/"+key,n)}
+  for(const pp of prospectsOf(key)){if(pp._id===skipP)continue;const V=S.priv[pp._id]||{};if((V.notes||"")!==notes){const nv={...V,notes};S.priv[pp._id]=nv;await write("prive/"+pp._id,nv)}}}
+
 /* ================= rendu ================= */
 function render(){
   $("#todayLabel").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -3443,7 +3451,7 @@ window.__pegaseBoot=boot;
 </script>
 
 <script>
-window.PEGASE_BUILD="20261030193726";
+window.PEGASE_BUILD="20261030195135";
 (function(){var busy=false;async function chk(){if(busy)return;busy=true;try{var r=await fetch("/?v="+Date.now(),{cache:"no-store"});var t=await r.text();var m=t.match(/PEGASE_BUILD="(\d+)"/);if(m&&m[1]!==window.PEGASE_BUILD){if(document.getElementById("pgUpd"))return;var b=document.createElement("div");b.id="pgUpd";b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:3000;background:#1d2b44;color:#fff;border-radius:999px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";b.innerHTML='Nouvelle version de Pégase <button style="border:0;background:#f2c94c;color:#1d2b44;border-radius:999px;padding:7px 14px;font:800 14px system-ui;cursor:pointer">Mettre à jour</button>';b.querySelector("button").onclick=function(){location.reload()};document.body.appendChild(b)}}catch(e){}busy=false}
 document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});window.addEventListener("focus",chk);setInterval(chk,120000);setTimeout(chk,15000)})();
 </script>
