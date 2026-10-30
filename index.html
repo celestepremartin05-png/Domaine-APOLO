@@ -1682,7 +1682,7 @@ async function saveProspect(){
   delete d.__call;delete d.__rep;delete d.__suite;delete d.__note;
   if(d.statut==="nouveau"&&d.historique.length)d.statut="contacte";
   if(d.statut==="attente")d.prochaine={type:"appel",date:"",texte:""};
-  if(d.prochaine&&d.prochaine.date&&d.prochaine.date>today()&&["appel","message","autre"].includes(d.prochaine.type)&&!["reserve","perdu","attente"].includes(d.statut)&&!typesOf(d).includes("visite")){if(d.statut==="nouveau")d.statut="contacte";d.__col="relance"}
+  if(d.prochaine&&d.prochaine.date&&!["reserve","perdu","attente"].includes(d.statut)&&!typesOf(d).includes("visite")){if(d.prochaine.type==="message")d.__col="message";else if(d.prochaine.date>today()&&["appel","autre"].includes(d.prochaine.type)){if(d.statut==="nouveau")d.statut="contacte";d.__col="relance"}}
   if(d.type!=="evenement")d.sousType="";
   const id=S.open==="new"?newId("p"):S.open;
   const TL=typesOf(d);d.type=TL[0]||d.type;const prixN=num(d.montant),recuN=d.besoin.recu===""||d.besoin.recu===undefined?null:num(d.besoin.recu);
@@ -2535,7 +2535,7 @@ function viewBoard(){
   const ps=all().sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));
   let h='<p class="muted" style="margin:0 0 12px">Glissez une fiche avec la souris, ou restez appuyée dessus sur téléphone pour la déplacer. Touchez un nom pour ouvrir sa fiche. Les points rouge (en retard) et jaune (aujourd\'hui) indiquent une relance à faire : touchez le nom pour voir pourquoi. Dans « Message », « À appeler » et « Relance », touchez ✓ quand c\'est fait : la fiche devient grise jusqu\'à demain.</p><div class="board">';
   const nxd=p=>((S.priv[p._id]||{}).prochaine||{}).date||"";
-  BOARD.forEach(c=>{let l=ps.filter(c.has);if(c.k==="relance"||c.k==="appel"){const t=today();l=l.slice().sort((a,b)=>{const da=nxd(a),db=nxd(b);const fa=da>t?1:0,fb=db>t?1:0;return fa-fb||(da||"0").localeCompare(db||"0")})}const tot=l.reduce((a,p)=>a+num(p.montant),0);
+  BOARD.forEach(c=>{let l=ps.filter(c.has);if(c.k==="relance"||c.k==="appel"||c.k==="message"){const t=today();l=l.slice().sort((a,b)=>{const da=nxd(a),db=nxd(b);const fa=da>t?1:0,fb=db>t?1:0;return fa-fb||(da||"0").localeCompare(db||"0")})}const tot=l.reduce((a,p)=>a+num(p.montant),0);
     h+='<section class="bcol" data-col="'+c.k+'" style="--bc:'+c.c+';--bb:'+c.bg+'"><div class="bhead"><span class="bdot"></span><b>'+c.l+'</b><span class="count">'+l.length+'</span>'+""+'</div><div class="blist">'+(l.length?l.map(boardCard).join(""):'<div class="bempty">Déposez une fiche ici</div>')+'</div></section>'});
   return h+'</div>';
 }
