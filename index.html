@@ -3274,6 +3274,7 @@ function refVal(r){if(!r)return null;
 function linesSync(f){if(!f||f.fige)return f;let L=(f.lignes||[]).map(l=>({...l}));let ch=false;
   const aid=f.agendaId||(f._id&&S.agenda[f._id]?f._id:"");
   if(!L.some(l=>l.ref)&&!f.linesManual&&aid&&S.agenda[aid]){const a={...S.agenda[aid],_id:aid};let D=devisLines(a);if(!D.length)D=[[tLab(tyOf(a)),1,revenueOfAgenda(a)]];if(D.length===L.length)L=L.map((l,i)=>({...l,ref:{src:"agenda",id:a._id,i}}))}
+  if(!L.some(l=>l.ref)&&!f.linesManual&&(f.clientKey||f.prospectId)){let C=[];try{C=docCandidates(f.clientKey,f.prospectId)}catch(_){C=[]}const used=new Set();L=L.map(l=>{const i=C.findIndex((c,j)=>!used.has(j)&&c.ref&&c.lib===l.lib);if(i<0)return l;used.add(i);return {...l,ref:C[i].ref}})}
   L=L.map(l=>{const v=refVal(l.ref);if(v&&(num(v.qte)!==num(l.qte===""?1:l.qte)||num(v.pu)!==num(l.pu))){ch=true;return {...l,qte:v.qte,pu:v.pu}}return l});
   return ch||L.some((l,i)=>l.ref&&!(f.lignes[i]||{}).ref)?{...f,lignes:L}:f}
 function factSync(f){f=linesSync(f);if(!f||!f.clientKey)return f;const cf=clientFact(f.clientKey);const C={...(f.client||{})};["nom","adresse","ice","if_","rc","patente"].forEach(k=>{if(cf[k])C[k]=cf[k]});return {...f,client:C}}
