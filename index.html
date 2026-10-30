@@ -1619,7 +1619,7 @@ function drawFiche(){
   prixBox()+
   /* 5 · prochaine étape */
   (isVis?'<fieldset class="fs"><legend>5 · Prochaine étape</legend><p class="muted" style="margin:0">La prochaine étape est la visite : elle s\'ajoute toute seule dans le calendrier au jour et à l\'heure choisis.</p></fieldset>':nextBox())+
-  callBox()+envoiBox()+
+  envoiBox()+callBox()+
   '<details class="fs suivi" id="suiviBox"'+(S.suiviOpen?" open":"")+'><summary><span>Statut et historique</span><span class="chip st-'+d.statut+'">'+STATUTS[d.statut].label+'</span></summary>'+
   '<div class="grid">'+fld("Statut",sel("f_statut",Object.entries(STATUTS).map(([k,v])=>[k,v.label]),d.statut))+(d.statut==="perdu"?fld("Raison de la perte",sel("f_perte",PERTES,d.raisonPerte,"Choisir…")):"<span></span>")+'</div>'+
   fld("Ajouter un échange",'<textarea id="f_log" placeholder="Ex. Appelée, attend l\'accord de son mari."></textarea>',true)+
@@ -3050,7 +3050,7 @@ const NX_IC={appel:"📞",message:"💬",rdv:"📅",autre:"📌"};
 const NX_REASONS=["Lui envoyer le prix","Lui envoyer les dates","Pas répondu : réessayer","Attend l'accord de son conjoint","Envoyer le lien pour l'acompte","Confirmer la réservation","Elle doit me rappeler : vérifier"];
 function nextBox(){const d=draft;const pr=d.prochaine||{};const ty=pr.type||"appel";
   return '<fieldset class="fs nextfs'+(pr.date?" on":"")+'"><legend>5 · Prochaine étape</legend>'+
-   '<div class="nx-ty">'+Object.entries(ACTIONS).map(([k,l])=>'<button type="button" data-nxty="'+k+'" aria-pressed="'+(ty===k)+'">'+NX_IC[k]+' '+esc(k==="message"?"Envoyer un message":l)+'</button>').join("")+'<input type="hidden" id="f_atype" value="'+esc(ty)+'"></div>'+
+   '<div class="nx-ty">'+["message","appel","rdv","autre"].map(k=>[k,ACTIONS[k]]).map(([k,l])=>'<button type="button" data-nxty="'+k+'" aria-pressed="'+(ty===k)+'">'+NX_IC[k]+' '+esc(k==="message"?"Envoyer un message":l)+'</button>').join("")+'<input type="hidden" id="f_atype" value="'+esc(ty)+'"></div>'+
    '<div class="row nx-when"><label class="f" style="flex:1;min-width:150px">Quand<input type="date" id="f_adate" value="'+esc(pr.date||"")+'"></label><div class="quick"><button type="button" class="btn small" data-q="0">Aujourd\'hui</button><button type="button" class="btn small" data-q="1">Demain</button><button type="button" class="btn small" data-q="3">Dans 3 jours</button><button type="button" class="btn small" data-q="7">Dans 1 semaine</button><button type="button" class="btn small ghost" data-q="x">Rien de prévu</button></div></div>'+
    '<label class="f full nx-why">Pourquoi ? Ce que je dois lui dire ou lui envoyer <span class="req">obligatoire si une date est mise</span><textarea id="f_atxt" rows="3" placeholder="Ex. Lui envoyer le prix du stage de novembre + l\'hébergement. Elle hésitait à cause des dates.">'+esc(pr.texte||"")+'</textarea></label>'+
    '<div class="nx-chips">'+NX_REASONS.map(r=>'<button type="button" class="hchip" data-nxr="'+esc(r)+'">+ '+esc(r)+'</button>').join("")+'</div></fieldset>'}
