@@ -2236,8 +2236,7 @@ async function saveClient(btn,silent){const d=S.draft;if(!String(d.nom||"").trim
   const key=S.route.id||ckey(d.nom,d.tel);if(!key){toast("Nom invalide");return null}if(btn)btn.disabled=true;
   const doc={...((S.clientsDb||{})[key]||{}),updatedAt:new Date().toISOString(),tags:d.tags||[],interets:d.interets||[],suivi:d.suivi||[],achats:(d.achats||[]).filter(a=>num(a.montant)||a.offre),fact:{...(d.fact||{})}};CFIELDS.forEach(f=>doc[f]=typeof d[f]==="string"?d[f].trim():(d[f]||""));
   if(await write("clients/"+key,doc)){S.clientsDb[key]=doc;S.dirty=false;S.touched=false;
-    try{for(const pp of prospectsOf(key)){const V=S.priv[pp._id]||{};if((V.notes||"")!==(doc.notes||"")){const nv={...V,notes:doc.notes||""};S.priv[pp._id]=nv;await write("prive/"+pp._id,nv)}}}catch(_){}
-    try{const nk=await propagatePerson(key,{nom:doc.nom,tel:doc.tel,email:doc.email},{client:false});if(nk!==key&&S.route&&S.route.page==="client"&&S.route.id===key){S.route.id=nk;S.clEditRoute=nk}}catch(_){}
+    S.clPending={key,nom:doc.nom,tel:doc.tel,email:doc.email,notes:doc.notes||""};if(!silent)await clRunPending();else clWatchPending();
     if(!silent){S.ctab="clients";go.force=true;go("clients");toast("Client enregistré · mis à jour partout")}return key}if(btn)btn.disabled=false;return null}
 document.addEventListener("click",async e=>{const t=e.target;if(!S.route||S.route.page!=="client"||!S.draft)return;
   if(t.id==="clSave"){saveClient(t);return}
@@ -3397,6 +3396,13 @@ function prospectsOf(key){return canProspects()?all().filter(pp=>ckey(pp.nom,pp.
 async function notesEverywhere(key,notes,skipP){if(!key)return;const C=S.clientsDb[key]||{};if((C.notes||"")!==notes){const n={...C,notes};S.clientsDb[key]=n;await write("clients/"+key,n)}
   for(const pp of prospectsOf(key)){if(pp._id===skipP)continue;const V=S.priv[pp._id]||{};if((V.notes||"")!==notes){const nv={...V,notes};S.priv[pp._id]=nv;await write("prive/"+pp._id,nv)}}}
 
+/* ===== v63 : la mise à jour partout se fait quand on quitte la fiche client (pas pendant la frappe) ===== */
+async function clRunPending(){const P=S.clPending;if(!P)return;S.clPending=null;const key=P.key;
+  try{for(const pp of prospectsOf(key)){const V=S.priv[pp._id]||{};if((V.notes||"")!==P.notes){const nv={...V,notes:P.notes};S.priv[pp._id]=nv;await write("prive/"+pp._id,nv)}}}catch(_){}
+  try{const nk=await propagatePerson(key,{nom:P.nom,tel:P.tel,email:P.email},{client:false});if(nk!==key&&S.route&&S.route.page==="client"&&S.route.id===key){S.route.id=nk;S.clEditRoute=nk}}catch(_){}
+  if(!(S.route&&S.route.page==="client"))render()}
+let clPT=null;function clWatchPending(){clearInterval(clPT);clPT=setInterval(()=>{const P=S.clPending;if(!P){clearInterval(clPT);return}if(!(S.route&&S.route.page==="client"&&S.route.id===P.key)){clearInterval(clPT);clRunPending()}},1200)}
+
 /* ================= rendu ================= */
 function render(){
   $("#todayLabel").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -3451,7 +3457,7 @@ window.__pegaseBoot=boot;
 </script>
 
 <script>
-window.PEGASE_BUILD="20261030195135";
+window.PEGASE_BUILD="20261030212835";
 (function(){var busy=false;async function chk(){if(busy)return;busy=true;try{var r=await fetch("/?v="+Date.now(),{cache:"no-store"});var t=await r.text();var m=t.match(/PEGASE_BUILD="(\d+)"/);if(m&&m[1]!==window.PEGASE_BUILD){if(document.getElementById("pgUpd"))return;var b=document.createElement("div");b.id="pgUpd";b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:3000;background:#1d2b44;color:#fff;border-radius:999px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";b.innerHTML='Nouvelle version de Pégase <button style="border:0;background:#f2c94c;color:#1d2b44;border-radius:999px;padding:7px 14px;font:800 14px system-ui;cursor:pointer">Mettre à jour</button>';b.querySelector("button").onclick=function(){location.reload()};document.body.appendChild(b)}}catch(e){}busy=false}
 document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});window.addEventListener("focus",chk);setInterval(chk,120000);setTimeout(chk,15000)})();
 </script>
