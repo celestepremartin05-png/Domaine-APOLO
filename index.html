@@ -2785,7 +2785,7 @@ function viewAdmin(){
     const F=S.factures||{};const tot=factList().length;
     h+='<p class="muted" style="margin:0 0 12px">Chaque activité payante peut avoir sa facture. Le numéro est donné automatiquement (F-'+today().slice(0,4)+'-001, 002…) et ne change plus. '+tot+' facture'+(tot>1?"s":"")+' émise'+(tot>1?"s":"")+'.</p>';
     h+=rows.length?'<div class="list">'+rows.map(a=>{const tot=revenueOfAgenda(a),enc=encaisseOf(a);const f=F[a._id];const cl=(a.client&&a.client.nom)||((a.resas||[])[0]||{}).nom||"—";
-      return '<div class="item fact"><span class="bar" style="background:'+tCol(tyOf(a))+'"></span><span style="min-width:0"><button class="linkbtn" data-item="agenda" data-id="'+esc(a._id)+'">'+esc(cl)+'</button><span class="sub">'+esc(tLab(tyOf(a)))+' · '+fmtDate(a.date)+'</span></span><span class="fact-r"><b>'+tot.toLocaleString("fr-FR")+' DH</b>'+(enc>=tot?'<span class="chip ok">Payé</span>':enc>0?'<span class="chip warn">Acompte '+enc.toLocaleString("fr-FR")+'</span>':'<span class="chip bad">À encaisser</span>')+(f?'<button class="btn small" data-fact="'+esc(a._id)+'">📄 '+esc(f.numero)+'</button>':'<button class="btn small primary" data-fact="'+esc(a._id)+'">Créer la facture</button>')+'</span></div>'}).join("")+'</div>':'<div class="empty">Aucune activité payante pour l\'instant.</div>';
+      return '<div class="item fact"><span class="bar" style="background:'+tCol(tyOf(a))+'"></span><span style="min-width:0"><button class="linkbtn" data-item="agenda" data-id="'+esc(a._id)+'">'+esc(cl)+'</button><span class="sub">'+esc(tLab(tyOf(a)))+' · '+fmtDate(a.date)+'</span></span><span class="fact-r"><b>'+tot.toLocaleString("fr-FR")+' DH</b>'+(enc>=tot?'<span class="chip ok">Payé</span>':enc>0?'<span class="chip warn">Acompte '+enc.toLocaleString("fr-FR")+'</span>':'<span class="chip bad">À encaisser</span>')+(f?'<button class="btn small" data-fact="'+esc(a._id)+'">📄 '+esc(f.numero)+'</button><button class="btn small ghost" data-factdel="'+esc(a._id)+'" title="Annuler cette facture" aria-label="Annuler la facture">✕</button>':'<button class="btn small primary" data-fact="'+esc(a._id)+'">Créer la facture</button>')+'</span></div>'}).join("")+'</div>':'<div class="empty">Aucune activité payante pour l\'instant.</div>';
   }
   if(t==="devis"){
     const rows=agendaList().filter(a=>a.statut!=="annule"&&(a.devis||[]).length||(a.statut==="option"&&revenueOfAgenda(a)>0)).sort((a,b)=>(a.date||"").localeCompare(b.date||""));
@@ -2799,8 +2799,9 @@ function viewAdmin(){
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-adtab]");if(b){S.adtab=b.dataset.adtab;render();return}
   const dv=e.target.closest("[data-devis-of]");if(dv){const a=S.agenda[dv.dataset.devisOf];if(a)devisPDF(a,dv.dataset.devisOf);return}
+  const fd=e.target.closest("[data-factdel]");if(fd){const id=fd.dataset.factdel;const f=(S.factures||{})[id];if(!f)return;const old={...f};delete S.factures[id];render();if(await del("factures/"+id))toastUndo("Facture "+old.numero+" annulée",async()=>{S.factures[id]=old;render();await write("factures/"+id,old)});return}
   const fb=e.target.closest("[data-fact]");if(fb){const id=fb.dataset.fact;const a=S.agenda[id];if(!a)return;let f=(S.factures||{})[id];
-    if(!f){f={numero:nextFactNo(),date:today(),agendaId:id,client:(a.client&&a.client.nom)||"",montant:revenueOfAgenda(a),cree:new Date().toISOString()};if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;render();toast("Facture "+f.numero+" créée")}
+    if(!f){f={numero:nextFactNo(),date:today(),agendaId:id,client:(a.client&&a.client.nom)||"",montant:revenueOfAgenda(a),cree:new Date().toISOString()};if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;render();const ff=f;toastUndo("Facture "+f.numero+" créée",async()=>{delete S.factures[id];render();await del("factures/"+id)})}
     facturePDF(a,f);return}
 });
 async function facturePDF(ev,f){
