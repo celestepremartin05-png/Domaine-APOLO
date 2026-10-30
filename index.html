@@ -985,6 +985,7 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .docsbox{border:1px solid #e3d3a8;background:#fffaf0;border-radius:12px;padding:10px 12px;margin:0 0 14px}
 .docs-l{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.doc-chip{border:1px solid #e3d3a8;background:#fff;border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}.doc-chip.fac{border-color:#9fd6b5;background:#f2faf5}
 .doc-ch{max-height:85vh;overflow:auto}.doc-cl{display:grid;gap:6px}.doc-cl .check{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px}.doc-cl .check input{width:20px;height:20px}
+.mm.dup{gap:10px}.mm.dup input,.mm.dup select{height:42px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;background:var(--bg);color:inherit;width:100%;box-sizing:border-box}
 </style>
 
 <div class="wrap">
@@ -1932,7 +1933,7 @@ function viewEvent(){
   if(k!=="rdv"&&k!=="autre"&&k!=="cours")h+='<div class="grid2"><fieldset class="fs"><legend>Organisation</legend>'+(cl.length?'<div class="progress"><span style="width:'+(done/cl.length*100)+'%"></span></div><span class="muted" style="font-size:13px">'+done+' sur '+cl.length+' fait</span>':"")+'<div class="checks">'+cl.map((x,i)=>'<div class="check'+(x.done?" done":"")+'"><input type="checkbox" data-k="checklist.'+i+'.done"'+(x.done?" checked":"")+(ed?"":" disabled")+' aria-label="Fait"><input type="text" data-k="checklist.'+i+'.txt" value="'+esc(x.txt)+'"'+(ed?"":" disabled")+'>'+(ed?'<button class="btn small ghost" data-rm="checklist.'+i+'" aria-label="Retirer">✕</button>':"")+'</div>').join("")+'</div>'+(ed?'<div><button class="btn small" data-add="checklist">+ Ajouter une tâche</button></div>':"")+'</fieldset>'+
     (k==="evenement"?'<fieldset class="fs"><legend>Contacts et prestataires</legend><div class="checks">'+(ev.contacts||[]).map((c,i)=>'<div class="fs" style="padding:10px;gap:6px;background:var(--bg)"><div class="grid3">'+F("Rôle","contacts."+i+".role",{ph:"Traiteur, DJ, photographe…"})+F("Nom","contacts."+i+".nom")+F("Téléphone","contacts."+i+".tel",{type:"tel"})+'</div>'+(ed?'<div><button class="btn small ghost danger" data-rm="contacts.'+i+'">Retirer ce contact</button></div>':"")+'</div>').join("")+'</div>'+((ev.contacts||[]).length?"":'<span class="muted" style="font-size:14px">Aucun contact ajouté.</span>')+(ed?'<div><button class="btn small" data-add="contacts">+ Ajouter un contact</button></div>':"")+'</fieldset>':"<span></span>")+'</div>';
   h+='<fieldset class="fs"><legend>Notes</legend>'+F("","notes",{area:true,full:true,ph:"Déroulé, demandes particulières, allergies…"})+'</fieldset>';
-  if(ed)h+='<div class="sticky-save"><button class="btn primary" id="evSave">'+(isNew?"Créer":"Enregistrer")+'</button><button class="btn" data-back="'+back+'" data-discard>'+(S.dirty?"Annuler les modifications":"Fermer")+'</button><span class="muted" style="font-size:13px" id="dirtyHint">'+(S.dirty?"Modifications non enregistrées":"")+'</span><span class="spacer"></span>'+(!isNew?(S.confirmDel?'<span class="muted" style="font-size:13px">Supprimer définitivement ?</span><button class="btn small danger" id="evDelYes">Oui</button><button class="btn small" id="evDelNo">Non</button>':'<button class="btn small danger" id="evDel">Supprimer</button>'):"")+'</div>';
+  if(ed)h+='<div class="sticky-save"><button class="btn primary" id="evSave">'+(isNew?"Créer":"Enregistrer")+'</button><button class="btn" data-back="'+back+'" data-discard>'+(S.dirty?"Annuler les modifications":"Fermer")+'</button><span class="muted" style="font-size:13px" id="dirtyHint">'+(S.dirty?"Modifications non enregistrées":"")+'</span><span class="spacer"></span>'+(!isNew?(S.confirmDel?'<span class="muted" style="font-size:13px">Supprimer définitivement ?</span><button class="btn small danger" id="evDelYes">Oui</button><button class="btn small" id="evDelNo">Non</button>':'<button class="btn small" data-evdup>📄 Dupliquer</button><button class="btn small danger" id="evDel">Supprimer</button>'):"")+'</div>';
   return h+'</div>';
 }
 function recalcExperience(d){const f=formulesOf(tyOf(d)).find(x=>x.nom===d.formule);const base=f?num(f.prix):0;const sp=num((d.spect||{}).nb)*num((d.spect||{}).prix);if(f||sp)d.paiement.total=base+sp}
@@ -3306,6 +3307,26 @@ function openDocChooser(kind,key,pid){const C=docCandidates(key,pid);const r=doc
 document.addEventListener("click",e=>{const b=e.target.closest("[data-mkdoc]");if(b){e.preventDefault();const [k,key,pid]=b.dataset.mkdoc.split("|");openDocChooser(k,key,pid);return}
   const o=e.target.closest(".docsbox [data-factopen]");if(o&&S.open){S.open=null;$("#drawerRoot").innerHTML=""}},true);
 document.addEventListener("toggle",e=>{if(e.target.id==="cFactBox")S.cFactOpen=e.target.open},true);
+
+/* ===== v58 : dupliquer un rendez-vous / cours ===== */
+function evCopy(src,date){const n=clone(src);const delta=Math.round((parse(date)-parse(src.date))/864e5);n.date=date;if(src.dateFin){const d=parse(src.dateFin);d.setDate(d.getDate()+delta);n.dateFin=iso(d)}
+  n.paiement={...(src.paiement||{}),acompteRecu:false,soldeRecu:false};n.resas=(src.resas||[]).map(r=>({...r,paye:false}));if(n.statut==="termine")n.statut="confirme";n.prospectId="";delete n.seanceFaite;n.updatedAt=new Date().toISOString();n.dupDe=S.route&&S.route.id||"";return n}
+function openDupDialog(){if(!S.draft||!S.route)return;const src=clone(S.draft);const nx=addDays(7,src.date||today());
+  const r=document.createElement("div");r.className="mm-ov";
+  r.innerHTML='<div class="mm dup" role="dialog" aria-label="Dupliquer"><b class="mm-t">Dupliquer « '+esc(src.titre||tLab(tyOf(src)))+' »</b><label class="f">Date de la copie<input type="date" id="dupDate" value="'+nx+'"></label><div class="quick"><button type="button" class="btn small" data-dupq="0">Même jour</button><button type="button" class="btn small" data-dupq="1">Le lendemain</button><button type="button" class="btn small" data-dupq="7">Semaine suivante</button></div>'+
+   '<div class="grid"><label class="f">Combien de copies ?<input type="number" id="dupN" min="1" max="52" value="1"></label><label class="f">Une copie tous les<select id="dupStep"><option value="7">7 jours (chaque semaine)</option><option value="14">14 jours</option><option value="1">jours</option></select></label></div>'+
+   '<p class="muted" style="margin:0;font-size:12.5px">La copie garde l\'heure, le client, les chevaux, le prix et les notes. Les paiements repartent à zéro.</p><div class="row" style="gap:8px"><button type="button" class="btn primary" data-dupgo>📄 Dupliquer</button><button type="button" class="btn" data-dupno>Annuler</button></div></div>';
+  document.body.appendChild(r);
+  r.addEventListener("click",async e=>{if(e.target===r||e.target.closest("[data-dupno]")){r.remove();return}
+    const q=e.target.closest("[data-dupq]");if(q){r.querySelector("#dupDate").value=addDays(Number(q.dataset.dupq),src.date||today());return}
+    if(!e.target.closest("[data-dupgo]"))return;const d0=r.querySelector("#dupDate").value;if(!d0){toast("Choisissez une date");return}
+    const N=Math.max(1,Math.min(52,num(r.querySelector("#dupN").value)||1)),st=num(r.querySelector("#dupStep").value)||7;r.remove();
+    const ids=[];for(let i=0;i<N;i++){const dt=addDays(i*st,d0);const id=newId("ev");const doc=evCopy(src,dt);if(await write("agenda/"+id,doc)){S.agenda[id]=doc;ids.push(id)}}
+    if(!ids.length){toast("Pas dupliqué, réessayez");return}
+    const tab=S.tab;go.force=true;if(N===1)go(tab,{page:"event",id:ids[0]});else{S.calCursor=d0;go(tab)}
+    toastUndo(N===1?"Copie créée le "+fmtDate(d0):N+" copies créées",async()=>{for(const id of ids){delete S.agenda[id];await del("agenda/"+id)}if(S.route&&ids.includes(S.route.id)){go.force=true;go(tab)}else render()})});
+}
+document.addEventListener("click",e=>{if(e.target.closest("[data-evdup]")){e.preventDefault();openDupDialog()}});
 
 /* ================= rendu ================= */
 function render(){
