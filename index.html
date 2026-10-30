@@ -1696,6 +1696,7 @@ function readForm(){
   const fp=document.getElementById("f_paye");if(fp){if(fp.checked){d.besoin.recu=String(num(d.montant)||"");d.besoin.paye="oui";d.paye=true;if(d.statut!=="perdu")d.statut="reserve"}else if(d.besoin.paye==="oui"||d.paye){d.besoin.recu="";d.besoin.paye="non";d.paye=false}}
 }
 async function saveProspect(){
+  const oldKeyP=S.open&&S.open!=="new"&&S.pub[S.open]?ckey(S.pub[S.open].nom,(S.priv[S.open]||{}).telephone):"";
   readForm();const d=draft;
   if(d.prochaine&&d.prochaine.date&&!String(d.prochaine.texte||"").trim()&&!(d.__call&&d.__rep==="non")){toast("Écrivez pourquoi vous devez la/le relancer");const t=$("#f_atxt");if(t){t.scrollIntoView({block:"center"});t.focus();t.classList.add("need")}return null}
   if(!d.nom&&!d.telephone){toast("Indiquez au moins un nom ou un téléphone");return null}
@@ -1721,6 +1722,8 @@ async function saveProspect(){
   const priv={genre:d.genre||"",motif:String(d.motif||"").trim(),aEnvoyer:d.aEnvoyer&&(d.aEnvoyer.on||d.aEnvoyer.texte)?{on:!!d.aEnvoyer.on,texte:String(d.aEnvoyer.texte||"").trim(),depuis:d.aEnvoyer.depuis||""}:null,appels:d.appels||[],email:d.email||"",telephone:d.telephone,prenom:d.prenom||"",nomFam:d.nomFam||"",agence:d.agence||"",estAgence:!!d.estAgence,instagram:d.instagram||"",besoin:d.besoin,notes:d.notes,prochaine:d.prochaine,historique:d.historique};
   if(!(await write("prospects/"+id,pub)))return null;
   if(!(await write("prive/"+id,priv)))return null;
+  S.pub[id]=pub;S.priv[id]=priv;
+  if(oldKeyP){try{await propagatePerson(oldKeyP,{nom:d.nom,tel:d.telephone,email:d.email},{skipP:id})}catch(_){}}
   return {id,pub,priv};
 }
 document.addEventListener("click",async e=>{
@@ -2222,7 +2225,9 @@ function viewClient(){if(S.clEditRoute!==S.route.id){S.clEdit="";S.clEditRoute=S
 async function saveClient(btn,silent){const d=S.draft;if(!String(d.nom||"").trim()&&!String(d.tel||"").trim()){toast("Indiquez au moins un nom ou un téléphone");return null}
   const key=S.route.id||ckey(d.nom,d.tel);if(!key){toast("Nom invalide");return null}if(btn)btn.disabled=true;
   const doc={...((S.clientsDb||{})[key]||{}),updatedAt:new Date().toISOString(),tags:d.tags||[],interets:d.interets||[],suivi:d.suivi||[],achats:(d.achats||[]).filter(a=>num(a.montant)||a.offre),fact:{...(d.fact||{})}};CFIELDS.forEach(f=>doc[f]=typeof d[f]==="string"?d[f].trim():(d[f]||""));
-  if(await write("clients/"+key,doc)){S.clientsDb[key]=doc;S.dirty=false;S.touched=false;if(!silent){S.ctab="clients";go.force=true;go("clients");toast("Client enregistré")}return key}if(btn)btn.disabled=false;return null}
+  if(await write("clients/"+key,doc)){S.clientsDb[key]=doc;S.dirty=false;S.touched=false;
+    try{const nk=await propagatePerson(key,{nom:doc.nom,tel:doc.tel,email:doc.email},{client:false});if(nk!==key&&S.route&&S.route.page==="client"&&S.route.id===key){S.route.id=nk;S.clEditRoute=nk}}catch(_){}
+    if(!silent){S.ctab="clients";go.force=true;go("clients");toast("Client enregistré · mis à jour partout")}return key}if(btn)btn.disabled=false;return null}
 document.addEventListener("click",async e=>{const t=e.target;if(!S.route||S.route.page!=="client"||!S.draft)return;
   if(t.id==="clSave"){saveClient(t);return}
   const ci=t.closest("[data-cint]");if(ci){const v=ci.dataset.cint;const a=S.draft.interets||[];S.draft.interets=a.includes(v)?a.filter(x=>x!==v):a.concat(v);markDirty();render();return}
@@ -3330,6 +3335,26 @@ function openDupDialog(){if(!S.draft||!S.route)return;const src=clone(S.draft);c
 }
 document.addEventListener("click",e=>{if(e.target.closest("[data-evdup]")){e.preventDefault();openDupDialog()}});
 
+/* ===== v59 : une même personne = mêmes infos partout (prospects, clients, administration) ===== */
+async function propagatePerson(oldKey,v,opts){opts=opts||{};if(!oldKey)return oldKey;const nom=String(v.nom||"").trim(),tel=String(v.tel||"").trim(),email=String(v.email||"").trim();const now=new Date().toISOString();
+  // prospects
+  if(canProspects())for(const id of Object.keys(S.pub||{})){if(id===opts.skipP)continue;const P=S.pub[id],V=S.priv[id]||{};if(ckey(P.nom,V.telephone)!==oldKey)continue;
+    if(!P.agence&&nom&&P.nom!==nom){const np={...P,nom,updatedAt:now};S.pub[id]=np;await write("prospects/"+id,np)}
+    const pp=nom.split(/\s+/);const nv={...V};let ch=false;if(tel&&V.telephone!==tel){nv.telephone=tel;ch=true}if(email&&V.email!==email){nv.email=email;ch=true}if(!P.agence&&nom&&((V.prenom||"")+" "+(V.nomFam||"")).trim()!==nom){nv.prenom=pp[0]||"";nv.nomFam=pp.slice(1).join(" ");ch=true}
+    if(ch){S.priv[id]=nv;await write("prive/"+id,nv)}}
+  // activités du calendrier
+  for(const id of Object.keys(S.agenda||{})){const a=S.agenda[id];const c=a.client||{};if(!c.nom||ckey(c.nom,c.tel)!==oldKey)continue;const nc={...c,nom:nom||c.nom,tel:tel||c.tel,email:email||c.email};if(nc.nom!==c.nom||nc.tel!==c.tel||nc.email!==c.email){const na={...a,client:nc,updatedAt:now};S.agenda[id]=na;await write("agenda/"+id,na)}}
+  // élèves
+  for(const id of Object.keys(S.eleves||{})){const e=S.eleves[id];if(ckey(e.nom,e.tel)!==oldKey)continue;const ne={...e,nom:nom||e.nom,tel:tel||e.tel};if(ne.nom!==e.nom||ne.tel!==e.tel){S.eleves[id]=ne;await write("eleves/"+id,ne)}}
+  // fiche client
+  if(opts.client!==false&&S.clientsDb[oldKey]){const C=S.clientsDb[oldKey];const nC={...C,nom:nom||C.nom,tel:tel||C.tel,email:email||C.email};if(nC.nom!==C.nom||nC.tel!==C.tel||nC.email!==C.email){S.clientsDb[oldKey]=nC;await write("clients/"+oldKey,nC)}}
+  // changement de clé (nouveau téléphone ou nouveau nom)
+  const newKey=ckey(nom,tel);
+  if(newKey&&newKey!==oldKey){if(S.clientsDb[oldKey]){const moved={...(S.clientsDb[newKey]||{}),...S.clientsDb[oldKey]};delete moved.fusionVers;S.clientsDb[newKey]=moved;await write("clients/"+newKey,moved);delete S.clientsDb[oldKey];await del("clients/"+oldKey)}
+    for(const id of Object.keys(S.factures||{})){const f=S.factures[id];if(f.clientKey===oldKey){const nf={...f,clientKey:newKey};S.factures[id]=nf;await write("factures/"+id,nf)}}
+    return newKey}
+  return oldKey}
+
 /* ================= rendu ================= */
 function render(){
   $("#todayLabel").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -3383,7 +3408,7 @@ window.__pegaseBoot=boot;
 </script>
 
 <script>
-window.PEGASE_BUILD="20261030185047";
+window.PEGASE_BUILD="20261030190035";
 (function(){var busy=false;async function chk(){if(busy)return;busy=true;try{var r=await fetch("/?v="+Date.now(),{cache:"no-store"});var t=await r.text();var m=t.match(/PEGASE_BUILD="(\d+)"/);if(m&&m[1]!==window.PEGASE_BUILD){if(document.getElementById("pgUpd"))return;var b=document.createElement("div");b.id="pgUpd";b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:3000;background:#1d2b44;color:#fff;border-radius:999px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";b.innerHTML='Nouvelle version de Pégase <button style="border:0;background:#f2c94c;color:#1d2b44;border-radius:999px;padding:7px 14px;font:800 14px system-ui;cursor:pointer">Mettre à jour</button>';b.querySelector("button").onclick=function(){location.reload()};document.body.appendChild(b)}}catch(e){}busy=false}
 document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});window.addEventListener("focus",chk);setInterval(chk,120000);setTimeout(chk,15000)})();
 </script>
