@@ -991,6 +991,10 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 label.pnotes{margin-top:10px;font-weight:700}
 .pn-from{background:#f5f9fe;border:1px solid #cfe0f5;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:14px}.pn-from small{font-weight:800;color:#2a78d6;text-transform:uppercase;font-size:11px;letter-spacing:.05em}.pn-from p{margin:4px 0}
 .fact-miss{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:#fdecec;border:1px solid #f3c2c2;color:#7a1f1f;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:14px}
+.codes .code-l{display:grid;gap:8px;margin-bottom:10px}.code-i{display:grid;gap:4px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;position:relative;background:var(--surface)}
+.code-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}.code-f small{min-width:78px;color:var(--muted);font-weight:700;font-size:12px}.code-v{font-family:ui-monospace,monospace;letter-spacing:.04em}
+.code-a{position:absolute;top:6px;right:6px;display:flex;gap:2px}
+.code-add{display:grid;grid-template-columns:1fr 1fr;gap:8px}.code-add input{height:42px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;background:var(--bg);color:inherit;min-width:0}
 </style>
 
 <div class="wrap">
@@ -2294,7 +2298,7 @@ function viewReglages(){
   let h='<div class="page"><p class="muted" style="margin:0">Ces informations servent aux devis, aux rapports et aux messages envoyés aux clients. Cette page n\'est visible que par vous.</p>';
   h+='<div class="grid2"><fieldset class="fs"><legend>Le domaine</legend><div class="grid">'+F("Nom","domaine")+F("Adresse","adresse")+F("Téléphone","tel",{type:"tel"})+F("E-mail","email",{type:"email"})+F("Site internet","site",{full:true})+F("ICE","ice")+F("RC","rc")+F("IF","if_")+'</div></fieldset>'+
     '<fieldset class="fs"><legend>Coordonnées bancaires (RIB)</legend><div class="grid">'+F("Titulaire du compte","titulaire")+F("Banque","banque")+F("RIB","rib",{full:true,ph:"24 chiffres"})+F("SWIFT / BIC","swift")+'</div></fieldset></div>';
-  h+='<div class="grid2">'+'<fieldset class="fs"><legend>Devis et objectifs</legend><div class="grid">'+F("Acompte demandé (%)","acomptePct",{type:"number"})+F("Validité du devis (jours)","validite",{type:"number"})+F("Objectif de chiffre par mois (DH)","objectif",{type:"number",ph:"Ex. 60000"})+F("Lien pour laisser un avis","avis",{ph:"Ex. lien Google Maps"})+'</div>'+F("Conditions","conditions",{area:true,full:true})+'</fieldset>'+monPctBox()+'</div>';
+  h+='<div class="grid2">'+'<fieldset class="fs"><legend>Devis et objectifs</legend><div class="grid">'+F("Acompte demandé (%)","acomptePct",{type:"number"})+F("Validité du devis (jours)","validite",{type:"number"})+F("Objectif de chiffre par mois (DH)","objectif",{type:"number",ph:"Ex. 60000"})+F("Lien pour laisser un avis","avis",{ph:"Ex. lien Google Maps"})+'</div>'+F("Conditions","conditions",{area:true,full:true})+'</fieldset>'+monPctBox()+'</div>'+codesBox();
   h+='<fieldset class="fs"><legend>Sauvegarde et import</legend><div class="row"><button class="btn" data-export>⬇ Exporter toutes les données (Excel)</button>'+(canProspects()?'<label class="btn" for="impIn2" style="cursor:pointer">⬆ Importer des demandes du site (Excel ou CSV)</label><input type="file" id="impIn2" accept=".csv,.xlsx,.xls" hidden>':"")+'</div><span class="muted" style="font-size:13px">Pensez à exporter une sauvegarde une fois par mois. Le fichier contient les prospects, l\'agenda, les clients, les élèves, le personnel, les dépenses et les chevaux.</span></fieldset>';
   if(ed)h+='<div class="sticky-save"><button class="btn primary" id="rgSave">Enregistrer les réglages</button><span class="muted" style="font-size:13px" id="dirtyHint">'+(S.dirty?"Modifications non enregistrées":"")+'</span></div>';
   return h+'</div>';
@@ -3403,6 +3407,21 @@ async function clRunPending(){const P=S.clPending;if(!P)return;S.clPending=null;
   if(!(S.route&&S.route.page==="client"))render()}
 let clPT=null;function clWatchPending(){clearInterval(clPT);clPT=setInterval(()=>{const P=S.clPending;if(!P){clearInterval(clPT);return}if(!(S.route&&S.route.page==="client"&&S.route.id===P.key)){clearInterval(clPT);clRunPending()}},1200)}
 
+/* ===== v64 : mes codes (Instagram, etc.) — privé ===== */
+function myCodes(){return ((S.priv&&S.priv._codes)||{}).items||[]}
+async function saveCodes(items){const d={items,updatedAt:new Date().toISOString()};S.priv._codes=d;return await write("prive/_codes",d)}
+function codesBox(){if(!canProspects())return "";const L=myCodes();const sh=S.codesShow||{};
+  return '<fieldset class="fs codes"><legend>🔐 Mes codes</legend><p class="muted" style="margin:0 0 8px;font-size:13px">Vos identifiants et mots de passe : Instagram, Facebook, banque, Wi-Fi, site… Visibles par vous seule, Catherine ne les voit pas.</p>'+
+   (L.length?'<div class="code-l">'+L.map(c=>'<div class="code-i"><b>'+esc(c.service||"Sans nom")+'</b>'+(c.ident?'<span class="code-f"><small>Identifiant</small><span>'+esc(c.ident)+'</span><button type="button" class="btn small ghost" data-copy="'+esc(c.ident)+'">Copier</button></span>':"")+(c.code?'<span class="code-f"><small>Code</small><span class="code-v">'+(sh[c.id]?esc(c.code):"••••••••")+'</span><button type="button" class="btn small ghost" data-codeshow="'+esc(c.id)+'">'+(sh[c.id]?"Cacher":"Voir")+'</button><button type="button" class="btn small ghost" data-copy="'+esc(c.code)+'">Copier</button></span>':"")+(c.note?'<span class="muted" style="font-size:13px">'+esc(c.note)+'</span>':"")+'<span class="code-a"><button type="button" class="btn small ghost" data-codeedit="'+esc(c.id)+'">✏️</button><button type="button" class="btn small ghost" data-codedel="'+esc(c.id)+'" aria-label="Supprimer">✕</button></span></div>').join("")+'</div>':"")+
+   (()=>{const e=S.codeEdit?L.find(x=>x.id===S.codeEdit)||{}:{};return '<div class="code-add"><input id="cdS" placeholder="Service : Instagram, banque, Wi-Fi…" value="'+esc(e.service||"")+'"><input id="cdI" placeholder="Identifiant ou e-mail" value="'+esc(e.ident||"")+'" autocomplete="off"><input id="cdC" placeholder="Mot de passe ou code" value="'+esc(e.code||"")+'" autocomplete="off"><input id="cdN" placeholder="Note" value="'+esc(e.note||"")+'"><button type="button" class="btn primary" data-codesave>'+(S.codeEdit?"Enregistrer":"+ Ajouter")+'</button>'+(S.codeEdit?'<button type="button" class="btn" data-codecancel>Annuler</button>':"")+'</div>'})()+'</fieldset>'}
+document.addEventListener("click",async e=>{const t=e.target;
+  const sh=t.closest("[data-codeshow]");if(sh){S.codesShow=S.codesShow||{};S.codesShow[sh.dataset.codeshow]=!S.codesShow[sh.dataset.codeshow];render();return}
+  const ed=t.closest("[data-codeedit]");if(ed){S.codeEdit=ed.dataset.codeedit;render();const f=$("#cdS");if(f)f.focus();return}
+  if(t.closest("[data-codecancel]")){S.codeEdit=null;render();return}
+  const dl=t.closest("[data-codedel]");if(dl){const before=myCodes().slice();if(await saveCodes(before.filter(x=>x.id!==dl.dataset.codedel))){render();toastUndo("Supprimé",async()=>{await saveCodes(before);render()})}return}
+  if(t.closest("[data-codesave]")){const g=i=>String(($("#"+i)||{}).value||"").trim();const v={service:g("cdS"),ident:g("cdI"),code:g("cdC"),note:g("cdN")};if(!v.service&&!v.ident&&!v.code){toast("Remplissez au moins le service");return}
+    const L=myCodes();const n=S.codeEdit?L.map(x=>x.id===S.codeEdit?{...x,...v}:x):L.concat({id:newId("cd"),...v});S.codeEdit=null;if(await saveCodes(n)){toast("Enregistré");render()}}});
+
 /* ================= rendu ================= */
 function render(){
   $("#todayLabel").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
@@ -3457,7 +3476,7 @@ window.__pegaseBoot=boot;
 </script>
 
 <script>
-window.PEGASE_BUILD="20261030212835";
+window.PEGASE_BUILD="20261031095520";
 (function(){var busy=false;async function chk(){if(busy)return;busy=true;try{var r=await fetch("/?v="+Date.now(),{cache:"no-store"});var t=await r.text();var m=t.match(/PEGASE_BUILD="(\d+)"/);if(m&&m[1]!==window.PEGASE_BUILD){if(document.getElementById("pgUpd"))return;var b=document.createElement("div");b.id="pgUpd";b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:3000;background:#1d2b44;color:#fff;border-radius:999px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";b.innerHTML='Nouvelle version de Pégase <button style="border:0;background:#f2c94c;color:#1d2b44;border-radius:999px;padding:7px 14px;font:800 14px system-ui;cursor:pointer">Mettre à jour</button>';b.querySelector("button").onclick=function(){location.reload()};document.body.appendChild(b)}}catch(e){}busy=false}
 document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});window.addEventListener("focus",chk);setInterval(chk,120000);setTimeout(chk,15000)})();
 </script>
