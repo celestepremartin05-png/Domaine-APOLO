@@ -3316,8 +3316,8 @@ function fxSave(){clearTimeout(fxT);const sv=$("#fxSaved");if(sv)sv.textContent=
 function fxPrev(){const p=$("#fxPrev");if(p&&S.fdraft)p.innerHTML=factHtml(S.fdraft);const L=document.querySelectorAll(".fx-l .fx-lt");(S.fdraft.lignes||[]).forEach((l,i)=>{if(L[i])L[i].textContent=fmt2((l.qte===""?1:num(l.qte))*num(l.pu))})}
 let feT=null;
 document.addEventListener("input",e=>{const t=e.target;if(!t.dataset)return;
-  if(t.dataset.ff&&S.fdraft){let v=t.type==="checkbox"?t.checked:t.value;if(t.dataset.ff==="tva")v=num(v);setP(S.fdraft,t.dataset.ff,v);if(S.fdraft.clientKey&&/^client\./.test(t.dataset.ff))clientFactWrite(S.fdraft.clientKey,t.dataset.ff.slice(7),v);
-    const lm=t.dataset.ff.match(/^lignes\.(\d+)\.(qte|pu)$/);if(lm){const l=S.fdraft.lignes[Number(lm[1])];if(l&&l.ref&&!S.fdraft.fige){refWriteLater(l)}else{if(l)l.ref=null;S.fdraft.linesManual=true}}fxPrev();fxSave();return}
+  if(t.dataset.ff&&S.fdraft){let v=t.type==="checkbox"?t.checked:t.value;if(t.dataset.ff==="tva")v=num(v);setP(S.fdraft,t.dataset.ff,v);if(/^client\./.test(t.dataset.ff))S.fdraft.clientMan={...(S.fdraft.clientMan||{}),[t.dataset.ff.slice(7)]:1};
+    const lm=t.dataset.ff.match(/^lignes\.(\d+)\.(qte|pu)$/);if(lm){const l=S.fdraft.lignes[Number(lm[1])];if(l)l.ref=null;S.fdraft.linesManual=true}fxPrev();fxSave();return}
   if(t.dataset.fe){const k=t.dataset.fe;S.reglages={...(S.reglages||{}),[k]:t.value};fxPrev();clearTimeout(feT);feT=setTimeout(()=>write("reglages/infos",{...(S.reglages||{})}),600)}});
 document.addEventListener("change",e=>{const t=e.target;if(t.dataset&&(t.dataset.ff==="tva"||t.dataset.ff==="acquittee"||t.dataset.ff==="fige")&&S.fdraft){if(t.dataset.ff==="fige"&&!t.checked){S.fdraft.fige=false;S.fdraft=linesSync(S.fdraft);fxSave()}setP(S.fdraft,t.dataset.ff,t.type==="checkbox"?t.checked:num(t.value));render()}});
 document.addEventListener("click",e=>{const g=e.target.closest("[data-goclient]");if(g){go("clients",{page:"client",id:g.dataset.goclient})}});
@@ -3382,7 +3382,7 @@ function viewFacture(){const id=S.route.id;const f=(S.factures||{})[id];if(!f)re
     '<details class="fxmore"><summary class="btn small" aria-label="Plus">⋯</summary><div class="fxpop">'+
       (dev&&ed?(d.factureId&&S.factures[d.factureId]?'<button class="btn" data-factopen="'+esc(d.factureId)+'">📄 Voir la facture</button>':'<button class="btn" data-dev2fact>➡️ Transformer en facture</button>'):"")+
       (dev?"":'<label class="check"><input type="checkbox" data-ff="acquittee"'+(d.acquittee?" checked":"")+dis+'> Facture payée (mention acquittée)</label>')+
-      '<label class="check"><input type="checkbox" data-ff="fige"'+(d.fige?" checked":"")+dis+'> 🔒 Envoyé : ne plus relier les prix</label>'+
+      '<label class="check"><input type="checkbox" data-ff="fige"'+(d.fige?" checked":"")+dis+'> 🔒 Figer : ne plus reprendre les prix de la fiche</label>'+
       '<div class="grid" style="grid-template-columns:1fr 1fr;gap:8px"><label class="f">Couleur<input type="color" '+em("couleur")+' value="'+esc(fxCol(E))+'"'+dis+' style="height:38px;padding:2px"></label><label class="f">TVA par défaut<select '+em("tvaDef")+dis+'>'+[["20","20 %"],["14","14 %"],["10","10 %"],["7","7 %"],["0","Sans"]].map(([v,l])=>'<option value="'+v+'"'+(String(num(E.tvaDef))===v?" selected":"")+'>'+l+'</option>').join("")+'</select></label><label class="f">Acompte (%)<input type="number" '+em("acomptePct")+' value="'+esc(E.acomptePct)+'"'+dis+'></label><label class="f">Devis valable (jours)<input type="number" '+em("validite")+' value="'+esc(E.validite)+'"'+dis+'></label></div>'+
       (ed?'<button class="btn small danger" data-factdel="'+esc(id)+'">'+(dev?"Supprimer ce devis":"Annuler cette facture")+'</button>':"")+
     '</div></details></div>';
@@ -3405,7 +3405,7 @@ function viewFacture(){const id=S.route.id;const f=(S.factures||{})[id];if(!f)re
      KV("Titulaire :",em("titulaire"),E.titulaire,"…")+KV("Banque :",em("banque"),E.banque,"…",{ta:1})+KV("RIB :",em("rib"),E.rib,"…")+KV("IBAN :",em("iban"),E.iban,"…")+KV("BIC :",em("bic"),E.bic,"…")+'</div>'+
      '<div class="fx-sign">'+Ta(em(dev?"signDevis":"signFact"),dev?E.signDevis:E.signFact,"Texte du cadre signature")+(dev?"":(E.cachet?'<div class="fxcachet"><img src="'+esc(E.cachet)+'" alt="Cachet et signature">'+(ed?'<span><label class="linkbtn">Changer<input type="file" id="fxCachetIn" accept="image/*" hidden></label> · <button type="button" class="linkbtn" data-cachetdel>Retirer</button></span>':"")+'</div>':(ed?'<label class="fxadd" style="display:inline-block;margin-top:6px;font-size:12px">+ Ajouter signature / tampon<input type="file" id="fxCachetIn" accept="image/*" hidden></label>':"")))+'</div></div>'+
    Ta(em("mentions"),E.mentions,"Mentions en bas de page (facultatif)")+
-  '</div></div><p class="fxhint">Touchez n\'importe quel texte du document pour le modifier. Les prix changés ici changent aussi sur la fiche client, le prospect et le calendrier.</p>';
+  '</div></div><p class="fxhint">Touchez n\'importe quel texte du document pour le modifier. Ce que vous changez ici ne change que ce document : la fiche client, le prospect et le calendrier restent comme ils sont.</p>';
   setTimeout(fxGrowAll,0);return h}
 const FX_FS=window.CSS&&CSS.supports&&CSS.supports("field-sizing","content");
 function fxGrow(t){if(FX_FS)return;t.style.height="0px";t.style.height=(t.scrollHeight+2)+"px"}
@@ -3447,7 +3447,7 @@ function linesSync(f){if(!f||f.fige)return f;let L=(f.lignes||[]).map(l=>({...l}
   if(!L.some(l=>l.ref)&&!f.linesManual&&(f.clientKey||f.prospectId)){let C=[];try{C=docCandidates(f.clientKey,f.prospectId)}catch(_){C=[]}const used=new Set();L=L.map(l=>{const i=C.findIndex((c,j)=>!used.has(j)&&c.ref&&c.lib===l.lib);if(i<0)return l;used.add(i);return {...l,ref:C[i].ref}})}
   L=L.map(l=>{const v=refVal(l.ref);if(v&&(num(v.qte)!==num(l.qte===""?1:l.qte)||num(v.pu)!==num(l.pu))){ch=true;return {...l,qte:v.qte,pu:v.pu}}return l});
   return ch||L.some((l,i)=>l.ref&&!(f.lignes[i]||{}).ref)?{...f,lignes:L}:f}
-function factSync(f){f=linesSync(f);if(!f||!f.clientKey)return f;const cf=clientFact(f.clientKey);const C={...(f.client||{})};["nom","adresse","ice","if_","rc","patente"].forEach(k=>{if(cf[k])C[k]=cf[k]});return {...f,client:C}}
+function factSync(f){f=linesSync(f);if(!f||!f.clientKey)return f;const cf=clientFact(f.clientKey);const C={...(f.client||{})};["nom","adresse","ice","if_","rc","patente"].forEach(k=>{if(cf[k]&&!(f.clientMan||{})[k])C[k]=cf[k]});return {...f,client:C}}
 let cfT=null;
 function clientFactWrite(key,k,v){const C=S.clientsDb[key]||{};const n={...C,fact:{...(C.fact||{}),[k]:v}};S.clientsDb[key]=n;if(S.draft&&S.route&&S.route.page==="client"&&S.route.id===key)S.draft.fact={...n.fact};clearTimeout(cfT);cfT=setTimeout(()=>write("clients/"+key,S.clientsDb[key]),700)}
 function docsOf(key,pid){return factList().filter(f=>(key&&f.clientKey===key)||(pid&&f.prospectId===pid)).sort((a,b)=>(b.cree||"").localeCompare(a.cree||""))}
