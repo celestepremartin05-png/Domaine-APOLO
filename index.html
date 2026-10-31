@@ -995,6 +995,8 @@ label.pnotes{margin-top:10px;font-weight:700}
 .code-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}.code-f small{min-width:78px;color:var(--muted);font-weight:700;font-size:12px}.code-v{font-family:ui-monospace,monospace;letter-spacing:.04em}
 .code-a{position:absolute;top:6px;right:6px;display:flex;gap:2px}
 .code-add{display:grid;grid-template-columns:1fr 1fr;gap:8px}.code-add input{height:42px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;background:var(--bg);color:inherit;min-width:0}
+.codes>summary{cursor:pointer;font-weight:800;display:flex;gap:8px;align-items:center;list-style:none}.codes>summary::before{content:"▸"}.codes[open]>summary::before{content:"▾"}
+.code-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.code-chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--ink)}.code-chip[aria-pressed="true"]{background:var(--band);border-color:var(--band);color:#fff}
 </style>
 
 <div class="wrap">
@@ -3410,17 +3412,25 @@ let clPT=null;function clWatchPending(){clearInterval(clPT);clPT=setInterval(()=
 /* ===== v64 : mes codes (Instagram, etc.) — privé ===== */
 function myCodes(){return ((S.priv&&S.priv._codes)||{}).items||[]}
 async function saveCodes(items){const d={items,updatedAt:new Date().toISOString()};S.priv._codes=d;return await write("prive/_codes",d)}
-function codesBox(){if(!canProspects())return "";const L=myCodes();const sh=S.codesShow||{};
-  return '<fieldset class="fs codes"><legend>🔐 Mes codes</legend><p class="muted" style="margin:0 0 8px;font-size:13px">Vos identifiants et mots de passe : Instagram, Facebook, banque, Wi-Fi, site… Visibles par vous seule, Catherine ne les voit pas.</p>'+
-   (L.length?'<div class="code-l">'+L.map(c=>'<div class="code-i"><b>'+esc(c.service||"Sans nom")+'</b>'+(c.ident?'<span class="code-f"><small>Identifiant</small><span>'+esc(c.ident)+'</span><button type="button" class="btn small ghost" data-copy="'+esc(c.ident)+'">Copier</button></span>':"")+(c.code?'<span class="code-f"><small>Code</small><span class="code-v">'+(sh[c.id]?esc(c.code):"••••••••")+'</span><button type="button" class="btn small ghost" data-codeshow="'+esc(c.id)+'">'+(sh[c.id]?"Cacher":"Voir")+'</button><button type="button" class="btn small ghost" data-copy="'+esc(c.code)+'">Copier</button></span>':"")+(c.note?'<span class="muted" style="font-size:13px">'+esc(c.note)+'</span>':"")+'<span class="code-a"><button type="button" class="btn small ghost" data-codeedit="'+esc(c.id)+'">✏️</button><button type="button" class="btn small ghost" data-codedel="'+esc(c.id)+'" aria-label="Supprimer">✕</button></span></div>').join("")+'</div>':"")+
-   (()=>{const e=S.codeEdit?L.find(x=>x.id===S.codeEdit)||{}:{};return '<div class="code-add"><input id="cdS" placeholder="Service : Instagram, banque, Wi-Fi…" value="'+esc(e.service||"")+'"><input id="cdI" placeholder="Identifiant ou e-mail" value="'+esc(e.ident||"")+'" autocomplete="off"><input id="cdC" placeholder="Mot de passe ou code" value="'+esc(e.code||"")+'" autocomplete="off"><input id="cdN" placeholder="Note" value="'+esc(e.note||"")+'"><button type="button" class="btn primary" data-codesave>'+(S.codeEdit?"Enregistrer":"+ Ajouter")+'</button>'+(S.codeEdit?'<button type="button" class="btn" data-codecancel>Annuler</button>':"")+'</div>'})()+'</fieldset>'}
+function codesBox(){if(!canProspects())return "";const L=myCodes();const sh=S.codesShow||{};const sel=S.codeSel;const form=S.codeEdit||S.codeAdd;
+  let h='<details class="fs codes" id="codesBox"'+(S.codesOpen?" open":"")+'><summary>🔐 Mes codes <span class="count">'+L.length+'</span><span class="muted" style="font-size:12.5px;font-weight:500">· touchez pour ouvrir</span></summary>';
+  h+='<p class="muted" style="margin:6px 0 8px;font-size:13px">Visibles par vous seule. Touchez un service pour voir son code.</p>';
+  h+=L.length?'<div class="code-chips">'+L.slice().sort((x,y)=>(x.service||"").localeCompare(y.service||"")).map(c=>'<button type="button" class="code-chip" data-codesel="'+esc(c.id)+'" aria-pressed="'+(sel===c.id)+'">'+esc(c.service||"Sans nom")+'</button>').join("")+'</div>':'<p class="muted" style="margin:0 0 8px">Aucun code pour l\'instant.</p>';
+  const c=sel&&L.find(x=>x.id===sel);
+  if(c&&!form)h+='<div class="code-i"><b>'+esc(c.service||"Sans nom")+'</b>'+(c.ident?'<span class="code-f"><small>Identifiant</small><span>'+esc(c.ident)+'</span><button type="button" class="btn small ghost" data-copy="'+esc(c.ident)+'">Copier</button></span>':"")+(c.code?'<span class="code-f"><small>Code</small><span class="code-v">'+(sh[c.id]?esc(c.code):"••••••••")+'</span><button type="button" class="btn small ghost" data-codeshow="'+esc(c.id)+'">'+(sh[c.id]?"Cacher":"Voir")+'</button><button type="button" class="btn small ghost" data-copy="'+esc(c.code)+'">Copier</button></span>':"")+(c.note?'<span class="muted" style="font-size:13px">'+esc(c.note)+'</span>':"")+'<span class="code-a"><button type="button" class="btn small ghost" data-codeedit="'+esc(c.id)+'">✏️</button><button type="button" class="btn small ghost" data-codedel="'+esc(c.id)+'" aria-label="Supprimer">✕</button></span></div>';
+  if(form){const e=S.codeEdit?L.find(x=>x.id===S.codeEdit)||{}:{};h+='<div class="code-add"><input id="cdS" placeholder="Service : Instagram, banque, Wi-Fi…" value="'+esc(e.service||"")+'"><input id="cdI" placeholder="Identifiant ou e-mail" value="'+esc(e.ident||"")+'" autocomplete="off"><input id="cdC" placeholder="Mot de passe ou code" value="'+esc(e.code||"")+'" autocomplete="off"><input id="cdN" placeholder="Note" value="'+esc(e.note||"")+'"><button type="button" class="btn primary" data-codesave>Enregistrer</button><button type="button" class="btn" data-codecancel>Annuler</button></div>'}
+  else h+='<div style="margin-top:8px"><button type="button" class="btn small" data-codeadd>+ Ajouter un code</button></div>';
+  return h+'</details>'}
+document.addEventListener("toggle",e=>{if(e.target.id==="codesBox"){S.codesOpen=e.target.open;if(!e.target.open){S.codesShow={};S.codeSel=null}}},true);
+document.addEventListener("click",e=>{const cs=e.target.closest("[data-codesel]");if(cs){S.codeSel=S.codeSel===cs.dataset.codesel?null:cs.dataset.codesel;S.codesShow={};render();return}
+  if(e.target.closest("[data-codeadd]")){S.codeAdd=true;S.codeEdit=null;render();const f=$("#cdS");if(f)f.focus()}});
 document.addEventListener("click",async e=>{const t=e.target;
   const sh=t.closest("[data-codeshow]");if(sh){S.codesShow=S.codesShow||{};S.codesShow[sh.dataset.codeshow]=!S.codesShow[sh.dataset.codeshow];render();return}
   const ed=t.closest("[data-codeedit]");if(ed){S.codeEdit=ed.dataset.codeedit;render();const f=$("#cdS");if(f)f.focus();return}
-  if(t.closest("[data-codecancel]")){S.codeEdit=null;render();return}
+  if(t.closest("[data-codecancel]")){S.codeEdit=null;S.codeAdd=false;render();return}
   const dl=t.closest("[data-codedel]");if(dl){const before=myCodes().slice();if(await saveCodes(before.filter(x=>x.id!==dl.dataset.codedel))){render();toastUndo("Supprimé",async()=>{await saveCodes(before);render()})}return}
   if(t.closest("[data-codesave]")){const g=i=>String(($("#"+i)||{}).value||"").trim();const v={service:g("cdS"),ident:g("cdI"),code:g("cdC"),note:g("cdN")};if(!v.service&&!v.ident&&!v.code){toast("Remplissez au moins le service");return}
-    const L=myCodes();const n=S.codeEdit?L.map(x=>x.id===S.codeEdit?{...x,...v}:x):L.concat({id:newId("cd"),...v});S.codeEdit=null;if(await saveCodes(n)){toast("Enregistré");render()}}});
+    const L=myCodes();const nid=newId("cd");const n=S.codeEdit?L.map(x=>x.id===S.codeEdit?{...x,...v}:x):L.concat({id:nid,...v});S.codeSel=S.codeEdit||nid;S.codeEdit=null;S.codeAdd=false;if(await saveCodes(n)){toast("Enregistré");render()}}});
 
 /* ================= rendu ================= */
 function render(){
@@ -3476,7 +3486,7 @@ window.__pegaseBoot=boot;
 </script>
 
 <script>
-window.PEGASE_BUILD="20261031095520";
+window.PEGASE_BUILD="20261031145701";
 (function(){var busy=false;async function chk(){if(busy)return;busy=true;try{var r=await fetch("/?v="+Date.now(),{cache:"no-store"});var t=await r.text();var m=t.match(/PEGASE_BUILD="(\d+)"/);if(m&&m[1]!==window.PEGASE_BUILD){if(document.getElementById("pgUpd"))return;var b=document.createElement("div");b.id="pgUpd";b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:3000;background:#1d2b44;color:#fff;border-radius:999px;padding:10px 12px 10px 18px;display:flex;gap:12px;align-items:center;font:600 14px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";b.innerHTML='Nouvelle version de Pégase <button style="border:0;background:#f2c94c;color:#1d2b44;border-radius:999px;padding:7px 14px;font:800 14px system-ui;cursor:pointer">Mettre à jour</button>';b.querySelector("button").onclick=function(){location.reload()};document.body.appendChild(b)}}catch(e){}busy=false}
 document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});window.addEventListener("focus",chk);setInterval(chk,120000);setTimeout(chk,15000)})();
 </script>
