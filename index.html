@@ -3213,7 +3213,10 @@ function emet(w){if(w&&typeof w==="object")w=emetOf(w);const r=reg();const keep=
 const EMET_DKEY={domaine:"domaine",ice:"ice",if_:"if_",rc:"rc",titulaire:"titulaire",banque:"banque",rib:"rib",acomptePct:"acomptePct",validite:"validite"};
 let emT=null;
 function emetSet(w,k,v,now){if(w==="asso")S.reglages={...(S.reglages||{}),asso:{...((S.reglages||{}).asso||{}),[k]:v}};else S.reglages={...(S.reglages||{}),[EMET_DKEY[k]||"f_"+k]:v};clearTimeout(emT);if(now)return write("reglages/infos",{...(S.reglages||{})});emT=setTimeout(()=>write("reglages/infos",{...(S.reglages||{})}),600)}
-function factNew(a,kind,w){w=w==="asso"?"asso":"domaine";const f={kind:kind==="devis"?"devis":"facture",emet:w,numero:kind==="devis"?nextDevNo(w):nextFactNo(w),date:today(),cree:new Date().toISOString(),tva:num(emet(w).tvaDef),delai:kind==="devis"?"avant la prestation":"à réception de facture",client:{nom:"",adresse:"",ice:"",if_:"",rc:"",patente:""},objet:"",datePresta:"",datePrestaFin:"",lignes:[{lib:"",qte:1,pu:""}]};
+/* prestations facturées par l'Association : spectacles et expériences équestres */
+const ASSO_TY=["experiences"];
+function autoEmet(a,pid){const P=pid&&S.pub&&S.pub[pid];if(a)return ASSO_TY.includes(tyOf(a))?"asso":"domaine";if(P)return typesOf(P).some(t=>ASSO_TY.includes(t))||ASSO_TY.includes(ptype(P))?"asso":"domaine";return "domaine"}
+function factNew(a,kind,w){w=w===undefined?autoEmet(a):w==="asso"?"asso":"domaine";const f={kind:kind==="devis"?"devis":"facture",emet:w,numero:kind==="devis"?nextDevNo(w):nextFactNo(w),date:today(),cree:new Date().toISOString(),tva:num(emet(w).tvaDef),delai:kind==="devis"?"avant la prestation":"à réception de facture",client:{nom:"",adresse:"",ice:"",if_:"",rc:"",patente:""},objet:"",datePresta:"",datePrestaFin:"",lignes:[{lib:"",qte:1,pu:""}]};
   if(a){f.agendaId=a._id||"";const cl=a.client||{};f.clientKey=ckey(cl.nom,cl.tel)||"";f.client.nom=cl.nom||((a.resas||[])[0]||{}).nom||"";f.datePresta=a.date||"";f.datePrestaFin=a.dateFin&&a.dateFin!==a.date?a.dateFin:"";{const tl=tyOf(a)==="autre"?"":tLab(tyOf(a));const ti=a.titre?a.titre.replace(/ · .*$/,""):"";f.objet=[tl,ti].filter(Boolean).join(", ")+" du "+fmtLong(a.date)}let L=devisLines(a);if(!L.length)L=[[tLab(tyOf(a)),1,revenueOfAgenda(a)]];f.lignes=L.map((l,i)=>({lib:l[0],qte:l[1],pu:l[2],ref:{src:"agenda",id:a._id,i}}))}
   return f}
 function factTotals(f){const ht=(f.lignes||[]).reduce((s2,l)=>s2+num(l.qte===""?1:l.qte)*num(l.pu),0);const t=num(f.tva);const tva=Math.round(ht*t)/100;return {ht,tva,ttc:Math.round((ht+tva)*100)/100,t}}
@@ -3360,7 +3363,7 @@ function openDocChooser(kind,key,pid){const C=docCandidates(key,pid);const r=doc
   document.body.appendChild(r);
   r.addEventListener("click",async e=>{if(e.target===r||e.target.closest("[data-dcno]")){r.remove();return}if(!e.target.closest("[data-dcgo]"))return;
     const sel=[...r.querySelectorAll("[data-dci]")].filter(x=>x.checked).map(x=>C[Number(x.dataset.dci)]);r.remove();
-    const id=newId(kind==="devis"?"dev":"fac");const f=factNew(null,kind);f.clientKey=key||"";f.prospectId=pid||"";const cf=clientFact(key);
+    const id=newId(kind==="devis"?"dev":"fac");const f=factNew(null,kind,autoEmet(null,pid));f.clientKey=key||"";f.prospectId=pid||"";const cf=clientFact(key);
     if(pid){const P={...(S.pub[pid]||{}),...(S.priv[pid]||{})};cf.nom=cf.nom||P.nom||"";if(P.agence)cf.nom=P.agence}
     f.client={...f.client,...Object.fromEntries(Object.entries(cf).filter(([,v])=>v))};
     if(sel.length){f.lignes=sel.map(x=>({lib:x.lib,qte:x.qte,pu:x.pu,ref:x.ref||null}));f.objet=sel.map(x=>x.lib.split(" · ")[0]).filter((v,i,A)=>A.indexOf(v)===i).join(" + ").slice(0,90);const ds=sel.map(x=>x.date).filter(Boolean).sort();if(ds.length){f.datePresta=ds[0];if(ds[ds.length-1]!==ds[0])f.datePrestaFin=ds[ds.length-1]}}
