@@ -3324,7 +3324,7 @@ document.addEventListener("click",e=>{const g=e.target.closest("[data-goclient]"
 document.addEventListener("click",async e=>{if(!S.route||S.route.page!=="facture"||!S.fdraft)return;
   if(e.target.closest("[data-fladd]")){S.fdraft.lignes=(S.fdraft.lignes||[]).concat({lib:"",qte:1,pu:""});fxSave();render();const L=document.querySelectorAll('.fx-l textarea');if(L.length)L[L.length-1].focus();return}
   const dl=e.target.closest("[data-fldel]");if(dl){S.fdraft.lignes.splice(Number(dl.dataset.fldel),1);fxSave();render();return}
-  if(e.target.closest("[data-factpdf]")){clearTimeout(fxT);const id=S.fdraftId;const doc={...S.fdraft,updatedAt:new Date().toISOString()};S.factures[id]=doc;await write("factures/"+id,doc);factPDF(doc);return}});
+  if(e.target.closest("[data-factpdf]")){clearTimeout(fxT);await fxCommit();factPDF(S.factures[S.fdraftId]);return}});
 function fxFlat(src){if(!/^data:image\/png/.test(src))return Promise.resolve(src);return new Promise(res=>{const i=new Image();i.onload=()=>{const c=document.createElement("canvas");c.width=i.width;c.height=i.height;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(i,0,0);res(c.toDataURL("image/jpeg",.9))};i.onerror=()=>res(src);i.src=src})}
 async function factPDF(f){const doc=await newPdf();if(!doc)return;const E=emet(f);const T=factTotals(f);const C=f.client||{};const dev=f.kind==="devis";
   const hx=fxCol(E);const G=[1,3,5].map(i=>parseInt(hx.slice(i,i+2),16)),K=[28,28,28],M=[90,90,90],L0=20,R0=190;let y=24;
@@ -3368,7 +3368,7 @@ document.addEventListener("change",e=>{if(e.target.id!=="fxLogoIn")return;const 
 /* ===== v65 : devis / factures modifiés directement sur la page ===== */
 function fxTotHtml(d){const T=factTotals(d);return T.t?'<div><span>Total HT</span><span>'+fmt2(T.ht)+' MAD</span></div><div><span>TVA '+T.t+' %</span><span>'+fmt2(T.tva)+' MAD</span></div><div class="fx-ttc"><span>Total TTC</span><span>'+fmt2(T.ttc)+' MAD</span></div>':'<div class="fx-ttc"><span>Total</span><span>'+fmt2(T.ht)+' MAD</span></div>'}
 function viewFacture(){const id=S.route.id;const f=(S.factures||{})[id];if(!f)return '<div class="empty">Ce document n\'existe plus. <button class="btn small" data-back="admin">Retour</button></div>';
-  if(!S.fdraft||S.fdraftId!==id){S.fdraft=JSON.parse(JSON.stringify(factSync({...f,_id:id})));delete S.fdraft._id;S.fdraftId=id;if(JSON.stringify(S.fdraft.lignes)!==JSON.stringify(f.lignes))setTimeout(fxSave,0)}
+  if(!S.fdraft||S.fdraftId!==id){if(S.fxDirty)fxDiscard();S.fdraft=JSON.parse(JSON.stringify(factSync({...f,_id:id})));delete S.fdraft._id;S.fdraftId=id;if(JSON.stringify(S.fdraft.lignes)!==JSON.stringify(f.lignes)){const nd={...S.fdraft,updatedAt:new Date().toISOString()};S.factures[id]=nd;setTimeout(()=>write("factures/"+id,nd),0)}}
   const d=S.fdraft,E=emet(d),W=emetOf(d),T=factTotals(d),ed=canAgenda(),dis=ed?"":" disabled",dev=d.kind==="devis",C=d.client||{};
   const In=(a,v,ph,o)=>{o=o||{};return '<input class="fxi'+(o.c?" "+o.c:"")+'" '+a+' type="'+(o.t||"text")+'" value="'+esc(v??"")+'" placeholder="'+esc(ph||"")+'"'+(o.t==="number"?' inputmode="decimal"':"")+dis+'>'};
   const Ta=(a,v,ph)=>'<textarea class="fxi fxa" rows="1" '+a+' placeholder="'+esc(ph||"")+'"'+dis+'>'+esc(v??"")+'</textarea>';
@@ -3377,7 +3377,7 @@ function viewFacture(){const id=S.route.id;const f=(S.factures||{})[id];if(!f)re
   let h='<div class="fxbar"><button class="btn small" data-back="admin">‹ Retour</button>'+
     '<div class="fxsw" role="group" aria-label="Émis par">'+[["domaine","Domaine Apolo"],["asso","Association Cheval Libre"]].map(([k,l])=>'<button type="button" data-emw="'+k+'" aria-pressed="'+(W===k)+'" style="--c:'+fxCol(emet(k))+'"'+dis+'><i></i>'+l+'</button>').join("")+'</div>'+
     '<label class="fxtva"><input type="checkbox" data-tvack'+(T.t?" checked":"")+dis+'> TVA'+(T.t?' <select data-ff="tva"'+dis+'>'+[20,14,10,7].concat([20,14,10,7].includes(T.t)?[]:[T.t]).map(v=>'<option value="'+v+'"'+(T.t===v?" selected":"")+'>'+v+' %</option>').join("")+'</select>':"")+'</label>'+
-    '<span class="spacer"></span><span class="muted" id="fxSaved" style="font-size:13px">Enregistré automatiquement</span>'+
+    '<span class="spacer"></span><span class="muted" id="fxSaved" style="font-size:13px">'+(S.fxDirty?"Pas encore enregistré":"")+'</span><button class="btn" id="fxSaveBtn" data-fxsave'+(S.fxDirty?"":" disabled")+'>'+(S.fxDirty?"💾 Enregistrer":"✓ Enregistré")+'</button>'+
     '<button class="btn primary" data-factpdf="'+esc(id)+'">⬇️ PDF</button>'+
     '<details class="fxmore"><summary class="btn small" aria-label="Plus">⋯</summary><div class="fxpop">'+
       (dev&&ed?(d.factureId&&S.factures[d.factureId]?'<button class="btn" data-factopen="'+esc(d.factureId)+'">📄 Voir la facture</button>':'<button class="btn" data-dev2fact>➡️ Transformer en facture</button>'):"")+
@@ -3422,6 +3422,22 @@ document.addEventListener("change",e=>{if(e.target.id!=="fxCachetIn"||!S.fdraft)
   rd.onload=()=>{const img=new Image();img.onload=async()=>{const mx=600,sc=Math.min(1,mx/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);const x=c.getContext("2d");x.drawImage(img,0,0,c.width,c.height);
     const D=x.getImageData(0,0,c.width,c.height),P=D.data;for(let i=0;i<P.length;i+=4){const l=(P[i]+P[i+1]+P[i+2])/3;const a=Math.max(0,Math.min(1,(242-l)/45));P[i+3]=Math.round(P[i+3]*a)}x.putImageData(D,0,0);
     if(await emetSet(w,"cachet",c.toDataURL("image/png"),true)){render();toast("Signature enregistrée : elle se met sur toutes les factures "+(w==="asso"?"de l'Association":"du Domaine"))}};img.onerror=()=>toast("Cette image ne peut pas être lue");img.src=rd.result};rd.readAsDataURL(file)});
+
+/* ===== v66 : devis / factures enregistrés seulement avec le bouton Enregistrer ===== */
+function fxMark(){if(!S.fxDirty){S.fxDirty=true;S.fxRegBak=S.fxRegBak||JSON.stringify(S.reglages||{})}S.dirty=true;S.touched=true;const b=$("#fxSaveBtn");if(b){b.disabled=false;b.textContent="💾 Enregistrer"}const sv=$("#fxSaved");if(sv)sv.textContent="Pas encore enregistré"}
+function fxSave(){fxMark()}
+function emetSet(w,k,v,now){if(w==="asso")S.reglages={...(S.reglages||{}),asso:{...((S.reglages||{}).asso||{}),[k]:v}};else S.reglages={...(S.reglages||{}),[EMET_DKEY[k]||"f_"+k]:v};
+  if(now)return write("reglages/infos",{...(S.reglages||{})});S.fxRegDirty=true;fxMark();return Promise.resolve(true)}
+async function fxCommit(){const id=S.fdraftId;if(!id||!S.fdraft)return false;const doc={...S.fdraft,updatedAt:new Date().toISOString()};S.factures[id]=doc;
+  let ok=await write("factures/"+id,doc);if(ok&&S.fxRegDirty){ok=await write("reglages/infos",{...(S.reglages||{})});if(ok)S.fxRegDirty=false}
+  if(ok){S.fxDirty=false;S.fxRegBak=null;S.dirty=false;S.touched=false;const b=$("#fxSaveBtn");if(b){b.disabled=true;b.textContent="✓ Enregistré"}const sv=$("#fxSaved");if(sv)sv.textContent=""}
+  return ok}
+function fxDiscard(){if(S.fxRegBak){try{S.reglages=JSON.parse(S.fxRegBak)}catch(_){}}S.fxRegBak=null;S.fxRegDirty=false;S.fxDirty=false;S.fdraft=null;S.fdraftId=null;S.dirty=false;S.touched=false}
+document.addEventListener("click",async e=>{if(!e.target.closest("[data-fxsave]"))return;const b=e.target.closest("[data-fxsave]");b.disabled=true;b.textContent="Enregistrement…";const ok=await fxCommit();toast(ok?"Enregistré ✓":"Pas enregistré, réessayez");if(!ok){b.disabled=false;b.textContent="💾 Enregistrer"}});
+document.addEventListener("click",e=>{if(!S.fxDirty||!(S.route&&S.route.page==="facture"))return;const nav=e.target.closest("[data-back],[data-tab],[data-factopen],[data-goclient]");if(!nav)return;
+  const now=Date.now();if(S.fxLeaveT&&now-S.fxLeaveT<6000){S.fxLeaveT=0;fxDiscard();return}
+  S.fxLeaveT=now;e.preventDefault();e.stopImmediatePropagation();toast("Pas encore enregistré : touchez « Enregistrer », ou encore une fois pour quitter sans enregistrer.")},true);
+window.addEventListener("beforeunload",e=>{if(S.fxDirty){e.preventDefault();e.returnValue=""}});
 
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
