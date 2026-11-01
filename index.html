@@ -1032,7 +1032,7 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .rg-em legend{color:#fff}.rg-em input[type=color]{height:42px;padding:3px;cursor:pointer}.rg-em{border-top:4px solid var(--c)}
 .rg-imgs{display:flex;gap:14px;flex-wrap:wrap}.rg-img{display:grid;gap:6px;justify-items:start;border:1px dashed var(--line);border-radius:10px;padding:10px;min-width:150px;flex:1}
 .rg-img img{max-width:160px;max-height:90px;object-fit:contain;background:#fff;border-radius:6px}.rg-il{font-size:13px;font-weight:700;color:var(--muted)}
-.fv-arr{margin:0;font-size:12.5px;color:#333}.fv>*{min-width:0}.fxdoc{overflow:hidden}
+.fv-arr{margin:0;font-size:12.5px;color:#333}.fv-lab{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--fxc,#8a6420);margin-bottom:4px}.fv-lab .linkbtn{font-size:10px;letter-spacing:0;text-transform:none}.fv>*{min-width:0}.fxdoc{overflow:hidden}
 .fv-ment{display:flex;justify-content:flex-end;margin-top:-10px}.fv-ment .fxi{text-align:right;font-weight:700;max-width:420px}
 .fv-foot .fxkv{flex-wrap:wrap}.fv-foot .fxkv .fxi{max-width:100%}
 @media (max-width:760px){
@@ -3525,8 +3525,8 @@ function viewFacture(){const id=S.route.id;const f=(S.factures||{})[id];if(!f)re
   h+='<div class="fxdoc" style="--fxc:'+fxCol(E)+'"><div class="fv">'+
    '<div class="fv-head"><div class="fv-title">'+(dev?"Devis":"Facture")+'</div><label class="fxlogo" title="Changer le logo">'+(E.logo?'<img src="'+esc(E.logo)+'" alt="Logo">':'<span class="ph">+ Logo</span>')+(ed?'<input type="file" id="fxLogoIn" accept="image/*" hidden>':"")+'</label></div>'+
    '<div class="fv-obj">'+In(ff("objet"),d.objet,"Intervention pour le …")+'</div>'+
-   '<div class="fv-parties"><div class="fv-em"><div class="nm">'+Ta(em("domaine"),E.domaine,"Nom")+Ta(em("sousTitre"),E.sousTitre,"« Nom court »")+'</div>'+(W==="domaine"||E.raison?In(em("raison"),E.raison,"Société (raison sociale)",{c:"fv-rs"}):"")+Ta(em("adresse"),E.adresse,"Adresse")+In(em("tel"),E.tel,"Téléphone")+In(em("email"),E.email,"E-mail")+(W==="asso"||E.autorisation?KV("N° d'autorisation d'Association :",em("autorisation"),E.autorisation,"…"):"")+'</div>'+
-     '<div class="fv-cl">'+(d.clientKey&&clientsAll().some(c=>c.key===d.clientKey)?'<small class="muted" style="font-size:10px">'+(dev?"Devis pour":"Facturé à")+' · <button type="button" class="linkbtn" data-goclient="'+esc(d.clientKey)+'">fiche client</button></small>':"")+'<div class="nm">'+Ta(ff("client.nom"),C.nom,"NOM DU CLIENT")+'</div>'+Ta(ff("client.adresse"),C.adresse,"(sigle, adresse…)")+KV("ICE :",ff("client.ice"),C.ice,"…")+KV("RC :",ff("client.rc"),C.rc,"…")+KV("IF :",ff("client.if_"),C.if_,"…")+KV("Patente (TP) :",ff("client.patente"),C.patente,"…")+'</div></div>'+
+   '<div class="fv-parties"><div class="fv-em"><small class="fv-lab">Émetteur</small><div class="nm">'+Ta(em("domaine"),E.domaine,"Nom")+Ta(em("sousTitre"),E.sousTitre,"« Nom court »")+'</div>'+(W==="domaine"||E.raison?In(em("raison"),E.raison,"Société (raison sociale)",{c:"fv-rs"}):"")+Ta(em("adresse"),E.adresse,"Adresse")+In(em("tel"),E.tel,"Téléphone")+In(em("email"),E.email,"E-mail")+(W==="asso"||E.autorisation?KV("N° d'autorisation d'Association :",em("autorisation"),E.autorisation,"…"):"")+'</div>'+
+     '<div class="fv-cl"><small class="fv-lab">Client'+(d.clientKey&&clientsAll().some(c=>c.key===d.clientKey)?' · <button type="button" class="linkbtn" data-goclient="'+esc(d.clientKey)+'">fiche</button>':"")+'</small>'+'<div class="nm">'+Ta(ff("client.nom"),C.nom,"NOM DU CLIENT")+'</div>'+Ta(ff("client.adresse"),C.adresse,"(sigle, adresse…)")+KV("ICE :",ff("client.ice"),C.ice,"…")+KV("RC :",ff("client.rc"),C.rc,"…")+KV("IF :",ff("client.if_"),C.if_,"…")+KV("Patente (TP) :",ff("client.patente"),C.patente,"…")+'</div></div>'+
    '<div><table class="fv-t"><thead><tr><th>Description</th><th>Prix '+(T.t?"HT ":"")+'MAD</th><th>Quantité</th><th>Total '+(T.t?"HT ":"")+'MAD</th><th></th></tr></thead><tbody>'+
      (d.lignes||[]).map((l,i)=>'<tr><td>'+Ta(ff("lignes."+i+".lib"),l.lib,"Prestation\n• détail")+'</td><td class="p">'+In(ff("lignes."+i+".pu"),l.pu,"0",{t:"number"})+'</td><td class="q">'+In(ff("lignes."+i+".qte"),l.qte,"1",{t:"number"})+'</td><td class="t" data-lt="'+i+'">'+fmtM((l.qte===""?1:num(l.qte))*num(l.pu))+'</td><td class="x">'+(ed?'<button type="button" class="fxdel" data-fldel="'+i+'" aria-label="Retirer la ligne">✕</button>':"")+'</td></tr>').join("")+'</tbody></table>'+
      '<div class="fv-tot" id="fxTot">'+fxTotHtml(d)+'</div></div>'+
@@ -3542,6 +3542,7 @@ async function factPDF(f){const doc=await newPdf();if(!doc)return;const E=emet(f
   doc.setFont("helvetica","bold");doc.setFontSize(34);doc.setTextColor(...G);doc.text(dev?"DEVIS":"FACTURE",L0,y+20);y+=34;
   if(f.objet){doc.setFontSize(10.5);doc.setTextColor(...K);const ob=doc.splitTextToSize(pT(f.objet),R0-L0);doc.text(ob,(L0+R0)/2,y,{align:"center"});y+=ob.length*5}
   y+=2;doc.setDrawColor(210,210,210);doc.setLineWidth(.3);doc.line(L0,y,R0,y);y+=9;
+  doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(...G);doc.text("ÉMETTEUR",L0,y);doc.text("CLIENT",R0,y,{align:"right"});y+=6;
   let ye=y;doc.setFontSize(10);doc.setFont("helvetica","bold");doc.setTextColor(...K);
   [E.domaine,E.sousTitre].filter(Boolean).forEach(t=>{const w=doc.splitTextToSize(pT(String(t).toUpperCase()),90);doc.text(w,L0,ye);ye+=w.length*5});
   doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(...M);
