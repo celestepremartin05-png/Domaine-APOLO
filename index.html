@@ -868,6 +868,22 @@ tr[data-client],[data-item="eleve"]{-webkit-touch-callout:none;-webkit-user-sele
 .callhist summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--muted);margin-top:6px}
 .benv{font-size:11.5px;font-weight:800;color:#b07d00;background:#fff3cf;border-radius:999px;padding:1px 8px;margin-top:2px}
 .cgrps{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+
+.cboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;align-items:start}
+.ccol{background:var(--gb);border:1px solid color-mix(in srgb,var(--g) 35%,transparent);border-top:5px solid var(--g);border-radius:14px;padding:10px;display:grid;gap:10px;min-width:0}
+.ccol-h{display:flex;align-items:center;gap:8px}.ccol-h i{width:11px;height:11px;border-radius:50%;background:var(--g)}.ccol-h b{font-size:15px;color:var(--ink)}
+.ccol-n{margin-left:auto;background:var(--g);color:#fff;border-radius:999px;font-size:12.5px;font-weight:700;padding:1px 9px}
+.ccol-l{display:grid;gap:8px;max-height:70vh;overflow-y:auto;padding-right:2px}
+.ccard{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--g);border-radius:10px;padding:9px 11px;display:grid;gap:3px;cursor:pointer;min-width:0;transition:transform .15s ease,box-shadow .15s ease}
+.ccard:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(30,60,100,.10)}
+.ccard.inc{background:#f6f7f9}
+.ccard-t{display:flex;align-items:center;gap:6px;min-width:0}.ccard-t b{font-size:14.5px;overflow-wrap:anywhere}
+.ccard-p{font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}.ccard-m{font-size:12px;color:var(--muted)}
+.ccard-x{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.cg-chip{display:inline-block;font-size:11px;font-weight:700;color:var(--g);background:var(--gb);border:1px solid color-mix(in srgb,var(--g) 30%,transparent);border-radius:999px;padding:1px 7px;white-space:nowrap}
+.ccol-e{color:var(--muted);font-size:13px;text-align:center;padding:14px 4px;border:2px dashed color-mix(in srgb,var(--g) 30%,transparent);border-radius:10px}
+.cvw button{padding:6px 12px}
+@media (max-width:760px){.cboard{grid-template-columns:repeat(5,82vw);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}.ccol{scroll-snap-align:start}.ccol-l{max-height:none}}
 .cgrp-b{display:inline-flex;align-items:center;gap:7px;border:1px solid color-mix(in srgb,var(--g,#999) 40%,transparent);background:var(--gb,#fff);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
 .cgrp-b i{width:10px;height:10px;border-radius:50%;background:var(--g)}.cgrp-b b{color:var(--g)}
 .cgrp-b[aria-pressed="true"]{background:var(--g);color:#fff;border-color:var(--g)}.cgrp-b[aria-pressed="true"] i{background:#fff}.cgrp-b[aria-pressed="true"] b{color:#fff}
@@ -2515,13 +2531,15 @@ async function importDemandes(file){
 document.addEventListener("change",e=>{if((e.target.id==="impIn"||e.target.id==="impIn2")&&e.target.files&&e.target.files[0]){importDemandes(e.target.files[0]);e.target.value=""}});
 
 /* ---------- recherche générale ---------- */
-function searchAll(q){q=normH(q);if(q.length<2)return [];const R=[];const hit=s=>normH(s).includes(q);
-  clientsAll().forEach(c=>{if(hit(c.nom+" "+c.tel+" "+c.email))R.push({g:"Clients",l:c.nom||c.tel,s:[c.tel,c.items.length+" activité(s)"].filter(Boolean).join(" · "),a:'data-client="'+esc(c.key)+'"'})});
-  if(canProspects())all().forEach(p=>{if(hit(p.nom+" "+(p.telephone||"")+" "+(p.email||"")+" "+(p.notes||"")))R.push({g:"Prospects",l:p.nom||"Sans nom",s:plabel(p,"")+" · "+STATUTS[p.statut].label,a:'data-open="'+esc(p._id)+'"'})});
-  agendaList().forEach(a=>{if(hit(titreEv(a)+" "+((a.client||{}).nom||"")+" "+(a.notes||"")+" "+(a.resas||[]).map(r=>r.nom).join(" ")))R.push({g:"Agenda",l:titreEv(a),s:fmtDate(a.date)+" · "+tLab(tyOf(a)),a:'data-item="agenda" data-id="'+esc(a._id)+'"'})});
-  elevesList().forEach(e=>{if(hit(e.nom+" "+(e.tel||"")))R.push({g:"Élèves",l:e.nom,s:e.niveau||"Élève",a:'data-item="eleve" data-id="'+esc(e._id)+'"'})});
+function phNorm(s){const intl=/^\s*(\+|00)/.test(String(s||""));let d=String(s||"").replace(/\D/g,"");if(d.startsWith("00"))d=d.slice(2);if(d.startsWith("212")&&(intl||d.length>=11))d="0"+d.slice(3);else if(d.startsWith("33")&&(intl||d.length===11))d="0"+d.slice(2);return d}
+function telHit(tel,q){const qd=phNorm(q);if(qd.length<4||/[a-zà-ÿ]/i.test(String(q)))return false;return String(tel||"").split(/[\/,;]| ou /).some(t=>{const td=phNorm(t);return td.includes(qd)||(qd.length>=9&&td.slice(-9)===qd.slice(-9))})}
+function searchAll(q){const q0=q;q=normH(q);const isTel=!/[a-zà-ÿ]/i.test(q0)&&phNorm(q0).length>=4;if(q.length<2&&!isTel)return [];const R=[];const hit=(s,tel)=>(q.length>=2&&normH(s).includes(q))||(tel!==undefined&&isTel&&telHit(tel,q0));
+  clientsAll().forEach(c=>{if(hit(c.nom+" "+c.tel+" "+c.email,c.tel))R.push({g:"Clients",l:c.nom||c.tel,s:[c.tel,c.items.length+" activité(s)"].filter(Boolean).join(" · "),a:'data-client="'+esc(c.key)+'"'})});
+  if(canProspects())all().forEach(p=>{if(hit(p.nom+" "+(p.telephone||"")+" "+(p.email||"")+" "+(p.notes||""),p.telephone||""))R.push({g:"Prospects",l:p.nom||"Sans nom",s:plabel(p,"")+" · "+STATUTS[p.statut].label,a:'data-open="'+esc(p._id)+'"'})});
+  agendaList().forEach(a=>{if(hit(titreEv(a)+" "+((a.client||{}).nom||"")+" "+(a.notes||"")+" "+(a.resas||[]).map(r=>r.nom).join(" "),[(a.client||{}).tel||""].concat((a.resas||[]).map(r=>r.tel||"")).join(" / ")))R.push({g:"Agenda",l:titreEv(a),s:fmtDate(a.date)+" · "+tLab(tyOf(a)),a:'data-item="agenda" data-id="'+esc(a._id)+'"'})});
+  elevesList().forEach(e=>{if(hit(e.nom+" "+(e.tel||""),e.tel||""))R.push({g:"Élèves",l:e.nom,s:e.niveau||"Élève",a:'data-item="eleve" data-id="'+esc(e._id)+'"'})});
   chevauxList().forEach(h=>{if(hit(h.nom+" "+(h.race||"")))R.push({g:"Chevaux",l:h.nom,s:h.race||"Cheval",a:'data-item="cheval" data-id="'+esc(h._id)+'"'})});
-  staffList().forEach(st=>{if(hit(st.nom+" "+(st.role||"")))R.push({g:"Personnel",l:st.nom,s:st.role||"",a:'data-item="staff" data-id="'+esc(st._id)+'"'})});
+  staffList().forEach(st=>{if(hit(st.nom+" "+(st.role||""),st.tel||""))R.push({g:"Personnel",l:st.nom,s:st.role||"",a:'data-item="staff" data-id="'+esc(st._id)+'"'})});
   OFFRES.forEach(o=>{if(hit(o[1]))R.push({g:"Offres",l:o[1],s:(S.offresDb[o[0]]||{}).prix||"",a:'data-item="offre" data-id="'+o[0]+'"'})});
   return R.slice(0,40)}
 function drawSearch(){const q=($("#gq")||{}).value||"";const box=$("#gres");if(!box)return;const R=searchAll(q);
@@ -3600,6 +3618,31 @@ async function dataPatch69(){if(S._p69||!S.loaded||!S.regLoaded||!canProspects()
   for(const id of Object.keys(S.factures||{})){const f=S.factures[id];if(f.fige||!/escales\s*signature/.test(nn((f.client||{}).nom)))continue;const C={...(f.client||{})};let ch=false;["adresse","ice","rc","patente","if_"].forEach(k=>{if(!C[k]){C[k]=ESCALES_FACT[k];ch=true}});if(!f.clientKey){f.clientKey=key;ch=true}if(ch){const nf={...f,client:C};S.factures[id]=nf;await write("factures/"+id,nf)}}
   const nr={...(S.reglages||{})};Object.entries(CJ_EMET).forEach(([k,v])=>{if(!nr[k])nr[k]=v});nr.patch69=today();S.reglages=nr;await write("reglages/infos",nr);
   toast("Infos d'Escales Signature et de C.J Exploitation ajoutées");if(!S.dirty)render()}
+
+/* ===== v70 : clients en colonnes de couleur (un client peut être dans plusieurs colonnes) + recherche par numéro ===== */
+function cGroups(c){const G=new Set();(c.items||[]).forEach(it=>{if(it.ty)G.add((CGRP.find(x=>x[4].includes(it.ty))||CGRP[4])[0])});(c.interets||[]).forEach(t=>G.add((CGRP.find(x=>x[4].includes(t))||CGRP[4])[0]));(c.offresVues||[]).forEach(t=>G.add((CGRP.find(x=>x[4].includes(t))||CGRP[4])[0]));if(G.size>1)G.delete("autre");if(!G.size)G.add("autre");return [...G]}
+function cMatch(c,q){if(!q)return true;const nn=x=>String(x||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");if(nn(c.nom+" "+c.tel+" "+c.email+" "+(c.ville||"")+" "+(c.entreprise||"")+" "+(c.tags||[]).join(" ")).includes(nn(q)))return true;return telHit(c.tel,q)}
+function viewClients(){
+  const q=(S.cq||"").trim();let L=clientsAll();const f=S.cf||"";const mode=S.cview||"col";
+  L=L.filter(c=>cMatch(c,q));
+  if(f.startsWith("tag:"))L=L.filter(c=>c.tags.includes(f.slice(4)));
+  if(f.startsWith("of:"))L=L.filter(c=>c.interets.includes(f.slice(3))||c.offresVues.includes(f.slice(3)));
+  const isDone=c=>!!((S.clientsDb||{})[c.key]||{}).complet;const allL=L;if(S.cinc)L=L.filter(c=>!isDone(c));
+  L.sort((a,b)=>S.csort==="total"?b.total-a.total:S.csort==="nom"?(a.nom||"").localeCompare(b.nom||""):(b.last||"").localeCompare(a.last||""));
+  let h='<div class="toolbar"><input id="cq" type="search" placeholder="Rechercher un nom ou un numéro (06…, +212…)" value="'+esc(S.cq||"")+'"><select id="cfilt"><option value="">Tous les clients</option><optgroup label="Étiquette">'+CTAGS.map(t=>'<option value="tag:'+esc(t)+'"'+(f==="tag:"+t?" selected":"")+'>'+esc(t)+'</option>').join("")+'</optgroup><optgroup label="Intéressé par">'+OFFRES.map(o=>'<option value="of:'+o[0]+'"'+(f==="of:"+o[0]?" selected":"")+'>'+esc(o[1])+'</option>').join("")+'</optgroup></select><select id="csort"><option value="recent"'+(!S.csort||S.csort==="recent"?" selected":"")+'>Les plus récents</option><option value="total"'+(S.csort==="total"?" selected":"")+'>Ceux qui ont le plus dépensé</option><option value="nom"'+(S.csort==="nom"?" selected":"")+'>Par nom</option></select>'+
+    '<span class="seg cvw">'+[["col","▦ Colonnes"],["liste","☰ Liste"]].map(([k,l])=>'<button type="button" data-cview="'+k+'" aria-pressed="'+(mode===k)+'">'+l+'</button>').join("")+'</span>'+
+    (()=>{const ni=allL.filter(c=>!isDone(c)).length;return ni?'<button type="button" class="cgrp-b inc-b" data-cinc aria-pressed="'+!!S.cinc+'"><i></i>À compléter <b>'+ni+'</b></button>':""})()+
+    '<span class="muted" style="font-size:13px">'+L.length+' client(s)</span>'+(canAgenda()?'<span class="spacer"></span><button class="btn primary" data-newclient>+ Ajouter un client</button>':"")+'</div>';
+  if(!L.length)return h+'<div class="empty">Aucun client ne correspond'+(q?' à « '+esc(q)+' »':"")+'.</div>';
+  const tick=c=>canAgenda()?'<button type="button" class="cdone" data-cdone="'+esc(c.key)+'" aria-pressed="'+isDone(c)+'" title="'+(isDone(c)?"Fiche terminée · toucher pour la remettre à compléter":"Marquer la fiche comme terminée")+'">✓</button>':"";
+  if(mode==="liste")return h+'<div class="tablewrap"><table><thead><tr><th>Client</th><th>Téléphone</th><th>Catégories</th><th class="num">Activités</th><th class="num">Total dépensé</th><th>Dernière fois</th></tr></thead><tbody>'+L.map(c=>{const gs=cGroups(c).map(g=>CGRP.find(x=>x[0]===g));return '<tr class="click crow'+(isDone(c)?"":" inc")+'" data-client="'+esc(c.key)+'" style="--g:'+gs[0][2]+';--gb:'+gs[0][3]+'"><td>'+tick(c)+'<b>'+esc(c.nom||"Sans nom")+'</b>'+(isDone(c)?"":' <span class="inc-c">À compléter</span>')+'</td><td>'+esc(c.tel||"—")+'</td><td>'+gs.map(g=>'<span class="cg-chip" style="--g:'+g[2]+';--gb:'+g[3]+'">'+esc(g[1])+'</span>').join(" ")+'</td><td class="num">'+c.items.length+'</td><td class="num">'+(c.total?money(c.total):"—")+'</td><td>'+(c.last?fmtDate(c.last):"—")+'</td></tr>'}).join("")+'</tbody></table></div>';
+  const cols=CGRP.map(g=>({g,L:L.filter(c=>cGroups(c).includes(g[0]))})).filter(x=>x.L.length||x.g[0]!=="autre");
+  return h+'<div class="cboard">'+cols.map(({g,L:CL})=>'<section class="ccol" style="--g:'+g[2]+';--gb:'+g[3]+'"><div class="ccol-h"><i></i><b>'+esc(g[1])+'</b><span class="ccol-n">'+CL.length+'</span></div><div class="ccol-l">'+
+    (CL.length?CL.map(c=>{const other=cGroups(c).filter(x=>x!==g[0]).map(x=>CGRP.find(y=>y[0]===x));return '<div class="ccard'+(isDone(c)?"":" inc")+'" data-client="'+esc(c.key)+'" role="button" tabindex="0"><div class="ccard-t">'+tick(c)+'<b>'+esc(c.nom||"Sans nom")+'</b></div>'+(c.tel?'<span class="ccard-p">📞 '+esc(c.tel)+'</span>':"")+'<span class="ccard-m">'+[c.items.length?c.items.length+" activité"+(c.items.length>1?"s":""):"",c.total?money(c.total):"",c.last?fmtDate(c.last):""].filter(Boolean).join(" · ")+'</span>'+
+      ((c.tags||[]).length||other.length||!isDone(c)?'<span class="ccard-x">'+(isDone(c)?"":'<span class="inc-c">À compléter</span>')+(c.tags||[]).map(t=>'<span class="chip'+(t==="VIP"?" warn":t==="Ne plus contacter"?" bad":"")+'">'+esc(t)+'</span>').join("")+other.map(o=>'<span class="cg-chip" style="--g:'+o[2]+';--gb:'+o[3]+'">aussi '+esc(o[1].toLowerCase())+'</span>').join("")+'</span>':"")+'</div>'}).join(""):'<div class="ccol-e">Aucun client</div>')+'</div></section>').join("")+'</div>';
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-cview]");if(b){S.cview=b.dataset.cview;try{localStorage.setItem("pg_cview",S.cview)}catch(_){}render()}});
+try{S.cview=localStorage.getItem("pg_cview")||"col"}catch(_){}
 
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
