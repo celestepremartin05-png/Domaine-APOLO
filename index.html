@@ -1078,6 +1078,7 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .cel-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.cel-flow>span{font-size:22px;color:var(--muted)}.cel-flow>div{display:grid;background:var(--sunk);border-radius:12px;padding:10px 14px;flex:1 1 130px}.cel-flow small{color:var(--muted);font-size:12.5px}.cel-flow b{font-family:var(--display);font-size:22px;font-weight:400}
 .cel-flow .big.due{background:#fdf0db}.cel-flow .big.due b{color:#a0651a;font-size:28px}.cel-flow .big.ok{background:#e8f6ee}.cel-flow .big.ok b{color:#2c7a4a;font-size:28px}
 @media (max-width:760px){.acc{grid-template-columns:1fr}.acc-todo #sec-todo .todo{max-height:60vh}.cal-day{min-height:96px}.ag-bar{grid-template-columns:1fr auto}.ag-t{grid-column:1/-1;order:3}.ag-op{display:none}.ag-12{gap:2px}.cel-flow>span{display:none}}
+#updBar{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:3000;display:flex;align-items:center;gap:10px;background:#071027;color:#fff;border-radius:999px;padding:8px 8px 8px 16px;box-shadow:0 12px 30px rgba(7,16,39,.35);font-weight:600;font-size:14px;max-width:calc(100vw - 24px)}#updBar #updGo{border:0;background:#f1d58e;color:#071027;font:inherit;font-weight:800;border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap}#updBar #updNo{border:0;background:none;color:#aab6c8;font:inherit;cursor:pointer;padding:4px 8px}@media (max-width:760px){#updBar{font-size:13px;width:calc(100vw - 24px);justify-content:space-between}}
 .fv>*{min-width:0}.fxdoc{overflow:hidden}
 .fv-ment{display:flex;justify-content:flex-end;margin-top:-10px}.fv-ment .fxi{text-align:right;font-weight:700;max-width:420px}
 .fv-foot .fxkv{flex-wrap:wrap}.fv-foot .fxkv .fxi{max-width:100%}
@@ -3738,6 +3739,16 @@ function viewCeleste(){
   const keys=monthKeys(12);const tv=keys.map(apportMonth),pv=tv.map(v=>Math.round(v*pct/100));
   h+='<details class="card" style="margin-top:16px"><summary><b>Mes 12 derniers mois</b></summary><p class="muted" style="margin:6px 0;font-size:13px">Bleu : ce que mes clients ont rapporté · Or : ma part.</p>'+lineChart(keys,[{lab:"Total généré",vals:tv,col:"#2a78d6"},{lab:"Ma part",vals:pv,col:"#d29a0e"}])+'</details>';
   return h}
+
+/* ===== v72 : message « Nouvelle version » quand Pégase a été mis à jour ===== */
+(function(){let base=null,shown=false;
+  async function sig(){try{const r=await fetch(location.pathname+"?_v="+Date.now(),{method:"HEAD",cache:"no-store"});if(!r.ok)return null;return r.headers.get("etag")||r.headers.get("last-modified")||r.headers.get("content-length")}catch(_){return null}}
+  async function check(){if(shown)return;const v=await sig();if(!v)return;if(base===null){base=v;return}if(v!==base)showUpd()}
+  function showUpd(){shown=true;if(document.getElementById("updBar"))return;const b=document.createElement("div");b.id="updBar";b.setAttribute("role","status");
+    b.innerHTML='<span>✨ Une nouvelle version de Pégase est disponible</span><button type="button" id="updGo">Mettre à jour</button><button type="button" id="updNo" aria-label="Plus tard">✕</button>';document.body.appendChild(b);
+    document.getElementById("updGo").onclick=()=>{if(S.dirty||S.fxDirty){toast("Enregistrez d'abord vos modifications, puis touchez « Mettre à jour »");return}location.reload()};
+    document.getElementById("updNo").onclick=()=>{b.remove();setTimeout(()=>{shown=false;showUpd()},30*60000)}}
+  window.__pgUpdCheck=check;check();setInterval(check,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)check()});window.addEventListener("focus",check)})();
 
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
