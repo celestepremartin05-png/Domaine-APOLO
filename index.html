@@ -1048,7 +1048,37 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .rg-em legend{color:#fff}.rg-em input[type=color]{height:42px;padding:3px;cursor:pointer}.rg-em{border-top:4px solid var(--c)}
 .rg-imgs{display:flex;gap:14px;flex-wrap:wrap}.rg-img{display:grid;gap:6px;justify-items:start;border:1px dashed var(--line);border-radius:10px;padding:10px;min-width:150px;flex:1}
 .rg-img img{max-width:160px;max-height:90px;object-fit:contain;background:#fff;border-radius:6px}.rg-il{font-size:13px;font-weight:700;color:var(--muted)}
-.fv-arr{margin:0;font-size:12.5px;color:#333}.fv-lab{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--fxc,#8a6420);margin-bottom:4px}.fv-lab .linkbtn{font-size:10px;letter-spacing:0;text-transform:none}.fv-av{font-weight:700;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px}.fv-av .fv-pct{width:56px;margin:0;text-align:center;font-weight:700;display:inline-block}.fv>*{min-width:0}.fxdoc{overflow:hidden}
+.fv-arr{margin:0;font-size:12.5px;color:#333}.fv-lab{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--fxc,#8a6420);margin-bottom:4px}.fv-lab .linkbtn{font-size:10px;letter-spacing:0;text-transform:none}.fv-av{font-weight:700;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px}.fv-av .fv-pct{width:56px;margin:0;text-align:center;font-weight:700;display:inline-block}
+/* v71 */
+.acc{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+.acc-day{display:grid;gap:12px}.acc-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.acc-h h2{font-size:24px}
+.acc-cal{justify-self:start;font-weight:600}
+.acc-todo #sec-todo .todo{max-height:calc(100vh - 230px);overflow-y:auto}
+.dg{position:relative;border-top:1px solid var(--line)}
+.dg-h{position:absolute;left:0;right:0;height:1px;background:var(--line)}.dg-h span{position:absolute;left:0;top:-1px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;background:var(--surface);padding-right:6px}
+.dg-ev{position:absolute;border:0;border-left:4px solid var(--k-other);border-radius:8px;padding:4px 8px;text-align:left;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;overflow:hidden;display:flex;flex-direction:column;gap:1px;box-shadow:0 1px 2px rgba(30,60,100,.08)}
+.dg-ev b{font-size:12px}.dg-ev.short{flex-direction:row;align-items:center;gap:6px;white-space:nowrap}.dg-ev.short span{overflow:hidden;text-overflow:ellipsis}.dg-ev span{font-weight:600;line-height:1.25}
+.dg-ev.perso{background:repeating-linear-gradient(135deg,#eef1f5 0 6px,#e3e8ee 6px 12px);border-left-color:var(--k-perso);color:var(--muted)}
+.dg-now{position:absolute;left:46px;right:0;height:2px;background:var(--bad);z-index:2}.dg-now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.dg-all{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.dg-all small{width:100%;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.dg-chip{border:0;border-left:4px solid var(--k-other);border-radius:8px;padding:6px 10px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+.cal-day{min-height:132px}.cal-day .ev{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}.cal-day .ev.allday{font-style:italic}
+.ag-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}.ag-nav h2{text-transform:capitalize;min-width:180px;text-align:center}
+.ag-sum{display:flex;align-items:stretch;gap:10px;margin-bottom:16px;flex-wrap:wrap}.ag-op{align-self:center;font-size:26px;color:var(--muted);font-weight:300}
+.ag-c{flex:1 1 180px;border-radius:16px;padding:16px 18px;display:grid;gap:2px;border:1px solid var(--line);background:var(--surface)}
+.ag-c span{font-weight:700;font-size:14px}.ag-c b{font-family:var(--display);font-size:30px;font-weight:400;line-height:1.1}.ag-c small{color:var(--muted);font-size:12.5px}
+.ag-c.in{background:#e8f6ee;border-color:#a9d9b9}.ag-c.in b{color:#2c7a4a}.ag-c.out{background:#fdecee;border-color:#f1b8c0}.ag-c.out b{color:#b8424c}.ag-c.ok{background:#e9f1fc;border-color:#b5cff0}.ag-c.ok b{color:#2c64a8}.ag-c.ko{background:#fdf0db;border-color:#ecc88a}.ag-c.ko b{color:#a0651a}
+.ag-bars{display:grid;gap:10px}.ag-bar{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:14px}.ag-l{display:flex;align-items:center;gap:7px;min-width:0}.ag-l i{width:10px;height:10px;border-radius:3px;flex:none}
+.ag-t{height:16px;background:var(--sunk);border-radius:5px;overflow:hidden}.ag-t span{display:block;height:100%;border-radius:0 5px 5px 0}.ag-bar b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ag-leg{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}.ag-leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.ag-12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;margin-top:10px}.ag-m{border:0;background:none;display:grid;gap:4px;justify-items:center;cursor:pointer;padding:4px 0;border-radius:8px;font:inherit}.ag-m.on{background:var(--sunk)}
+.ag-p{height:110px;display:flex;align-items:flex-end;gap:2px;width:100%;justify-content:center}.ag-p i{width:38%;max-width:16px;border-radius:3px 3px 0 0;min-height:2px}.ag-m small{font-size:11px;color:var(--muted);text-transform:capitalize}
+.ag-deps summary{cursor:pointer}
+.cel-money{display:grid;gap:10px;margin-top:16px;border-top:4px solid #d29a0e}.cel-pct2{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}.cel-pct2 input{width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.cel-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.cel-flow>span{font-size:22px;color:var(--muted)}.cel-flow>div{display:grid;background:var(--sunk);border-radius:12px;padding:10px 14px;flex:1 1 130px}.cel-flow small{color:var(--muted);font-size:12.5px}.cel-flow b{font-family:var(--display);font-size:22px;font-weight:400}
+.cel-flow .big.due{background:#fdf0db}.cel-flow .big.due b{color:#a0651a;font-size:28px}.cel-flow .big.ok{background:#e8f6ee}.cel-flow .big.ok b{color:#2c7a4a;font-size:28px}
+@media (max-width:760px){.acc{grid-template-columns:1fr}.acc-todo #sec-todo .todo{max-height:60vh}.cal-day{min-height:96px}.ag-bar{grid-template-columns:1fr auto}.ag-t{grid-column:1/-1;order:3}.ag-op{display:none}.ag-12{gap:2px}.cel-flow>span{display:none}}
+.fv>*{min-width:0}.fxdoc{overflow:hidden}
 .fv-ment{display:flex;justify-content:flex-end;margin-top:-10px}.fv-ment .fxi{text-align:right;font-weight:700;max-width:420px}
 .fv-foot .fxkv{flex-wrap:wrap}.fv-foot .fxkv .fxi{max-width:100%}
 @media (max-width:760px){
@@ -1524,7 +1554,7 @@ function viewPersonnel(){
   const du=staffList().reduce((s,st)=>s+owed(st).reduce((a,x)=>a+x.montant,0),0);
   const m=t.slice(0,7);const paidMonth=staffList().reduce((s,st)=>s+moisPaidIn(st,m)+(isMois(st)?0:Object.entries(st.passages||{}).filter(([d,ps])=>ps.paye&&d.slice(0,7)===m&&!ps.absent).reduce((a,[d])=>a+shiftOf(st,d).montant,0)),0);
   let h='<div class="row" style="margin-bottom:16px"><span class="muted">Le personnel du domaine, ses jours de présence et les paiements, jour par jour. Quelqu\'un est venu un jour imprévu ? Touchez « + Ajouter » sous le jour.</span><span class="spacer"></span>'+(canAgenda()?'<button class="btn primary" id="newStaff">+ Ajouter une personne</button>':"")+'</div>';
-  h+='<div class="strip">'+cellScroll(L.length,"Personnes","sec-staff")+cellScroll(nb,"Passages "+(S.pweek===0?"cette semaine":"sur la semaine affichée"),"sec-pweek")+cellScroll(money(du),"Reste à payer (jusqu\'à aujourd\'hui)","sec-staff",du>0)+cellScroll(money(paidMonth),"Payé ce mois-ci","sec-staff")+'</div>';
+  h+=''&&('<div class="strip">'+cellScroll(L.length,"Personnes","sec-staff")+cellScroll(nb,"Passages "+(S.pweek===0?"cette semaine":"sur la semaine affichée"),"sec-pweek")+cellScroll(money(du),"Reste à payer (jusqu\'à aujourd\'hui)","sec-staff",du>0)+cellScroll(money(paidMonth),"Payé ce mois-ci","sec-staff")+'</div>');
   const Lt=L.filter(x=>!x.epingle&&(!stEnded(x)||owed(x).length));
   h+=walletCards();
   h+='<section class="section" id="sec-pweek"><div class="cal"><div class="cal-head"><button class="btn small" data-pw="-1" aria-label="Semaine précédente">‹</button><h2>'+label+'</h2><button class="btn small" data-pw="1" aria-label="Semaine suivante">›</button>'+(S.pweek?'<button class="btn small ghost" data-pw="0">Revenir à aujourd\'hui</button>':"")+'<span class="spacer"></span><span style="font-size:13px;opacity:.9">'+mon.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+' – '+sun.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+'</span></div><div class="wkwrap" style="border:0;border-radius:0"><div class="wk">'+cols+'</div></div><div class="legend">'+[...new Set(L.map(st=>st.epingle||/tout faire/i.test(st.role||"")?"Homme à tout faire":(RCOL[st.role]?st.role:"Autre")))].map(r=>'<span><i class="dot" style="background:'+RCOL[r][0]+'"></i>'+esc(r)+'</span>').join("")+'<span class="muted" style="flex-basis:100%">Touchez un prénom, ou une personne dans « L\'équipe » plus bas, pour cocher ce qui est payé.</span></div></div></section>';
@@ -1933,7 +1963,7 @@ function itemsOn(date){
   elevesList().filter(e=>e.actif!==false).forEach(e=>(e.creneaux||[]).forEach(c=>{if(Number(c.jour)===d.getDay())out.push({ty:offreOfEleve(e),kind:"cours",titre:e.nom||"Élève",heure:c.heure||"",id:e._id,src:"eleve"})}));
   Object.entries(S.occupe).forEach(([id,o])=>{if(o.date!==date)return;const mine=S.uid&&o.auteur===S.uid;const det=mine?S.myPerso[id]:null;
     out.push({ty:"perso",kind:"perso",titre:mine&&det?(det.titre||"Perso"):"Occupé · perso",heure:o.debut||"",fin:o.fin||"",id,src:"perso",mine:!!mine})});
-  out.sort((a,b)=>(a.heure||"00").localeCompare(b.heure||"00"));
+  out.sort((a,b)=>(a.heure?toMin(a.heure):-1)-(b.heure?toMin(b.heure):-1));
   return out;
 }
 function titreEv(a){if(a.titre)return a.titre;if(a.typeLibre)return a.typeLibre;const ty=tyOf(a);const nm=a.client&&a.client.nom;
@@ -1965,7 +1995,7 @@ function calendar(){
     for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const ds=iso(d);if(i===35&&d.getMonth()!==c.m)break;days.push(ds);
       const items=itemsOn(ds).filter(calPass);
       cells+='<div role="button" tabindex="0" class="cal-day'+(d.getMonth()!==c.m?" out":"")+(ds===t?" today":"")+(ds===c.sel?" sel":"")+'" data-day="'+ds+'" aria-label="'+fmtLong(ds)+', '+items.length+' activité(s)"><span class="d">'+d.getDate()+'</span>'+
-        items.slice(0,3).map(x=>'<span class="ev'+(x.virtual?" virtual":"")+(x.ty==="perso"?" perso":"")+'"'+evAttrs(x,ds)+' style="'+evStyle(x)+'">'+evLabel(x)+'</span>').join("")+(items.length>3?'<span class="more">+'+(items.length-3)+'</span>':"")+'</div>'}
+        items.map(x=>'<span class="ev'+(x.virtual?" virtual":"")+(x.ty==="perso"?" perso":"")+(x.heure?"":" allday")+'"'+evAttrs(x,ds)+' style="'+evStyle(x)+'">'+evLabel(x)+'</span>').join("")+'</div>'}
     title=first.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
     body='<div class="cal-grid">'+["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].map(x=>'<div class="cal-dow">'+x+'</div>').join("")+cells+'</div>';
   }else{
@@ -1978,7 +2008,7 @@ function calendar(){
   const selItems=itemsOn(c.sel).filter(calPass).map(x=>({...x,date:c.sel}));
   return '<div class="cal"><div class="cal-head"><button class="btn small" data-cal="-1" aria-label="Précédent">‹</button><h2>'+esc(title)+'</h2><button class="btn small" data-cal="1" aria-label="Suivant">›</button><button class="btn small ghost" data-cal="0">Aujourd\'hui</button><span class="spacer"></span><span class="seg cv">'+[["mois","Mois"],["semaine","Semaine"],["jour","Jour"]].map(([k,l])=>'<button type="button" data-calview="'+k+'" aria-pressed="'+(view===k)+'">'+l+'</button>').join("")+'</span>'+(canAgenda()?'<button class="btn small primary" data-new-ev="'+c.sel+'" data-choose>+ Ajouter</button>':"")+'</div>'+
     body+(legend?'<div class="legend">'+legend+'</div>':"")+'</div>'+
-    (view==="jour"?"":'<section class="section" style="margin-top:16px"><div class="section-head"><h2 style="text-transform:capitalize">'+fmtLong(c.sel)+'</h2><span class="count">'+selItems.length+'</span></div>'+(selItems.length?'<div class="list">'+selItems.map(x=>itemRow(x,false)).join("")+'</div>':'<div class="empty">Rien de prévu ce jour-là.'+(canAgenda()?' Utilisez « + Ajouter ».':"")+'</div>')+'</section>');
+    "";
 }
 function toMin(h){const p=String(h||"0:0").split(":").map(Number);return (p[0]||0)*60+(p[1]||0)}
 function rangeOf(x){if(!x.heure)return null;const s=toMin(x.heure);let e=x.fin?toMin(x.fin):s+60;if(e<=s)e=s+60;return [s,e]}
@@ -2421,7 +2451,7 @@ function viewReglages(){
   if(!S.draft)S.draft=rgEmetDraft(clone({msg_confirmation:MSG_DEF.confirmation,msg_rappel:MSG_DEF.rappel,msg_merci:MSG_DEF.merci,...reg()}));const ed=canAgenda();
   let h='<div class="page"><p class="muted" style="margin:0">Ces informations servent aux devis, aux rapports et aux messages envoyés aux clients. Cette page n\'est visible que par vous.</p>';
   h+=rgEmetBox("domaine")+rgEmetBox("asso");
-  h+='<div class="grid2">'+'<fieldset class="fs"><legend>Devis et objectifs</legend><div class="grid">'+F("Acompte demandé (%)","acomptePct",{type:"number"})+F("Validité du devis (jours)","validite",{type:"number"})+F("Objectif de chiffre par mois (DH)","objectif",{type:"number",ph:"Ex. 60000"})+F("Lien pour laisser un avis","avis",{ph:"Ex. lien Google Maps"})+'</div>'+F("Conditions","conditions",{area:true,full:true})+'</fieldset>'+monPctBox()+'</div>'+codesBox();
+  h+=codesBox();if(0)h+='<div class="grid2">'+'<fieldset class="fs"><legend>Devis et objectifs</legend><div class="grid">'+F("Acompte demandé (%)","acomptePct",{type:"number"})+F("Validité du devis (jours)","validite",{type:"number"})+F("Objectif de chiffre par mois (DH)","objectif",{type:"number",ph:"Ex. 60000"})+F("Lien pour laisser un avis","avis",{ph:"Ex. lien Google Maps"})+'</div>'+F("Conditions","conditions",{area:true,full:true})+'</fieldset>'+monPctBox()+'</div>'+codesBox();
   h+='<fieldset class="fs"><legend>Sauvegarde et import</legend><div class="row"><button class="btn" data-export>⬇ Exporter toutes les données (Excel)</button>'+(canProspects()?'<label class="btn" for="impIn2" style="cursor:pointer">⬆ Importer des demandes du site (Excel ou CSV)</label><input type="file" id="impIn2" accept=".csv,.xlsx,.xls" hidden>':"")+'</div><span class="muted" style="font-size:13px">Pensez à exporter une sauvegarde une fois par mois. Le fichier contient les prospects, l\'agenda, les clients, les élèves, le personnel, les dépenses et les chevaux.</span></fieldset>';
   if(ed)h+='<div class="sticky-save"><button class="btn primary" id="rgSave">Enregistrer les réglages</button><span class="muted" style="font-size:13px" id="dirtyHint">'+(S.dirty?"Modifications non enregistrées":"")+'</span></div>';
   return h+'</div>';
@@ -2676,9 +2706,6 @@ function viewCalendrier(){
   let h='<div class="row" style="margin-bottom:12px"><span class="muted">Tout le domaine au même endroit : activités, brunchs, stages, cours et rendez-vous. Touchez un jour, une activité, ou « + Ajouter ».</span></div>';
   h+='<div class="calfilt"><button type="button" class="hchip agchip" data-calmode="agenda">📋 Agenda'+(agendaOpen()?' <span class="nbadge">'+agendaOpen()+'</span>':"")+'</button><button type="button" class="hchip" data-cf="" aria-pressed="'+(!f.length)+'">Tout afficher</button>'+TY_GROUPS.map(([g,ids])=>ids.map(id=>'<button type="button" class="hchip ichip" data-cf="'+id+'" aria-pressed="'+f.includes(id)+'" style="--ic:'+tCol(id)+'"><span class="dot" style="background:'+tCol(id)+'"></span>'+esc(tLab(id))+'</button>').join("")).join("")+'</div>';
   h+=calendar();
-  const rows=[];for(const ds of nextBrunches(4)){const ex=agendaList().find(a=>a.kind==="brunch"&&a.date===ds);rows.push({ds,ex})}
-  h+='<section class="section" style="margin-top:22px"><div class="section-head"><h2>Prochains brunchs</h2><span class="muted" style="font-size:13px">Un dimanche sur deux dès le 8 novembre · 12 h – 16 h 30 · 20 places</span></div><div class="cards">'+rows.map(r=>{const e=r.ex;const pl=e?couverts(e):0;const cap=e?num(e.capacite)||20:20;
-    return '<button class="card cardlink" style="border-top:4px solid '+tCol("brunch")+'" '+(e?'data-item="agenda" data-id="'+esc(e._id)+'"':'data-item="virtual" data-date="'+r.ds+'"')+'><b style="text-transform:capitalize">'+fmtLong(r.ds)+'</b><span class="muted" style="font-size:14px">'+pl+' couverts sur '+cap+(e&&isComplet(e)?' · <b style="color:var(--bad)">Complet</b>':"")+'</span><span class="progress"><span style="width:'+Math.min(100,pl/(cap||1)*100)+'%"></span></span></button>'}).join("")+'</div></section>';
   return h;
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-cf]");if(!b)return;const v=b.dataset.cf;if(!v)S.calFilt=[];else{const a=S.calFilt||[];S.calFilt=a.includes(v)?a.filter(x=>x!==v):a.concat(v)}render()});
@@ -2956,11 +2983,11 @@ function viewAdmin(){
     const rows=agendaList().filter(a=>a.statut!=="annule"&&revenueOfAgenda(a)>0).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
     const F={};factList().filter(f=>f.kind!=="devis"&&f.agendaId).forEach(f=>{F[f.agendaId]=f});const tot=factList().filter(f=>f.kind!=="devis").length;
     h+='<div class="row" style="margin:0 0 12px"><span class="muted">Créez une facture depuis une activité ci-dessous, ou une facture libre. Numéro automatique (FAC-'+today().slice(0,4)+'-001, 002…). '+tot+' facture'+(tot>1?"s":"")+'.</span><span class="spacer"></span>'+(canAgenda()?'<button class="btn primary" data-factnew>+ Nouvelle facture</button>':"")+'</div>';
-    {const miss=rows.filter(a=>!F[a._id]&&(encaisseOf(a)>0||a.date<=today()));if(miss.length&&canAgenda())h+='<div class="fact-miss"><span><b>'+miss.length+' activité'+(miss.length>1?"s":"")+' sans facture</b> : déjà payée'+(miss.length>1?"s":"")+' ou déjà passée'+(miss.length>1?"s":"")+'. Chaque vente doit avoir sa facture, même si le client ne la demande pas.</span><button class="btn primary" data-factall>🧾 Créer les '+miss.length+' facture'+(miss.length>1?"s":"")+'</button></div>'}
+    {const miss=rows.filter(a=>!F[a._id]&&!a.sansFacture&&(encaisseOf(a)>0||a.date<=today()));if(miss.length&&canAgenda())h+='<div class="fact-miss"><span><b>'+miss.length+' activité'+(miss.length>1?"s":"")+' sans facture</b> : déjà payée'+(miss.length>1?"s":"")+' ou déjà passée'+(miss.length>1?"s":"")+'. Chaque vente doit avoir sa facture, même si le client ne la demande pas.</span><button class="btn primary" data-factall>🧾 Créer les '+miss.length+' facture'+(miss.length>1?"s":"")+'</button></div>'}
     const libres=factList().filter(f=>f.kind!=="devis"&&(!f.agendaId||!S.agenda[f.agendaId])).sort((a,b)=>(b.numero||"").localeCompare(a.numero||""));
     if(libres.length)h+='<div class="list" style="margin-bottom:14px">'+libres.map(f=>'<div class="item fact"><span class="bar" style="background:'+fxCol(emet(f))+'"></span><span style="min-width:0">'+(f.clientKey&&clientsAll().some(c=>c.key===f.clientKey)?'<button class="linkbtn fx-name" data-goclient="'+esc(f.clientKey)+'" title="Ouvrir la fiche client">'+esc((f.client&&f.client.nom)||"Client")+' ✏️</button>':'<button class="linkbtn fx-name" data-factopen="'+esc(f._id)+'">'+esc((f.client&&f.client.nom)||"Client à compléter")+' ✏️</button>')+'<span class="sub">'+(emetOf(f)==="asso"?'<b style="color:#083a6f">Cheval Libre</b> · ':"")+esc(f.objet||"Facture libre")+' · '+fmtDate(f.date)+'</span></span><span class="fact-r"><b>'+factTotals(f).ttc.toLocaleString("fr-FR")+' DH</b><button class="btn small" data-factopen="'+esc(f._id)+'">📄 '+esc(f.numero)+'</button><button class="btn small ghost" data-factdel="'+esc(f._id)+'" aria-label="Annuler la facture">✕</button></span></div>').join("")+'</div>';
     h+=rows.length?'<div class="list">'+rows.map(a=>{const tot=revenueOfAgenda(a),enc=encaisseOf(a);const f=F[a._id];const cl=(a.client&&a.client.nom)||((a.resas||[])[0]||{}).nom||"—";
-      return '<div class="item fact"><span class="bar" style="background:'+tCol(tyOf(a))+'"></span><span style="min-width:0">'+personLink(cl,(a.client||{}).tel,'data-item="agenda" data-id="'+esc(a._id)+'"')+'<span class="sub">'+esc(tLab(tyOf(a)))+' · '+fmtDate(a.date)+'</span></span><span class="fact-r"><b>'+tot.toLocaleString("fr-FR")+' DH</b>'+(enc>=tot?'<span class="chip ok">Payé</span>':enc>0?'<span class="chip warn">Acompte '+enc.toLocaleString("fr-FR")+'</span>':'<span class="chip bad">À encaisser</span>')+(f?'<button class="btn small" data-factopen="'+esc(a._id)+'">📄 '+esc(f.numero)+'</button><button class="btn small ghost" data-factdel="'+esc(a._id)+'" title="Annuler cette facture" aria-label="Annuler la facture">✕</button>':'<button class="btn small primary" data-fact="'+esc(a._id)+'">Créer la facture</button>')+'</span></div>'}).join("")+'</div>':'<div class="empty">Aucune activité payante pour l\'instant.</div>';
+      return '<div class="item fact"><span class="bar" style="background:'+tCol(tyOf(a))+'"></span><span style="min-width:0">'+personLink(cl,(a.client||{}).tel,'data-item="agenda" data-id="'+esc(a._id)+'"')+'<span class="sub">'+esc(tLab(tyOf(a)))+' · '+fmtDate(a.date)+'</span></span><span class="fact-r"><b>'+tot.toLocaleString("fr-FR")+' DH</b>'+(enc>=tot?'<span class="chip ok">Payé</span>':enc>0?'<span class="chip warn">Acompte '+enc.toLocaleString("fr-FR")+'</span>':'<span class="chip bad">À encaisser</span>')+(f?'<button class="btn small" data-factopen="'+esc(a._id)+'">📄 '+esc(f.numero)+'</button><button class="btn small ghost" data-factdel="'+esc(a._id)+'" title="Annuler cette facture" aria-label="Annuler la facture">✕</button>':a.sansFacture?'<span class="chip">Pas de facture</span><button class="btn small ghost" data-nofact="'+esc(a._id)+'" title="Remettre « Créer la facture »" aria-label="Remettre">↺</button>':'<button class="btn small primary" data-fact="'+esc(a._id)+'">Créer la facture</button><button class="btn small ghost" data-nofact="'+esc(a._id)+'" title="Pas de facture pour celle-ci" aria-label="Pas de facture">✕</button>')+'</span></div>'}).join("")+'</div>':'<div class="empty">Aucune activité payante pour l\'instant.</div>';
   }
   if(t==="devis"){const D=factList().filter(f=>f.kind==="devis").sort((x,y)=>(y.numero||"").localeCompare(x.numero||""));
     h+='<div class="row" style="margin-bottom:12px"><span class="muted">Préparez un devis à envoyer, au même modèle que les factures. Numéro automatique (DEV-'+today().slice(0,4)+'-001…). Une fois accepté, transformez-le en facture en un geste.</span><span class="spacer"></span>'+(canAgenda()?'<button class="btn primary" data-devnew>+ Nouveau devis</button>':"")+'</div>';
@@ -3588,7 +3615,7 @@ async function factPDF(f){const doc=await newPdf();if(!doc)return;const E=emet(f
   await saveFile((dev?"Devis ":"Facture ")+(C.nom?pT(C.nom)+" ":"")+(f.objet?pT(f.objet).replace(/^Intervention pour le /,""):f.numero)+".pdf",doc.output("blob"))}
 
 /* ===== v68 : réglages · infos du Domaine Apolo et de l'Association Cheval Libre ===== */
-const RG_EM=[["domaine","Nom"],["sousTitre","Sous-titre"],["adresse","Adresse",{area:1,full:1}],["tel","Téléphone"],["email","E-mail"],["site","Site internet"],["autorisation","N° d'autorisation (association)"],["ice","ICE"],["if_","IF (identifiant)"],["rc","RC"],["patente","Patente (TP)"],
+const RG_EM=[["domaine","Nom"],["sousTitre","Sous-titre"],["raison","Raison sociale (société)"],["adresse","Adresse",{area:1,full:1}],["tel","Téléphone"],["email","E-mail"],["site","Site internet"],["autorisation","N° d'autorisation (association)"],["ice","ICE"],["if_","IF (identifiant)"],["rc","RC"],["patente","Patente (TP)"],
   ["paiement","Phrase de paiement",{area:1,full:1}],["titulaire","Titulaire du compte"],["banque","Banque",{area:1}],["iban","IBAN"],["rib","RIB"],["bic","BIC / SWIFT"],
   ["libTotal","Texte du total (sans TVA)"],["mentionTva","Phrase sous le total (sans TVA)"],["signDevis","Cadre signature · devis",{area:1}],["signFact","Cadre signature · facture",{area:1}],["mentions","Mentions en bas de page",{area:1,full:1}]];
 const rgPath=(w,k)=>w==="asso"?"asso."+k:(EMET_DKEY[k]||"f_"+k);
@@ -3643,6 +3670,74 @@ function viewClients(){
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-cview]");if(b){S.cview=b.dataset.cview;try{localStorage.setItem("pg_cview",S.cview)}catch(_){}render()}});
 try{S.cview=localStorage.getItem("pg_cview")||"col"}catch(_){}
+
+/* ===== v71 : refonte · accueil, argent, Céleste, pas de facture ===== */
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-nofact]");if(!b||!canAgenda())return;const id=b.dataset.nofact;const a=S.agenda[id];if(!a)return;const n={...a,sansFacture:!a.sansFacture};S.agenda[id]=n;render();if(!(await write("agenda/"+id,n)))toast("Pas enregistré, réessayez");else if(n.sansFacture)toast("Pas de facture pour cette activité")});
+
+/* Accueil : la journée d'aujourd'hui avec les heures + la liste « À faire » */
+const DG_H=54;
+function dayTimeline(ds){const its=itemsOn(ds).filter(x=>x.ty!=="perso"||x.mine);const allday=its.filter(x=>!x.heure),timed=its.filter(x=>x.heure).map(x=>{const r=rangeOf(x);return {...x,s:r[0],e:r[1]}});
+  let h0=8,h1=20;timed.forEach(x=>{h0=Math.min(h0,Math.floor(x.s/60));h1=Math.max(h1,Math.ceil(x.e/60))});h1=Math.min(24,Math.max(h1,h0+1));
+  const lanes=[];timed.forEach(x=>{let l=lanes.findIndex(end=>end<=x.s);if(l<0){l=lanes.length;lanes.push(0)}lanes[l]=x.e;x.l=l});
+  timed.forEach(x=>{const ov=timed.filter(y=>y.s<x.e&&y.e>x.s);x.n=Math.max(...ov.map(y=>y.l))+1});
+  const now=new Date();const nm=now.getHours()*60+now.getMinutes();const isT=ds===today();
+  let g='<div class="dg" style="height:'+((h1-h0)*DG_H)+'px">';
+  for(let h=h0;h<h1;h++)g+='<div class="dg-h" style="top:'+((h-h0)*DG_H)+'px"><span>'+pad(h)+'h</span></div>';
+  g+=timed.map(x=>'<button class="dg-ev'+(x.ty==="perso"?" perso":"")+(x.e-x.s<50?" short":"")+'"'+evAttrs(x,ds)+' style="top:'+((x.s-h0*60)/60*DG_H)+'px;height:'+Math.max(26,(x.e-x.s)/60*DG_H-3)+'px;left:calc(54px + (100% - 58px) * '+(x.l/x.n)+');width:calc((100% - 58px) / '+x.n+' - 4px);'+evStyle(x)+'"><b>'+esc(x.heure.replace(":","h"))+(x.fin?" – "+esc(x.fin.replace(":","h")):"")+'</b><span>'+esc(x.titre)+'</span></button>').join("");
+  if(isT&&nm>=h0*60&&nm<=h1*60)g+='<div class="dg-now" style="top:'+((nm-h0*60)/60*DG_H)+'px"></div>';
+  g+='</div>';
+  return (allday.length?'<div class="dg-all"><small>Dans la journée, sans horaire</small>'+allday.map(x=>'<button class="dg-chip"'+evAttrs(x,ds)+' style="'+evStyle(x)+'">'+esc(x.titre)+'</button>').join("")+'</div>':"")+(timed.length||!allday.length?(timed.length?g:'<div class="empty">Aucun rendez-vous aujourd\'hui.</div>'):"")}
+function viewAccueil(){const t=today();
+  return '<div class="acc"><section class="acc-day card"><div class="acc-h"><div><h2>Aujourd\'hui</h2><span class="muted" style="text-transform:capitalize">'+esc(fmtLong(t))+'</span></div>'+(canAgenda()?'<button class="btn small primary" data-new-ev="'+t+'" data-choose>+ Ajouter</button>':"")+'</div>'+dayTimeline(t)+'<button class="linkbtn acc-cal" data-tab="calendrier">Ouvrir le calendrier ›</button></section>'+
+    '<div class="acc-todo">'+todoCard()+'</div></div>'}
+
+/* Argent : une seule page simple — ce qui est entré, ce qui est sorti, ce qui reste, ce qu'on vous doit */
+const AG_IN=[["cours","Cours","#2a78d6"],["stage","Stages et formations","#7a4fd0"],["balade","Balades et visites","#2f8f5b"],["event","Événements et brunchs","#c2475c"],["pension","Pension des chevaux","#b98226"],["autre","Autre","#71849a"]];
+function grpOfTy(ty){const g=CGRP.find(x=>x[4].includes(ty));return g?g[0]:"autre"}
+function entreesOfMonth(m){const o={};const add=(k,v)=>{if(v)o[k]=(o[k]||0)+v};add("pension",pensionOfMonth(m));
+  agendaList().filter(a=>a.statut!=="annule"&&(a.date||"").slice(0,7)===m).forEach(a=>add(grpOfTy(tyOf(a)),encaisseOf(a)));
+  elevesList().forEach(e=>(e.paiements||[]).forEach(p=>{if((p.date||"").slice(0,7)===m)add(grpOfTy(offreOfEleve(e)),num(p.montant))}));return o}
+function hbars(rows,max){return rows.length?'<div class="ag-bars">'+rows.map(([l,v,c])=>'<div class="ag-bar"><span class="ag-l"><i style="background:'+c+'"></i>'+esc(l)+'</span><span class="ag-t"><span style="width:'+Math.max(2,v/(max||1)*100)+'%;background:'+c+'"></span></span><b>'+money(v)+'</b></div>').join("")+'</div>':'<div class="empty">Rien ce mois-ci.</div>'}
+function viewArgent(){
+  if(!S.amonth)S.amonth=today().slice(0,7);const m=S.amonth;const mName=parse(m+"-01").toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+  const E=entreesOfMonth(m);const ent=Object.values(E).reduce((a,b)=>a+b,0);const deps=depensesOfMonth(m);const sor=deps.reduce((s,x)=>s+x.montant,0);const res=ent-sor;
+  const du=aEncaisser();const duT=du.reduce((s,x)=>s+x.reste,0);
+  let h='<div class="ag-nav"><button class="btn small" data-am="-1" aria-label="Mois précédent">‹</button><h2>'+esc(mName)+'</h2><button class="btn small" data-am="1" aria-label="Mois suivant">›</button><span class="spacer"></span><button class="btn" data-report="'+m+'">📄 Rapport PDF</button>'+(canAgenda()?'<button class="btn primary" data-newdep>+ Dépense</button>':"")+'</div>';
+  h+='<div class="ag-sum"><div class="ag-c in"><span>💰 Entré</span><b>'+money(ent)+'</b><small>Argent reçu ce mois-ci</small></div><div class="ag-op">−</div><div class="ag-c out"><span>💸 Sorti</span><b>'+money(sor)+'</b><small>Dépenses et salaires payés</small></div><div class="ag-op">=</div><div class="ag-c '+(res>=0?"ok":"ko")+'"><span>'+(res>=0?"✅ Il reste":"⚠️ Il manque")+'</span><b>'+money(Math.abs(res))+'</b><small>'+(res>=0?"Bénéfice du mois":"Plus de sorties que d\'entrées")+'</small></div></div>';
+  const inRows=AG_IN.map(([k,l,c])=>[l,E[k]||0,c]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const byCat={};deps.forEach(d=>byCat[d.cat]=(byCat[d.cat]||0)+d.montant);const DC=["#c2475c","#eb6834","#d29a0e","#7a4fd0","#2a78d6","#2f8f5b","#71849a"];
+  const outRows=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>[k,v,DC[i%DC.length]]);
+  h+='<div class="grid2"><section class="card"><h3>D\'où vient l\'argent</h3>'+hbars(inRows,Math.max(...inRows.map(x=>x[1]),1))+'</section><section class="card"><h3>Où part l\'argent</h3>'+hbars(outRows,Math.max(...outRows.map(x=>x[1]),1))+'</section></div>';
+  h+='<section class="card" style="margin-top:16px"><div class="row"><h3 style="margin:0">On vous doit</h3><span class="spacer"></span><b style="color:'+(duT?"var(--bad)":"var(--ok)")+'">'+(duT?money(duT):"Rien, tout est payé")+'</b></div>'+(du.length?'<div class="list" style="border:0;margin-top:8px">'+du.slice(0,12).map(x=>'<button class="item" data-item="agenda" data-id="'+esc(x.a._id)+'"><span class="bar" style="background:'+(x.late?"var(--bad)":"var(--warn)")+'"></span><span style="min-width:0"><b>'+esc((x.a.client&&x.a.client.nom)||titreEv(x.a))+'</b><span class="sub">'+esc(tLab(tyOf(x.a)))+' · '+fmtDate(x.a.date)+(x.late?" · passé":"")+'</span></span><b>'+money(x.reste)+'</b></button>').join("")+'</div>'+(du.length>12?'<p class="muted" style="margin:6px 0 0;font-size:13px">… et '+(du.length-12)+' autre(s).</p>':""):"")+'</section>';
+  const ks=monthKeys(12);const ins=ks.map(k=>Object.values(entreesOfMonth(k)).reduce((a,b)=>a+b,0)),outs=ks.map(k=>depensesOfMonth(k).reduce((s,x)=>s+x.montant,0));const mx=Math.max(1,...ins,...outs);
+  h+='<section class="card" style="margin-top:16px"><div class="row"><h3 style="margin:0">Les 12 derniers mois</h3><span class="spacer"></span><span class="ag-leg"><i style="background:#2f8f5b"></i>Entré <i style="background:#c2475c;margin-left:10px"></i>Sorti</span></div><div class="ag-12">'+ks.map((k,i)=>'<button type="button" class="ag-m'+(k===m?" on":"")+'" data-amset="'+k+'" title="'+esc(parse(k+"-01").toLocaleDateString("fr-FR",{month:"long",year:"numeric"}))+' · entré '+ins[i].toLocaleString("fr-FR")+' DH · sorti '+outs[i].toLocaleString("fr-FR")+' DH"><span class="ag-p"><i style="height:'+(ins[i]/mx*100)+'%;background:#2f8f5b"></i><i style="height:'+(outs[i]/mx*100)+'%;background:#c2475c"></i></span><small>'+parse(k+"-01").toLocaleDateString("fr-FR",{month:"short"}).replace(".","")+'</small></button>').join("")+'</div></section>';
+  h+='<details class="card ag-deps" style="margin-top:16px"'+(S.agDepOpen?" open":"")+'><summary><b>Détail des dépenses du mois</b> <span class="count">'+deps.length+'</span></summary>'+(deps.length?'<div class="list" style="border:0;margin-top:8px">'+deps.map(d=>'<button class="item" '+(d.src==="depense"?'data-dep="'+esc(d.id)+'"':d.src==="staff"?'data-item="staff" data-id="'+esc(d.id)+'"':'data-item="cheval" data-id="'+esc(d.id)+'"')+'><span class="bar" style="background:#c2475c"></span><span style="min-width:0"><b>'+esc(d.lib)+'</b><span class="sub">'+esc(d.cat)+' · '+fmtDate(d.date)+'</span></span><b>'+money(d.montant)+'</b></button>').join("")+'</div>':'<div class="empty">Aucune dépense ce mois-ci.</div>')+'</details>';
+  h+='<p style="text-align:center;margin-top:18px"><button class="linkbtn" data-atab="stats">Voir les statistiques détaillées ›</button></p>';
+  return h}
+function viewArgentTab(){if(S.tab==="stats"){S.tab="argent";S.atab="stats"}if(S.atab==="stats")return '<p style="margin:0 0 12px"><button class="btn small" data-atab="argent">‹ Retour à l\'argent</button></p>'+viewStats();return viewArgent()}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-amset]");if(b){S.amonth=b.dataset.amset;render()}});
+document.addEventListener("toggle",e=>{if(e.target.classList&&e.target.classList.contains("ag-deps"))S.agDepOpen=e.target.open},true);
+
+/* Céleste : plus clair — d'abord mon argent, puis mes clients et mes versements */
+function viewCeleste(){
+  if(!canProspects())return '<div class="empty">Page réservée.</div>';
+  const pct=moiPct();const items=apportItems();const m=today().slice(0,7);
+  const totAll=items.reduce((s,x)=>s+x.enc,0);const partAll=Math.round(totAll*pct/100);
+  const vers=(moi().versements||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));const recu=vers.reduce((s,v)=>s+num(v.montant),0);const solde=partAll-recu;
+  const caM=apportMonth(m),partM=Math.round(caM*pct/100);const mName=parse(m+"-01").toLocaleDateString("fr-FR",{month:"long"});
+  let h='<div class="cel-top">'+myAgendaHtml()+myNotesHtml()+'</div>';
+  h+='<section class="card cel-money"><div class="row"><h2 style="margin:0">💰 Mon argent</h2><span class="spacer"></span><label class="cel-pct2">Ma part <input type="number" id="celPct" min="0" max="100" step="0.5" inputmode="decimal" value="'+esc(moi().pct??"")+'" placeholder="0"> %</label></div>'+
+    '<div class="cel-flow"><div><small>Mes clients ont rapporté</small><b>'+money(totAll)+'</b></div><span>→</span><div><small>Ma part ('+pct+' %)</small><b>'+money(partAll)+'</b></div><span>−</span><div><small>Déjà reçu</small><b>'+money(recu)+'</b></div><span>=</span><div class="big '+(solde>0?"due":"ok")+'"><small>'+(solde>0?"On me doit encore":solde<0?"J\'ai reçu en trop":"Je suis à jour")+'</small><b>'+money(Math.abs(solde))+'</b></div></div>'+
+    '<p class="muted" style="margin:10px 0 0">En '+esc(mName)+' : mes clients ont rapporté <b>'+money(caM)+'</b>, ma part est de <b>'+money(partM)+'</b>. Seul l\'argent déjà encaissé compte.</p></section>';
+  const by={};items.forEach(x=>{const k=normTxt(x.client);(by[k]=by[k]||{nom:x.client,enc:0,offres:new Set(),last:"",ref:x}).enc+=x.enc;by[k].offres.add(OF[x.offre]?OF[x.offre].nom:tLab(x.offre));if((x.date||"")>by[k].last)by[k].last=x.date});
+  const L=Object.values(by).sort((a,b)=>b.enc-a.enc);
+  h+='<div class="grid2" style="margin-top:16px"><section class="section" style="margin:0"><div class="section-head"><h2>Mes clients</h2><span class="count">'+L.length+'</span></div>'+
+    (L.length?'<div class="list">'+L.map(c=>'<button class="item" '+(c.ref.src==="agenda"?'data-item="agenda" data-id="'+esc(c.ref.id)+'"':'data-item="eleve" data-id="'+esc(c.ref.id)+'"')+'><span class="bar" style="background:#d29a0e"></span><span style="min-width:0"><b>'+esc(c.nom)+'</b><span class="sub">'+esc([...c.offres].join(", "))+(c.last?' · '+fmtDate(c.last):"")+'</span></span><span style="text-align:right;font-size:14px"><b>'+money(c.enc)+'</b><br><span class="muted" style="font-size:12.5px">ma part '+Math.round(c.enc*pct/100).toLocaleString("fr-FR")+' DH</span></span></button>').join("")+'</div>':'<div class="empty">Aucun client compté pour l\'instant. Dans la fiche d\'une activité, indiquez qu\'elle vient de vous.</div>')+'</section>'+
+    '<section class="section" style="margin:0"><div class="section-head"><h2>Versements reçus</h2><span class="count">'+money(recu)+'</span></div><div class="card cel-v"><div class="cel-add"><input type="date" id="cvD" value="'+today()+'"><input type="number" id="cvM" min="0" inputmode="numeric" placeholder="Montant (DH)"><input id="cvN" placeholder="Ex. virement de Catherine"><button class="btn primary" data-cv-add>Ajouter</button></div>'+
+    (vers.length?'<div class="w-list">'+vers.map(v=>'<div class="w-i donne"><span class="w-s">+</span><span class="w-t"><b>'+esc(v.note||"Versement")+'</b><small>'+fmtDate(v.date)+'</small></span><b class="w-m">'+money(num(v.montant))+'</b><button class="btn small ghost" data-cv-del="'+esc(v.id)+'" aria-label="Supprimer">✕</button></div>').join("")+'</div>':'<p class="muted" style="margin:0;font-size:14px">Notez ici ce qu\'on vous verse : votre solde se met à jour tout seul.</p>')+'</div></section></div>';
+  const keys=monthKeys(12);const tv=keys.map(apportMonth),pv=tv.map(v=>Math.round(v*pct/100));
+  h+='<details class="card" style="margin-top:16px"><summary><b>Mes 12 derniers mois</b></summary><p class="muted" style="margin:6px 0;font-size:13px">Bleu : ce que mes clients ont rapporté · Or : ma part.</p>'+lineChart(keys,[{lab:"Total généré",vals:tv,col:"#2a78d6"},{lab:"Ma part",vals:pv,col:"#d29a0e"}])+'</details>';
+  return h}
 
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
@@ -3824,7 +3919,7 @@ function render(){
   if(fsel){const el=document.querySelector("#view "+fsel);if(el){el.focus({preventScroll:true});if(fcar)try{el.setSelectionRange(fcar[0],fcar[1])}catch(_){}}}else if(k){const el=document.querySelector('[data-k="'+k+'"]');if(el)el.focus()}
 }
 let pending=0;
-function onData(){if(S.loaded&&S.regLoaded&&!S._p69)setTimeout(dataPatch69,800);if(S.route&&(S.dirty||(S.autoRoute&&S.autoRoute===S.route)))return;if(S.route)S.draft=null;render()}
+function onData(){if(S.loaded&&S.regLoaded&&!S._p69)setTimeout(dataPatch69,800);if(S.route&&(S.dirty||autoT||autoBusy))return;if(S.route)S.draft=null;render()}
 async function boot(){
   render();
   if(!window.claude||!window.claude.use){render();return}
