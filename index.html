@@ -1079,7 +1079,7 @@ tr.crow.inc{background:#f1f2f4!important}tr.crow.inc td{color:#8b939e}tr.crow.in
 .cel-flow .big.due{background:#fdf0db}.cel-flow .big.due b{color:#a0651a;font-size:28px}.cel-flow .big.ok{background:#e8f6ee}.cel-flow .big.ok b{color:#2c7a4a;font-size:28px}
 @media (max-width:760px){.acc{grid-template-columns:1fr}.acc-todo #sec-todo .todo{max-height:60vh}.cal-day{min-height:96px}.ag-bar{grid-template-columns:1fr auto}.ag-t{grid-column:1/-1;order:3}.ag-op{display:none}.ag-12{gap:2px}.cel-flow>span{display:none}}
 #updBar{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:3000;display:flex;align-items:center;gap:10px;background:#071027;color:#fff;border-radius:999px;padding:8px 8px 8px 16px;box-shadow:0 12px 30px rgba(7,16,39,.35);font-weight:600;font-size:14px;max-width:calc(100vw - 24px)}#updBar #updGo{border:0;background:#f1d58e;color:#071027;font:inherit;font-weight:800;border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap}#updBar #updNo{border:0;background:none;color:#aab6c8;font:inherit;cursor:pointer;padding:4px 8px}@media (max-width:760px){#updBar{font-size:13px;width:calc(100vw - 24px);justify-content:space-between}}
-.of-new{margin-bottom:16px}.of-new input[type=color]{height:42px;padding:3px;cursor:pointer}.fv>*{min-width:0}.fxdoc{overflow:hidden}
+.of-new{margin-bottom:16px}.of-new input[type=color]{height:42px;padding:3px;cursor:pointer}.dinfo-c{border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:12px;display:grid;gap:8px;background:var(--surface);min-width:0}.dinfo-c pre{margin:0;white-space:pre-wrap;font:inherit;font-size:13.5px;background:var(--sunk);border-radius:8px;padding:10px;max-height:340px;overflow:auto;user-select:all}.dinfo .grid2{margin-top:6px}.fv>*{min-width:0}.fxdoc{overflow:hidden}
 .fv-ment{display:flex;justify-content:flex-end;margin-top:-10px}.fv-ment .fxi{text-align:right;font-weight:700;max-width:420px}
 .fv-foot .fxkv{flex-wrap:wrap}.fv-foot .fxkv .fxi{max-width:100%}
 @media (max-width:760px){
@@ -2451,7 +2451,7 @@ function payMessage(ev){const r=reg();const total=revenueOfAgenda(ev);return fil
 function viewReglages(){
   if(!S.draft)S.draft=rgEmetDraft(clone({msg_confirmation:MSG_DEF.confirmation,msg_rappel:MSG_DEF.rappel,msg_merci:MSG_DEF.merci,...reg()}));const ed=canAgenda();
   let h='<div class="page"><p class="muted" style="margin:0">Ces informations servent aux devis, aux rapports et aux messages envoyés aux clients. Cette page n\'est visible que par vous.</p>';
-  h+=rgEmetBox("domaine")+rgEmetBox("asso");
+  h+=devisInfoBox()+rgEmetBox("domaine")+rgEmetBox("asso");
   h+=codesBox();if(0)h+='<div class="grid2">'+'<fieldset class="fs"><legend>Devis et objectifs</legend><div class="grid">'+F("Acompte demandé (%)","acomptePct",{type:"number"})+F("Validité du devis (jours)","validite",{type:"number"})+F("Objectif de chiffre par mois (DH)","objectif",{type:"number",ph:"Ex. 60000"})+F("Lien pour laisser un avis","avis",{ph:"Ex. lien Google Maps"})+'</div>'+F("Conditions","conditions",{area:true,full:true})+'</fieldset>'+monPctBox()+'</div>'+codesBox();
   h+='<fieldset class="fs"><legend>Sauvegarde et import</legend><div class="row"><button class="btn" data-export>⬇ Exporter toutes les données (Excel)</button>'+(canProspects()?'<label class="btn" for="impIn2" style="cursor:pointer">⬆ Importer des demandes du site (Excel ou CSV)</label><input type="file" id="impIn2" accept=".csv,.xlsx,.xls" hidden>':"")+'</div><span class="muted" style="font-size:13px">Pensez à exporter une sauvegarde une fois par mois. Le fichier contient les prospects, l\'agenda, les clients, les élèves, le personnel, les dépenses et les chevaux.</span></fieldset>';
   if(ed)h+='<div class="sticky-save"><button class="btn primary" id="rgSave">Enregistrer les réglages</button><span class="muted" style="font-size:13px" id="dirtyHint">'+(S.dirty?"Modifications non enregistrées":"")+'</span></div>';
@@ -3779,6 +3779,21 @@ const _viewOffre0=viewOffre;viewOffre=function(){const id=S.route&&S.route.id;co
   if(!o||!o.custom)return h;const d=S.draft||{};const ed=canAgenda();const grs=[...new Set(OGROUPS.map(g=>g[0]).concat([d.groupe||""]).filter(Boolean))];
   const box='<fieldset class="fs of-new" style="border-top:4px solid '+(d.couleur||"#71849a")+'"><legend>Votre offre</legend><div class="grid">'+F("Nom de l\'offre","nom",{ph:"Ex. Initiation poney"})+F("Rangée dans","groupe",{list:"ofGrpL",ph:"Ex. Équitation"})+F("Comment elle se réserve","type",{sel:OF_TYPES})+F("Couleur","couleur",{type:"color"})+'</div><datalist id="ofGrpL">'+grs.map(g=>'<option value="'+esc(g)+'">').join("")+'</datalist><p class="muted" style="margin:0;font-size:13px">Après « Enregistrer », elle apparaît dans le calendrier (+ Ajouter), les bulles des prospects, les colonnes des clients et l\'argent.</p>'+(ed?'<div><button type="button" class="btn small danger" data-ofdel="'+esc(id)+'">Supprimer l\'offre</button></div>':"")+'</fieldset>';
   const i=h.indexOf('<div class="strip"');return i>=0?h.slice(0,i)+box+h.slice(i):h+box};
+
+/* ===== v74 : fiches à copier-coller pour demander un devis à un fournisseur ===== */
+function devisInfoTxt(w){const E=emet(w);const L=[];const add=(l,v)=>{v=String(v||"").trim();if(v)L.push(l+v)};
+  L.push("Bonjour,","","Merci d'établir le devis (puis la facture) au nom de :","");
+  L.push(String(E.domaine||"").toUpperCase()+(w==="asso"&&E.sousTitre?" "+E.sousTitre:""));
+  if(E.raison)L.push(E.raison);
+  String(E.adresse||"").split("\n").filter(x=>x.trim()).forEach(x=>L.push(x.trim()));
+  L.push("");
+  add("ICE : ",E.ice);add("IF : ",E.if_);add("RC : ",E.rc);add("Patente (TP) : ",E.patente);add("N° d'autorisation d'association : ",E.autorisation);
+  L.push("");add("Téléphone : ",E.tel);add("E-mail : ",E.email);
+  L.push("");L.push("Merci d'indiquer les montants HT, la TVA et le total TTC.");
+  L.push("Merci de préciser aussi les délais et les conditions de paiement.","","Cordialement,",w==="asso"?"Association « Le Cheval Libre »":"Domaine Apolo");
+  return L.join("\n").replace(/\n{3,}/g,"\n\n")}
+function devisInfoBox(){return '<fieldset class="fs dinfo"><legend>📋 Demander un devis à un fournisseur</legend><p class="muted" style="margin:0;font-size:13px">Copiez la fiche et collez-la dans votre message (WhatsApp, e-mail) : le fournisseur a tout ce qu\'il faut pour faire le devis au bon nom. Elle se met à jour avec les infos ci-dessous.</p><div class="grid2">'+
+  ["domaine","asso"].map(w=>{const t=devisInfoTxt(w);const c=fxCol(emet(w));return '<div class="dinfo-c" style="--c:'+c+'"><div class="row"><b style="color:'+c+'">'+esc(EMET_NOMS[w])+'</b><span class="spacer"></span><button type="button" class="btn small primary" data-copy="'+esc(t)+'">📋 Copier</button></div><pre>'+esc(t)+'</pre></div>'}).join("")+'</div></fieldset>'}
 
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
