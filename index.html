@@ -36,6 +36,7 @@
 .ag-tabs button[aria-pressed="true"]{background:#fff;color:#071027;box-shadow:0 1px 4px rgba(20,40,70,.12)}
 .ag-err{background:#fde3e5;color:#b8424c;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600}
 .ag-ok{background:#e2f4e8;color:#2c7a4a;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600}
+.ag-card,.ag-card *{box-sizing:border-box}.ag-card{overflow-wrap:anywhere}.ag-qr{display:flex;justify-content:center;background:#fff;border:1px solid #d8e6f4;border-radius:12px;padding:10px}.ag-qr img{width:190px;height:190px}.ag-secret{font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em;word-break:break-all}.ag-ol{margin:0;padding-left:20px;font-size:14px;color:#4b5d73;display:grid;gap:4px}
 .ag-out{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 @media (max-width:760px){body.pg-in .hdr-r .today-date{display:none}}
 .fx-sug{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.fx-sug small{flex-basis:100%}.fx-grille{margin-top:12px;border:1px dashed #d8c79f;border-radius:12px;padding:8px 12px;background:#fffdf7}.fx-grille summary{cursor:pointer;font-weight:600;color:#8a6420}.fx-gg{margin:8px 0}.fx-gg b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#7a6a4a;margin-bottom:5px}.fx-gc{display:flex;flex-wrap:wrap;gap:6px}.fx-gc .chip{border:1px solid #e3d6b8;background:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;color:#2a2418}.fx-gc .chip:hover{border-color:#c9a961;background:#fbf4e3}
@@ -51,10 +52,11 @@
   const gate=document.getElementById("authGate"),card=document.getElementById("agCard");
   const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   if(!CFG.url||!CFG.anonKey||!window.supabase){card.innerHTML='<h1>Pégase n\'est pas encore relié à sa base de données</h1><p>Il manque l\'adresse Supabase dans le fichier config.js.</p>';return}
-  const sb=window.supabase.createClient(CFG.url,CFG.anonKey,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
+  const sb=window.supabase.createClient(CFG.url,CFG.anonKey,{auth:{persistSession:true,storageKey:"pegase-auth",autoRefreshToken:true,detectSessionInUrl:false}});
+  const MFA_DAYS=30;
   const st={mode:"login",email:"",msg:"",err:""};
   const logo=()=>{const l=document.querySelector(".brand .logo");return l&&l.src?'<img src="'+l.src+'" alt="">':""};
-  function trad(e){const m=String((e&&e.message)||e||"");
+  function trad(e){const m=String((e&&e.message)||e||"");if(/totp|mfa/i.test(m))return "Code incorrect. Tapez le code affiché en ce moment dans Google Authenticator.";
     if(/Invalid login credentials/i.test(m))return "E-mail ou mot de passe incorrect.";
     if(/Email not confirmed/i.test(m))return "Votre adresse n'est pas encore vérifiée. Inscrivez-vous à nouveau pour recevoir un code.";
     if(/Database error saving new user|non autoris/i.test(m))return "Cette adresse e-mail n'est pas autorisée à utiliser Pégase.";
@@ -69,6 +71,8 @@
     if(st.mode==="login")f='<h1>Bonjour 👋</h1><p>Connectez-vous avec votre adresse e-mail et votre mot de passe.</p><label>E-mail<input id="agEmail" type="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" value="'+esc(st.email)+'"></label><label>Mot de passe<input id="agPwd" type="password" autocomplete="current-password"></label><button class="ag-btn" data-go="login">Se connecter</button><button class="ag-link" data-m="forgot">Mot de passe oublié ?</button>';
     if(st.mode==="signup")f='<h1>Créer mon compte</h1><p>Une seule fois. Seules les adresses autorisées peuvent s\'inscrire.</p><label>E-mail<input id="agEmail" type="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" value="'+esc(st.email)+'"></label><label>Mot de passe (8 caractères minimum)<input id="agPwd" type="password" autocomplete="new-password"></label><label>Confirmer le mot de passe<input id="agPwd2" type="password" autocomplete="new-password"></label><button class="ag-btn" data-go="signup">M\'inscrire</button>';
     if(st.mode==="code")f='<h1>Code de vérification</h1><p>Nous avons envoyé un code à <b>'+esc(st.email)+'</b>. Regardez aussi dans les courriers indésirables.</p><label>Code reçu par e-mail<input id="agCode" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label><button class="ag-btn" data-go="verify">Valider</button><button class="ag-link" data-go="resend">Renvoyer le code</button><button class="ag-link" data-m="login">Retour</button>';
+    if(st.mode==="mfa-enroll")f='<h1>🔐 Double authentification</h1><p>Votre compte administrateur protège les données privées (mots de passe, prospects). Activez Google Authenticator une fois :</p><ol class="ag-ol"><li>Installez <b>Google Authenticator</b> sur votre téléphone.</li><li>Touchez <b>+</b> puis <b>Scanner un code QR</b> :</li></ol>'+(st.qr?'<div class="ag-qr"><img src="'+esc(st.qr)+'" alt="Code QR"></div>':"")+(st.secret?'<p style="font-size:12.5px">Pas d\'appareil photo ? Choisissez « Saisir une clé » et tapez :<br><b class="ag-secret">'+esc(st.secret)+'</b></p>':"")+'<label>3. Tapez le code à 6 chiffres affiché<input id="agMfa" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label><button class="ag-btn" data-go="mfa-enroll">Activer</button><button class="ag-link" data-go="logout">Se déconnecter</button>';
+    if(st.mode==="mfa")f='<h1>🔐 Code de sécurité</h1><p>'+esc(st.mfaWhy||"Ouvrez Google Authenticator et tapez le code à 6 chiffres de Pégase.")+'</p><label>Code Google Authenticator<input id="agMfa" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label><button class="ag-btn" data-go="mfa">Valider</button><button class="ag-link" data-go="logout">Se déconnecter</button>';
     if(st.mode==="forgot")f='<h1>Mot de passe oublié</h1><p>Indiquez votre e-mail : vous recevrez un code pour choisir un nouveau mot de passe.</p><label>E-mail<input id="agEmail" type="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" value="'+esc(st.email)+'"></label><button class="ag-btn" data-go="forgot">Recevoir un code</button><button class="ag-link" data-m="login">Retour</button>';
     if(st.mode==="reset")f='<h1>Nouveau mot de passe</h1><p>Code envoyé à <b>'+esc(st.email)+'</b>.</p><label>Code reçu par e-mail<input id="agCode" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label><label>Nouveau mot de passe<input id="agPwd" type="password" autocomplete="new-password"></label><label>Confirmer<input id="agPwd2" type="password" autocomplete="new-password"></label><button class="ag-btn" data-go="reset">Enregistrer et me connecter</button><button class="ag-link" data-m="login">Retour</button>';
     card.innerHTML='<div class="ag-brand">'+logo()+'<div><small>Domaine Apolo · Marrakech</small><b>Pégase</b></div></div>'+tabs+(st.err?'<div class="ag-err">'+esc(st.err)+'</div>':"")+(st.msg?'<div class="ag-ok">'+esc(st.msg)+'</div>':"")+f;
@@ -87,6 +91,9 @@
         if(data&&data.session)return start();st.mode="code";st.msg="Code envoyé ✓";return draw()}
       if(k==="verify"){const c=val("agCode");if(!c){st.err="Tapez le code reçu par e-mail.";return draw()}busy();
         const {error}=await sb.auth.verifyOtp({email:st.email,token:c,type:"signup"});if(error)throw error;return start()}
+      if(k==="logout"){await sb.auth.signOut();st.mode="login";st.qr="";st.secret="";return draw()}
+      if(k==="mfa-enroll"||k==="mfa"){const c=val("agMfa").replace(/\D/g,"");if(c.length!==6){st.err="Tapez les 6 chiffres du code.";return draw()}busy();
+        const {error}=await sb.auth.mfa.challengeAndVerify({factorId:st.factorId,code:c});if(error)throw error;st.qr="";st.secret="";return start()}
       if(k==="resend"){busy();const {error}=await sb.auth.resend({type:"signup",email:st.email});if(error)throw error;st.msg="Nouveau code envoyé ✓";return draw()}
       if(k==="forgot"){if(!st.email){st.err="Indiquez votre e-mail.";return draw()}busy();const {error}=await sb.auth.resetPasswordForEmail(st.email);if(error)throw error;st.mode="reset";st.msg="Code envoyé ✓";return draw()}
       if(k==="reset"){const c=val("agCode"),p=val("agPwd");if(!c||!p){st.err="Tapez le code et le nouveau mot de passe.";return draw()}if(p.length<8){st.err="Le mot de passe doit faire au moins 8 caractères.";return draw()}if(p!==val("agPwd2")){st.err="Les deux mots de passe ne sont pas identiques.";return draw()}busy();
@@ -118,6 +125,7 @@
     const {data:{user}}=await sb.auth.getUser();if(!user){st.err="Connexion impossible, réessayez.";return draw()}
     uid=user.id;const r=await sb.from("allowed").select("role").maybeSingle();role=r.data&&r.data.role;
     if(!role){await sb.auth.signOut();st.mode="login";st.err="Connectée, mais adresse absente de la liste autorisée ("+(user.email||"")+(r.error?" · "+r.error.message:"")+").";return draw()}
+    if(role==="owner"&&!(await mfaOk()))return;
     sb.channel("pegase-docs").on("postgres_changes",{event:"*",schema:"public",table:"docs"},pl=>{const row=pl.new&&pl.new.path?pl.new:null;const path=row?row.path:(pl.old&&pl.old.path);if(!path)return;local(path,pl.eventType==="DELETE"?null:row.data)}).subscribe();
     window.claude={use:async n=>n==="db"?db:n==="user"?{isOwner:async()=>role==="owner",canEdit:async()=>role==="owner"||role==="editor",id:async()=>uid}:n==="downloads"?{save:async({filename,data})=>{const a=document.createElement("a");a.href=URL.createObjectURL(data);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}}:null};
     gate.hidden=true;document.body.classList.add("pg-in");
@@ -125,6 +133,17 @@
     if(window.__pegaseBoot)window.__pegaseBoot();
     if(role==="owner"){const c=await sb.from("docs").select("path",{count:"exact",head:true});if(!c.error&&(c.count===0||location.hash==="#import"))showImport()}
   }
+  function jwtPayload(){try{return sb.auth.getSession().then(({data})=>{const t=data&&data.session&&data.session.access_token;if(!t)return {};const b=t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");return JSON.parse(decodeURIComponent(escape(atob(b+"===".slice((b.length+3)%4)))))})}catch(_){return Promise.resolve({})}}
+  async function mfaOk(){
+    const lf=await sb.auth.mfa.listFactors();if(lf.error){console.warn("2FA indisponible",lf.error);window.__mfaWarn=lf.error.message;return true}
+    const tot=(lf.data&&lf.data.totp||[]).filter(f=>f.status==="verified");
+    if(!tot.length){const old=(lf.data&&lf.data.all||[]).filter(f=>f.factor_type==="totp"&&f.status!=="verified");for(const f of old){try{await sb.auth.mfa.unenroll({factorId:f.id})}catch(_){}}
+      const en=await sb.auth.mfa.enroll({factorType:"totp",friendlyName:"Pégase",issuer:"Pégase · Domaine Apolo"});if(en.error){console.warn("2FA indisponible",en.error);window.__mfaWarn=en.error.message;return true}
+      st.factorId=en.data.id;st.qr=en.data.totp.qr_code;st.secret=en.data.totp.secret;st.mode="mfa-enroll";st.err="";gate.hidden=false;draw();return false}
+    st.factorId=tot[0].id;const P=await jwtPayload();
+    const t=(P.amr||[]).filter(a=>a.method==="totp").map(a=>Number(a.timestamp)||0).reduce((a,b)=>Math.max(a,b),0);
+    const fresh=P.aal==="aal2"&&t&&(Date.now()/1000-t)<MFA_DAYS*86400;
+    if(fresh)return true;st.mfaWhy=P.aal==="aal2"?"Cela fait plus de 30 jours : par sécurité, tapez le code de Google Authenticator.":"Nouvelle connexion : ouvrez Google Authenticator et tapez le code à 6 chiffres de Pégase.";st.mode="mfa";st.err="";gate.hidden=false;draw();return false}
   function showImport(){const o=document.createElement("div");o.id="agImp";o.style.cssText="position:fixed;inset:0;z-index:2100;background:rgba(7,16,39,.6);display:flex;align-items:center;justify-content:center;padding:20px";
     o.innerHTML='<div class="ag-card"><h1>Importer vos données</h1><p>Votre Pégase en ligne est vide. Tapez le code d\'import que Claude vous a donné pour y recopier vos prospects, votre calendrier, vos chevaux, vos offres…</p><label>Code d\'import<input id="impPw" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX"></label><div id="impMsg"></div><button class="ag-btn" id="impGo">Importer</button><button class="ag-link" id="impNo">Plus tard</button></div>';
     document.body.appendChild(o);
@@ -141,7 +160,7 @@
         m.innerHTML='<div class="ag-ok">✓ '+docs.length+' fiches importées</div>';b.textContent="Terminé";setTimeout(()=>o.remove(),1500);
       }catch(e){m.innerHTML='<div class="ag-err">'+esc(e.message||String(e))+'</div>';b.disabled=false;b.textContent="Importer"}};
   }
-  window.addEventListener("DOMContentLoaded",draw);
+  window.addEventListener("DOMContentLoaded",async()=>{try{const {data}=await sb.auth.getSession();if(data&&data.session){card.innerHTML='<div class="ag-brand">'+logo()+'<div><small>Domaine Apolo · Marrakech</small><b>Pégase</b></div></div><p>Connexion…</p>';return start()}}catch(_){}draw()});
 })();
 </script>
 <title>Pégase</title>

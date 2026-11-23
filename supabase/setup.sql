@@ -15,9 +15,22 @@ create policy "chacun lit son role" on public.allowed
   for select to authenticated
   using (lower(email) = lower(auth.jwt() ->> 'email'));
 
+-- Le compte administrateur doit avoir validé Google Authenticator (aal2) depuis moins de 30 jours.
 create or replace function public.app_role() returns text
 language sql stable security definer set search_path = public as $$
-  select role from public.allowed where lower(email) = lower(auth.jwt() ->> 'email')
+  select case
+    when a.role = 'owner' and not (
+      coalesce(auth.jwt() ->> 'aal', 'aal1') = 'aal2'
+      and exists (
+        select 1 from jsonb_array_elements(coalesce(auth.jwt() -> 'amr', '[]'::jsonb)) as m
+        where m ->> 'method' = 'totp'
+          and (m ->> 'timestamp')::bigint > extract(epoch from now() - interval '30 days')
+      )
+    ) then null
+    else a.role
+  end
+  from public.allowed a
+  where lower(a.email) = lower(auth.jwt() ->> 'email')
 $$;
 
 -- 2. Personne d'autre ne peut créer de compte
