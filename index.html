@@ -2427,7 +2427,7 @@ function viewClient(){if(S.clEditRoute!==S.route.id){S.clEdit="";S.clEditRoute=S
 }
 async function saveClient(btn,silent){const d=S.draft;if(!String(d.nom||"").trim()&&!String(d.tel||"").trim()){toast("Indiquez au moins un nom ou un téléphone");return null}
   const key=S.route.id||ckey(d.nom,d.tel);if(!key){toast("Nom invalide");return null}if(btn)btn.disabled=true;
-  const doc={...((S.clientsDb||{})[key]||{}),updatedAt:new Date().toISOString(),tags:d.tags||[],interets:d.interets||[],suivi:d.suivi||[],achats:(d.achats||[]).filter(a=>num(a.montant)||a.offre),fact:{...(d.fact||{})}};CFIELDS.forEach(f=>doc[f]=typeof d[f]==="string"?d[f].trim():(d[f]||""));
+  const doc={...((S.clientsDb||{})[key]||{}),...(d.complet!==undefined?{complet:!!d.complet}:{}),updatedAt:new Date().toISOString(),tags:d.tags||[],interets:d.interets||[],suivi:d.suivi||[],achats:(d.achats||[]).filter(a=>num(a.montant)||a.offre),fact:{...(d.fact||{})}};CFIELDS.forEach(f=>doc[f]=typeof d[f]==="string"?d[f].trim():(d[f]||""));
   if(await write("clients/"+key,doc)){S.clientsDb[key]=doc;S.dirty=false;S.touched=false;
     S.clPending={key,nom:doc.nom,tel:doc.tel,email:doc.email,notes:doc.notes||""};if(!silent)await clRunPending();else clWatchPending();
     if(!silent){S.ctab="clients";go.force=true;go("clients");toast("Client enregistré · mis à jour partout")}return key}if(btn)btn.disabled=false;return null}
@@ -4151,6 +4151,9 @@ function acoProspectBox(d,tot){if(!typesOf(d).includes("stages"))return "";const
 document.addEventListener("change",e=>{const id=e.target.id;if(!["f_acoPaye","f_acoMt","f_acoDate","f_acoMoyen"].includes(id)||!draft)return;readForm();const b=draft.besoin=draft.besoin||{};const A=b.acompte={...(b.acompte||{})};
   if(id==="f_acoPaye"){A.paye=e.target.checked;if(A.paye){if(!num(A.montant)){const pr=(draft.lignes||[]).length?num(lignesTotal(draft)):num(draft.montant);if(pr)A.montant=Math.round(pr/2)}if(!A.date)A.date=today()}}
   if(id==="f_acoMt")A.montant=e.target.value;if(id==="f_acoDate")A.date=e.target.value;if(id==="f_acoMoyen")A.moyen=e.target.value;drawFiche()});
+
+/* ===== v88 : « Fiche terminée » cochée sur la fiche client = enregistré pour de bon ===== */
+document.addEventListener("change",e=>{const c=e.target.closest&&e.target.closest("[data-cl-complet]");if(!c||!canAgenda()||!S.route||!S.route.id)return;const k=S.route.id;if(S.draft)S.draft.complet=c.checked;setClientDone(k,c.checked)});
 
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
