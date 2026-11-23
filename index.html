@@ -4050,6 +4050,13 @@ async function dataPatch83(){if(S._p83||!S.loaded||!S.regLoaded||!canProspects()
   if(nr.f_cgvPaiement===CGV_OLD)nr.f_cgvPaiement=CGV_NEW;if(nr.asso&&nr.asso.cgvPaiement===CGV_OLD)nr.asso={...nr.asso,cgvPaiement:CGV_NEW};nr.patch83=today();S.reglages=nr;await write("reglages/infos",nr);if(!S.dirty)render()}
 const _onData83=onData;onData=function(){if(S.loaded&&S.regLoaded&&!S._p83)setTimeout(dataPatch83,1200);return _onData83.apply(this,arguments)};
 
+/* ===== v84 : remplacement de l'ancienne phrase « solde 30 jours avant », même si elle a été enregistrée ===== */
+function cgvIsOld(t){t=String(t||"");return /30 jours avant la prestation/.test(t)&&/moins de 30 jours/.test(t)}
+async function dataPatch84(){if(S._p84||!S.loaded||!S.regLoaded||!canProspects())return;S._p84=true;const R=S.reglages||{};const nr={...R};let ch=false;
+  if(cgvIsOld(nr.f_cgvPaiement)){nr.f_cgvPaiement=CGV_NEW;ch=true}if(nr.asso&&cgvIsOld(nr.asso.cgvPaiement)){nr.asso={...nr.asso,cgvPaiement:CGV_NEW};ch=true}
+  if(!ch)return;S.reglages=nr;await write("reglages/infos",nr);toast("Conditions de paiement mises à jour (solde réglé sur place)");if(!S.dirty)render()}
+const _onData84=onData;onData=function(){if(S.loaded&&S.regLoaded&&!S._p84)setTimeout(dataPatch84,1500);return _onData84.apply(this,arguments)};
+
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
   toastUndo((kind==="devis"?"Devis ":"Facture ")+f.numero+" créé"+(kind==="devis"?"":"e"),async()=>{delete S.factures[id];if(S.route&&S.route.page==="facture"){go.force=true;go("admin")}else render();await del("factures/"+id)});go("admin",{page:"facture",id})}
