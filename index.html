@@ -1304,8 +1304,11 @@ function elevesList(){return Object.keys(S.eleves).map(id=>({...S.eleves[id],_id
 const BRUNCH={debut:"2026-11-08",h1:"12:00",h2:"17:00",tous:7,prixA:790,prixE:390};
 /* prix du brunch : chaque brunch garde ses propres prix ; un nouveau brunch reprend ceux du dernier brunch, sinon 790 / 390 DH */
 function brPrixDef(ds){const L=agendaList().filter(a=>a.kind==="brunch"&&a.date&&a.date!==ds&&(num(a.prixAdulte)||num(a.prixEnfant))).sort((x,y)=>{const bx=x.date<ds,by=y.date<ds;if(bx!==by)return bx?-1:1;return bx?y.date.localeCompare(x.date):x.date.localeCompare(y.date)});const r=L[0];return r?{a:num(r.prixAdulte)||BRUNCH.prixA,e:num(r.prixEnfant)||BRUNCH.prixE}:{a:BRUNCH.prixA,e:BRUNCH.prixE}}
-function isBrunchDay(ds){if(ds<BRUNCH.debut)return false;const n=Math.round((parse(ds)-parse(BRUNCH.debut))/864e5);return n%BRUNCH.tous===0}
-function nextBrunches(n){const out=[];let ds=today()>BRUNCH.debut?today():BRUNCH.debut;let k=Math.max(0,Math.ceil(Math.round((parse(ds)-parse(BRUNCH.debut))/864e5)/BRUNCH.tous));for(let i=0;i<n;i++)out.push(addDays((k+i)*BRUNCH.tous,BRUNCH.debut));return out}
+/* Brunchs prévus (proposés automatiquement dans le calendrier). Pour l'instant seulement le 29 novembre :
+   on n'affiche plus un brunch tous les dimanches. Ajouter ici les prochaines dates quand elles sont décidées. */
+BRUNCH.dates=["2026-11-29"];
+function isBrunchDay(ds){return BRUNCH.dates.includes(ds)}
+function nextBrunches(n){const t=today();const D=new Set(BRUNCH.dates.filter(d=>d>=t));agendaList().forEach(a=>{if(a.kind==="brunch"&&a.statut!=="annule"&&a.date>=t)D.add(a.date)});return [...D].sort().slice(0,n)}
 document.addEventListener("click",e=>{
   const it=e.target.closest("[data-item]");if(!it)return;
   const src=it.dataset.item;
@@ -4215,7 +4218,7 @@ const _saveClient90=saveClient;saveClient=async function(btn,silent){const A=S.d
   try{if(key&&A){const pr=prospectsOf(key).find(pp=>typesOf(pp).includes("stages"));await stSync(pr?"p:"+pr._id:"c:"+key,d.nom,"",d.tel,A,pr?pr.dateEvent:"")}}catch(_){}return key};
 
 /* ===== v91 : repère de version visible (bas du menu) ===== */
-const PEGASE_VERSION="25 nov. · brunch : prix 790 / 390";
+const PEGASE_VERSION="25 nov. · brunch seulement le 29";
 const _renderTabs91=renderTabs;renderTabs=function(){_renderTabs91.apply(this,arguments);const t=$("#tabs");if(t&&!t.querySelector(".pg-ver")){t.insertAdjacentHTML("beforeend",'<div class="pg-ver">Version : '+PEGASE_VERSION+'</div>')}};
 
 /* ===== v92 : livre de comptes — recettes et dépenses du mois, comme un livre de comptable ===== */
