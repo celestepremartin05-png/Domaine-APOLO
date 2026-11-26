@@ -4227,7 +4227,7 @@ const _saveClient90=saveClient;saveClient=async function(btn,silent){const A=S.d
   try{if(key&&A){const pr=prospectsOf(key).find(pp=>typesOf(pp).includes("stages"));await stSync(pr?"p:"+pr._id:"c:"+key,d.nom,"",d.tel,A,pr?pr.dateEvent:"")}}catch(_){}return key};
 
 /* ===== v91 : repère de version visible (bas du menu) ===== */
-const PEGASE_VERSION="25 nov. · Événements + synchro";
+const PEGASE_VERSION="26 nov. · devis équithérapie Noémie";
 const _renderTabs91=renderTabs;renderTabs=function(){_renderTabs91.apply(this,arguments);const t=$("#tabs");if(t&&!t.querySelector(".pg-ver")){t.insertAdjacentHTML("beforeend",'<div class="pg-ver">Version : '+PEGASE_VERSION+'</div>')}};
 
 /* ===== v92 : livre de comptes — recettes et dépenses du mois, comme un livre de comptable ===== */
@@ -4404,6 +4404,25 @@ const _lvLines94=lvLines;lvLines=function(m){const r=_lvLines94(m);try{evList().
     const x={k,date:E.date,lib:"🎪 "+(E.nom||"Événement"),client:s2.pers+" pers.",prevu:s2.rec,enc:s2.enc,src:"Événement",note:n.note||""};if(n.paye===true)x.enc=x.prevu;else if(n.paye===false)x.enc=0;x.statut=x.enc>=x.prevu&&x.prevu>0?"paye":x.enc>0?"partiel":"non";
     if(n.cache)r.H.push(x);else r.R.push(x)});r.R.sort((a,b)=>(a.date||"").localeCompare(b.date||""))}catch(_){}return r};
 document.addEventListener("click",e=>{const o=e.target.closest(".lv-lib");if(!o||!/🎪/.test(o.textContent))return;const k=(o.closest("tr").querySelector("[data-lvnote]")||{}).dataset;if(!k||!k.lvnote)return;S.route=null;S.tab="events";S.evtab="evts";S.evtId=k.lvnote.slice(2);S.evD=null;render()});
+
+/* ===== v95 : devis de Noémie rempli à partir du pré-devis « Connexion à Soi à travers le Cheval » (une seule fois) ===== */
+const EQUI_GROUPE={objet:"« Connexion à Soi à travers le Cheval »",pu:650,
+  lib:"Séance d'équithérapie de groupe – 2 h 30\nTarif groupe par participant (tarif individuel 1 300 MAD, soit -50 %)\n"+
+   "• Accueil et introduction (20 min) : le cheval et son langage émotionnel\n"+
+   "• Rencontre et observation (30 min) : approche du cheval, connexion\n"+
+   "• Expériences pratiques (1 h 20) : présence, confiance, intentions, émotions, communication\n"+
+   "• Intégration et partage (20 min) : bilan et pistes pour le quotidien\n"+
+   "Inclus : Catherine Evrard et son équipe, 2 à 3 chevaux adaptés au groupe. Accessible à tous, exercices à pied uniquement.\n"+
+   "Tenue : chaussures fermées, tenue confortable."};
+async function dataPatch95(){if(S._p95||!S.loaded||!canAgenda())return;S._p95=true;
+  const L=factList().filter(f=>f.kind==="devis"&&/no[eéè]mie/i.test(String((f.client||{}).nom||""))&&!f.p95).sort((a,b)=>String(b.cree||b.date||"").localeCompare(String(a.cree||a.date||"")));
+  const f=L[0];if(!f)return;const id=f._id;const cur=S.factures[id];if(!cur)return;
+  const old=(cur.lignes||[]).filter(l=>String(l.lib||"").trim()||num(l.pu));const isEq=l=>/equith|connexion|seance/.test(normTxt(l.lib||""));
+  let eq=old.filter(isEq),others=old.filter(l=>!isEq(l));if(!eq.length&&old.length===1){eq=old;others=[]}
+  const ln={lib:EQUI_GROUPE.lib,qte:num((eq[0]||{}).qte)||1,pu:EQUI_GROUPE.pu};
+  const n={...cur,objet:EQUI_GROUPE.objet,lignes:[ln,...others],p95:true,updatedAt:new Date().toISOString()};
+  if(await write("factures/"+id,n)){S.factures[id]=n;toast("Devis "+(n.numero||"")+" de "+((n.client||{}).nom||"Noémie")+" rempli (équithérapie de groupe)");if(!S.dirty)render()}}
+const _onData95=onData;onData=function(){if(S.loaded&&!S._p95)setTimeout(dataPatch95,1800);return _onData95.apply(this,arguments)};
 
 /* ===== v55 : devis au même modèle, sans mentions entre crochets ===== */
 async function factCreate(kind,a){const id=newId(kind==="devis"?"dev":"fac");const f=factNew(a,kind);if(!(await write("factures/"+id,f)))return;S.factures=S.factures||{};S.factures[id]=f;
